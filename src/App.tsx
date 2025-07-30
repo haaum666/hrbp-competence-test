@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 function App() {
   return (
-    <Router basename={import.meta.env.BASE_URL}>
+    <Router> {/* <-- Изменено здесь */}
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center p-4">
         <h1 className="text-4xl font-bold mb-6">Добро пожаловать в HRBP-Тест!</h1>
         <p className="text-lg text-center">
