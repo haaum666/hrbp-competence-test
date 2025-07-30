@@ -1,0 +1,33 @@
+name: Deploy to GitHub Pages # Название workflow
+
+on:
+  push:
+    branches:
+      - main # Триггер: запускать workflow при каждом пуше в ветку 'main' (или 'master')
+
+jobs:
+  build-and-deploy: # Название задачи
+    runs-on: ubuntu-latest # Виртуальная машина, на которой будет выполняться задача
+
+    steps:
+      - name: Checkout code # Шаг 1: Клонирование репозитория
+        uses: actions/checkout@v4 # Используем action для получения кода
+
+      - name: Set up Node.js # Шаг 2: Настройка окружения Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Используем Node.js версии 20
+
+      - name: Install dependencies # Шаг 3: Установка зависимостей проекта
+        run: npm install # Или 'yarn install' если используете Yarn
+
+      - name: Build project # Шаг 4: Сборка React/Vite приложения
+        run: npm run build # Запускаем скрипт сборки, который генерирует файлы в папку 'dist'
+
+      - name: Deploy to GitHub Pages # Шаг 5: Деплой собранного приложения на GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4 # Используем популярный action для деплоя на GH Pages
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }} # Используем встроенный токен GitHub Actions
+          publish_dir: ./dist # Указываем директорию, которую нужно опубликовать (результат сборки Vite)
+          publish_branch: gh-pages # Ветка, в которую будут деплоиться статические файлы
+          # cname: hrbp-test.com # Опционально: если у вас есть собственный домен (замените на ваш домен или удалите)
