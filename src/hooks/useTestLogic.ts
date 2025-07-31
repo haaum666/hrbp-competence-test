@@ -60,32 +60,7 @@ const useTestLogic = (): UseTestLogicReturn => {
   const [showResumeOption, setShowResumeOption] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(INITIAL_TIME_PER_QUESTION);
 
-  // Effect для инициализации вопросов при первом рендере
-  useEffect(() => {
-    setQuestions(generateQuestions());
-  }, []);
-
-  // Effect для проверки сохраненного прогресса при загрузке
-  useEffect(() => {
-    const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
-    const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
-    const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
-
-    if (savedAnswers && savedIndex && savedTestStarted === 'true') {
-      try {
-        const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
-        const parsedIndex: number = parseInt(savedIndex, 10);
-
-        if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < questions.length) {
-          setShowResumeOption(true);
-        }
-      } catch (e) {
-        console.error('Failed to parse saved test data:', e);
-        // Очищаем localStorage, если данные повреждены
-        clearLocalStorage();
-      }
-    }
-  }, [questions.length]); // Зависит от questions.length, чтобы убедиться, что вопросы загружены
+  // --- НАЧАЛО: Все функции useCallback определяются здесь, перед useEffect ---
 
   // Функция для очистки localStorage связанных с тестом
   const clearLocalStorage = useCallback(() => {
@@ -93,6 +68,115 @@ const useTestLogic = (): UseTestLogicReturn => {
     localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     localStorage.removeItem(LOCAL_STORAGE_KEY_START_TIME);
+  }, []);
+
+  /**
+   * @function calculateTestResult
+   * @description Вычисляет итоговые результаты теста.
+   */
+  const calculateTestResult = useCallback(() => {
+    if (questions.length === 0) return;
+
+    let correctAnswers = 0;
+    let incorrectAnswers = 0;
+    let unanswered = 0;
+    const answersDetails: AnswerDetail[] = [];
+
+    questions.forEach((question) => {
+      const userAnswer = userAnswers.find((ans) => ans.questionId === question.id);
+      let isCorrect = false;
+
+      if (userAnswer && userAnswer.selectedOptionId) {
+        if (question.type === 'multiple-choice') {
+          isCorrect = userAnswer.selectedOptionId === question.correctAnswer;
+        } else {
+          // Для кейсов или приоритизации, где нет однозначного "правильного" ответа
+          // можно считать ответ правильным, если он просто был дан.
+          // Или внедрить более сложную логику оценки.
+          isCorrect = true; // Считаем, что если пользователь дал ответ, то он "правильный" для этого типа
+        }
+      }
+
+      if (isCorrect) {
+        correctAnswers++;
+      } else if (userAnswer && userAnswer.selectedOptionId) {
+        incorrectAnswers++;
+      } else {
+        unanswered++;
+      }
+
+      answersDetails.push({
+        question,
+        userAnswer,
+        isCorrect,
+      });
+    });
+
+    const totalQuestions = questions.length;
+    const scorePercentage = (correctAnswers / totalQuestions) * 100;
+
+    setTestResult({
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      unanswered,
+      scorePercentage,
+      answers: answersDetails,
+    });
+
+    setTestFinished(true);
+    clearLocalStorage(); // Очищаем localStorage после завершения теста
+  }, [questions, userAnswers, clearLocalStorage]);
+
+  /**
+   * @function handleNextQuestion
+   * @description Переходит к следующему вопросу или завершает тест, если это последний вопрос.
+   */
+  const handleNextQuestion = useCallback(() => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+    } else {
+      // Если это последний вопрос, завершаем тест
+      calculateTestResult();
+    }
+  }, [currentQuestionIndex, questions.length, calculateTestResult]);
+
+  /**
+   * @function handlePreviousQuestion
+   * @description Переходит к предыдущему вопросу.
+   */
+  const handlePreviousQuestion = useCallback(() => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
+    }
+  }, [currentQuestionIndex]);
+
+  /**
+   * @function handleAnswerSelect
+   * @description Обрабатывает выбор ответа пользователем, сохраняет его и переходит к следующему вопросу.
+   * @param {string} questionId - ID вопроса, на который был дан ответ.
+   * @param {string} selectedOptionId - ID выбранного варианта ответа.
+   */
+  const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
+    setUserAnswers((prevAnswers) => {
+      const existingAnswerIndex = prevAnswers.findIndex(
+        (answer) => answer.questionId === questionId
+      );
+
+      const newAnswer: UserAnswer = {
+        questionId,
+        selectedOptionId,
+        answeredTime: new Date().toISOString(),
+      };
+
+      if (existingAnswerIndex > -1) {
+        const updatedAnswers = [...prevAnswers];
+        updatedAnswers[existingAnswerIndex] = newAnswer;
+        return updatedAnswers;
+      } else {
+        return [...prevAnswers, newAnswer];
+      }
+    });
   }, []);
 
   /**
@@ -156,74 +240,46 @@ const useTestLogic = (): UseTestLogicReturn => {
       startNewTest(); // Если нет сохраненных данных, начинаем новый тест
     }
   }, [questions, startNewTest]);
+  // --- КОНЕЦ: Все функции useCallback определены ---
 
-  /**
-   * @function calculateTestResult
-   * @description Вычисляет итоговые результаты теста.
-   */
-  const calculateTestResult = useCallback(() => {
-    if (questions.length === 0) return;
 
-    let correctAnswers = 0;
-    let incorrectAnswers = 0;
-    let unanswered = 0;
-    const answersDetails: AnswerDetail[] = [];
+  // Effect для инициализации вопросов при первом рендере
+  useEffect(() => {
+    setQuestions(generateQuestions());
+  }, []);
 
-    questions.forEach((question) => {
-      const userAnswer = userAnswers.find((ans) => ans.questionId === question.id);
-      let isCorrect = false;
+  // Effect для проверки сохраненного прогресса при загрузке
+  useEffect(() => {
+    const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
+    const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+    const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
 
-      if (userAnswer && userAnswer.selectedOptionId) {
-        if (question.type === 'multiple-choice') {
-          isCorrect = userAnswer.selectedOptionId === question.correctAnswer;
-        } else {
-          // Для кейсов или приоритизации, где нет однозначного "правильного" ответа
-          // можно считать ответ правильным, если он просто был дан.
-          // Или внедрить более сложную логику оценки.
-          isCorrect = true; // Считаем, что если пользователь дал ответ, то он "правильный" для этого типа
+    if (savedAnswers && savedIndex && savedTestStarted === 'true') {
+      try {
+        const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
+        const parsedIndex: number = parseInt(savedIndex, 10);
+
+        if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < questions.length) {
+          setShowResumeOption(true);
         }
+      } catch (e) {
+        console.error('Failed to parse saved test data:', e);
+        // Очищаем localStorage, если данные повреждены
+        clearLocalStorage();
       }
+    }
+  }, [questions.length]); // Зависит от questions.length, чтобы убедиться, что вопросы загружены
 
-      if (isCorrect) {
-        correctAnswers++;
-      } else if (userAnswer && userAnswer.selectedOptionId) {
-        incorrectAnswers++;
-      } else {
-        unanswered++;
-      }
-
-      answersDetails.push({
-        question,
-        userAnswer,
-        isCorrect,
-      });
-    });
-
-    const totalQuestions = questions.length;
-    const scorePercentage = (correctAnswers / totalQuestions) * 100;
-
-    setTestResult({
-      totalQuestions,
-      correctAnswers,
-      incorrectAnswers,
-      unanswered,
-      scorePercentage,
-      answers: answersDetails,
-    });
-
-    setTestFinished(true);
-    clearLocalStorage(); // Очищаем localStorage после завершения теста
-  }, [questions, userAnswers, clearLocalStorage]);
 
   // Effect для обработки таймера
   useEffect(() => {
-    let timerId: number | null = null; // <-- ИЗМЕНЕНИЕ: NodeJS.Timeout заменен на number
+    let timerId: number | null = null;
 
     if (testStarted && !testFinished && questions[currentQuestionIndex]) {
       const questionStartTime = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_START_TIME) || Date.now().toString(), 10);
       const elapsedSinceStart = (Date.now() - questionStartTime) / 1000;
       const initialTimeForCurrentQuestion = questions[currentQuestionIndex].timeEstimate || INITIAL_TIME_PER_QUESTION;
-      const timeLeftOnLoad = Math.max(0, initialTimeForCurrentQuestion - elapsedSinceStart);
+      const timeLeftOnLoad = Math.max(0, initialTimeForCurrentQuestion - elapsedSinceStart); // <-- ИСПРАВЛЕНА ОПЕЧАТКА ЗДЕСЬ
 
       setRemainingTime(timeLeftOnLoad);
 
@@ -232,7 +288,7 @@ const useTestLogic = (): UseTestLogicReturn => {
           if (prevTime <= 1) {
             window.clearInterval(timerId!);
             // Если время вышло, автоматически переходим к следующему вопросу
-            handleNextQuestion();
+            handleNextQuestion(); // Теперь handleNextQuestion уже определен
             return 0;
           }
           return prevTime - 1;
@@ -265,57 +321,6 @@ const useTestLogic = (): UseTestLogicReturn => {
       }
     }
   }, [userAnswers, currentQuestionIndex, testStarted, testFinished, questions]);
-
-  /**
-   * @function handleAnswerSelect
-   * @description Обрабатывает выбор ответа пользователем, сохраняет его и переходит к следующему вопросу.
-   * @param {string} questionId - ID вопроса, на который был дан ответ.
-   * @param {string} selectedOptionId - ID выбранного варианта ответа.
-   */
-  const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
-    setUserAnswers((prevAnswers) => {
-      const existingAnswerIndex = prevAnswers.findIndex(
-        (answer) => answer.questionId === questionId
-      );
-
-      const newAnswer: UserAnswer = {
-        questionId,
-        selectedOptionId,
-        answeredTime: new Date().toISOString(),
-      };
-
-      if (existingAnswerIndex > -1) {
-        const updatedAnswers = [...prevAnswers];
-        updatedAnswers[existingAnswerIndex] = newAnswer;
-        return updatedAnswers;
-      } else {
-        return [...prevAnswers, newAnswer];
-      }
-    });
-  }, []);
-
-  /**
-   * @function handleNextQuestion
-   * @description Переходит к следующему вопросу или завершает тест, если это последний вопрос.
-   */
-  const handleNextQuestion = useCallback(() => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
-    } else {
-      // Если это последний вопрос, завершаем тест
-      calculateTestResult();
-    }
-  }, [currentQuestionIndex, questions.length, calculateTestResult]);
-
-  /**
-   * @function handlePreviousQuestion
-   * @description Переходит к предыдущему вопросу.
-   */
-  const handlePreviousQuestion = useCallback(() => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
-    }
-  }, [currentQuestionIndex]);
 
   const progressPercentage = questions.length > 0 ? ((currentQuestionIndex) / questions.length) * 100 : 0;
 
