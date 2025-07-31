@@ -117,6 +117,11 @@ const App: React.FC = () => {
     }
   };
 
+  // НОВОЕ: Расчет процента прогресса
+  const progressPercentage = questions.length > 0
+    ? ((currentQuestionIndex + 1) / questions.length) * 100
+    : 0;
+
   return (
     <Router>
       <div className="min-h-screen bg-gray-900 font-sans text-gray-100 p-4">
@@ -160,7 +165,7 @@ const App: React.FC = () => {
                       isFirstQuestion={currentQuestionIndex === 0}
                       isLastQuestion={currentQuestionIndex === questions.length - 1}
                       remainingTime={remainingTime}
-                      // timeEstimate={questions[currentQuestionIndex].timeEstimate} // УДАЛЕН: Этот пропс больше не передается
+                      progressPercentage={progressPercentage} {/* НОВОЕ: Передаем процент прогресса */}
                     />
                   ) : testFinished ? (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
