@@ -1,118 +1,94 @@
 import React from 'react';
-import { TestResult, QuestionLevel } from '../../types/test.d'; // Импортируем QuestionLevel
+import { TestResult, AnswerDetail, Question, UserAnswer } from '../../types/test.d'; // Обновленный импорт
+import DataExporter from './DataExporter'; // Импортируем наш новый компонент DataExporter
 
-/**
- * @interface ResultDetailViewProps
- * @description Пропсы для компонента ResultDetailView.
- * @property {TestResult} testResult - Объект с полными результатами теста.
- */
 interface ResultDetailViewProps {
-  testResult: TestResult;
+  testResult: TestResult | null; // Теперь может быть null, если результаты еще не загружены
+  questions: Question[]; // Добавляем questions как пропс
+  userAnswers: UserAnswer[]; // Добавляем userAnswers как пропс
 }
 
-/**
- * @function getLevelColor
- * @description Возвращает класс цвета для уровня сложности вопроса.
- * @param {QuestionLevel} level - Уровень сложности ('junior', 'middle', 'senior').
- * @returns {string} Класс Tailwind CSS.
- */
-const getLevelColor = (level: QuestionLevel): string => {
-    switch (level) {
-        case 'junior': return 'text-green-400';
-        case 'middle': return 'text-yellow-400';
-        case 'senior': return 'text-red-400';
-        default: return 'text-gray-400';
-    }
-};
-
-/**
- * @function ResultDetailView
- * @description React компонент для отображения детальных результатов теста.
- * Показывает каждый вопрос, ответ пользователя, правильный ответ и объяснение.
- * @param {ResultDetailViewProps} props - Пропсы компонента.
- * @returns {JSX.Element} Рендеринг компонента детальных результатов.
- */
-const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult }) => {
+const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questions, userAnswers }) => {
   if (!testResult) {
-    return <p className="text-white text-xl">Результаты теста не найдены.</p>;
+    return (
+      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-3xl w-full mx-auto text-center border border-gray-700/50 text-white">
+        <p className="text-2xl">Результаты теста не найдены.</p>
+        {/* Можно добавить кнопку для перехода на главную или начала теста */}
+      </div>
+    );
   }
 
-  return (
-    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-4xl w-full mx-auto text-white border border-gray-700/50">
-      <h2 className="text-4xl font-bold text-center mb-6">Детальные Результаты Теста</h2>
+  const { totalQuestions, correctAnswers, incorrectAnswers, unanswered, scorePercentage, answers } = testResult;
 
-      <div className="text-center mb-8">
-        <p className="text-xl">Итоговый балл: <span className="font-extrabold text-purple-400">{testResult.scorePercentage.toFixed(2)}%</span></p>
-        <p className="text-lg text-gray-300">Правильных: <span className="text-green-400">{testResult.correctAnswers}</span> | Неправильных: <span className="text-red-400">{testResult.incorrectAnswers}</span> | Пропущено: <span className="text-yellow-400">{testResult.unanswered}</span></p>
+  return (
+    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-4xl w-full mx-auto border border-gray-700/50 text-white">
+      <h2 className="text-3xl font-bold mb-6 text-white text-center">Детальные Результаты Теста</h2>
+
+      {/* Сводка результатов */}
+      <div className="text-lg space-y-2 mb-8 p-4 bg-gray-800 rounded-lg border border-gray-700">
+        <p>Всего вопросов: <span className="font-semibold text-blue-400">{totalQuestions}</span></p>
+        <p>Правильных ответов: <span className="font-semibold text-green-400">{correctAnswers}</span></p>
+        <p>Неправильных ответов: <span className="font-semibold text-red-400">{incorrectAnswers}</span></p>
+        <p>Без ответа: <span className="font-semibold text-yellow-400">{unanswered}</span></p>
+        <p className="text-2xl pt-4">Итоговый балл: <span className="font-extrabold text-purple-400">{scorePercentage.toFixed(2)}%</span></p>
       </div>
 
-      <div className="space-y-8">
-        {testResult.answers.map((detail, index) => (
-          <div key={detail.question.id} className="bg-gray-800 bg-opacity-60 rounded-lg p-6 shadow-xl border border-gray-700">
-            <h3 className="text-xl font-bold mb-3">
-                Вопрос {index + 1}: {detail.question.text}
-            </h3>
-            <div className="mb-4 text-sm text-gray-400 flex justify-between">
-                <span>Категория: {detail.question.categoryid}</span>
-                <span className={`font-semibold ${getLevelColor(detail.question.level)}`}>
-                    Уровень: {detail.question.level.charAt(0).toUpperCase() + detail.question.level.slice(1)}
-                </span>
-            </div>
+      {/* Кнопка экспорта данных */}
+      <div className="flex justify-center mb-8">
+        <DataExporter
+          testResult={testResult}
+          questions={questions}
+          userAnswers={userAnswers}
+        />
+      </div>
 
-            {detail.question.type === 'multiple-choice' && (
-              <>
-                <p className="mb-2">
-                  <span className="font-semibold text-gray-300">Ваш ответ: </span>
-                  <span className={detail.isCorrect ? 'text-green-400' : 'text-red-400'}>
-                    {detail.userAnswer?.selectedOptionId
-                      ? detail.question.options.find(opt => opt.id === detail.userAnswer?.selectedOptionId)?.text
-                      : 'Ответ не выбран / Пропущено'}
-                  </span>
-                </p>
-                <p className="mb-4">
-                  <span className="font-semibold text-gray-300">Правильный ответ: </span>
-                  <span className="text-green-400">
-                    {detail.question.options.find(opt => opt.id === detail.question.correctAnswer)?.text}
-                  </span>
-                </p>
-              </>
-            )}
+      {/* Детали по каждому вопросу */}
+      <h3 className="text-xl font-semibold mb-4 text-gray-200">Разбор вопросов:</h3>
+      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3">
+        {answers.map((detail: AnswerDetail, index: number) => (
+          <div key={index} className="bg-gray-800 p-5 rounded-lg border border-gray-700">
+            <p className="font-medium text-gray-100 mb-3 text-lg">
+              Вопрос {index + 1}: {detail.question.text}
+              <span className={`ml-3 text-sm font-semibold ${
+                detail.isCorrect ? 'text-green-400' : (detail.userAnswer ? 'text-red-400' : 'text-yellow-400')
+              }`}>
+                ({detail.isCorrect ? 'Верно' : (detail.userAnswer ? 'Неверно' : 'Без ответа')})
+              </span>
+            </p>
 
-            {/* Для других типов вопросов (case-study, prioritization) можно выводить только объяснение */}
-            {detail.question.type !== 'multiple-choice' && (
-              <p className="mb-4">
-                <span className="font-semibold text-gray-300">Ваш ответ (неприменимо к этому типу): </span>
-                <span className="text-gray-400">
-                  {detail.userAnswer?.selectedOptionId ? 'Отвечено' : 'Пропущено'}
+            {detail.userAnswer && (
+              <p className="text-sm text-gray-300 mb-2">
+                Ваш ответ: <span className="font-normal">
+                  {detail.userAnswer.selectedOptionId
+                    ? detail.question.options.find(opt => opt.id === detail.userAnswer!.selectedOptionId)?.text
+                    : 'Не выбран'}
                 </span>
               </p>
             )}
 
-            <p className="mb-4">
-              <span className="font-semibold text-gray-300">Объяснение: </span>
-              <span className="text-gray-200">{detail.question.explanation}</span>
-            </p>
+            {detail.question.type === 'multiple-choice' && !detail.isCorrect && (
+              <p className="text-sm text-blue-400">
+                Правильный ответ: <span className="font-normal">
+                  {detail.question.options.find(opt => opt.id === detail.question.correctAnswer)?.text}
+                </span>
+              </p>
+            )}
 
-            {detail.question.sources && detail.question.sources.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-700">
-                    <p className="font-semibold text-gray-300 mb-2">Источники:</p>
-                    <ul className="list-disc list-inside text-sm text-gray-400">
-                        {detail.question.sources.map((source, srcIndex) => (
-                            <li key={srcIndex}>
-                                {source.startsWith('http') ? (
-                                    <a href={source} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
-                                        {source}
-                                    </a>
-                                ) : (
-                                    source
-                                )}
-                            </li>
-                        ))}
-                    </ul>
-                </div>
+            {/* Здесь можно добавить объяснение правильного ответа, если оно есть в данных вопроса */}
+            {detail.question.explanation && (
+              <div className="mt-3 p-3 bg-gray-700 rounded-md text-sm text-gray-400">
+                <p className="font-medium text-gray-200 mb-1">Объяснение:</p>
+                <p>{detail.question.explanation}</p>
+              </div>
             )}
           </div>
         ))}
+      </div>
+
+      <div className="flex justify-center mt-8">
+        <a href="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+          Вернуться к началу
+        </a>
       </div>
     </div>
   );
