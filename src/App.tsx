@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import React, { useState } from 'react';
 
-// <-- Важные импорты
 import { mockQuestions } from './data/questions'; 
 import QuestionRenderer from './components/test/QuestionRenderer';
 
@@ -103,9 +102,26 @@ function App() {
               </h1>
 
               <p className="text-xl md:text-2xl text-gray-200 max-w-3xl mb-10 leading-relaxed">
-                Здесь скоро будет тест на HRBP.
+                Ребятушки, я тут совсем угорел по своей работе и начал собирать тест на HRBP.
                 <br/><br/>
-               
+                Сейчас он на стадии валидации, параллельно собираю web-версию (на скрине).
+                <br/>
+                Исследования и аналитику уже прошел - проработал источники уровня Harvard Business Review, SHRM.
+                <br/>
+                В течение месяца планирую выпустить в прод.
+                <br/><br/>
+                76 вопросов: кейсы, приоритизация, знания • От Junior до Senior • Персональная аналитика.
+                <br/>
+                Бесплатно и без ограничений - я таких в открытом доступе еще не видел.
+                <br/><br/>
+                Каждый вопрос с детальными объяснениями и персональными рекомендациями по развитию.
+                <br/>
+                Закрываю свою потребность - мне не хватало подобного теста, решил сделать сам.
+                <br/><br/>
+                Логи исследований, инфу про наполнение и валидацию буду публиковать по ходу разработки.
+                <br/><br/>
+                Мне очень важно ваше мнение, буду рад, если кто-нибудь захочет вступить в фокус-группу проекта.
+              </p>
 
               <Link to="/test" className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block">
                 Начать Тест
