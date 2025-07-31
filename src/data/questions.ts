@@ -1,5 +1,5 @@
 // src/data/questions.ts
-import { Question } from '../types/test';
+import { Question } from '../types/test'; // <-- Важный импорт
 
 export const mockQuestions: Question[] = [
   {
@@ -26,14 +26,12 @@ export const mockQuestions: Question[] = [
     level: 'middle',
     type: 'case-study',
     text: 'Ваша компания столкнулась с высокой текучестью кадров в отделе продаж (25% за последний год). Какие три ключевых шага вы предпримете для анализа и решения этой проблемы?',
-    // Кейсовые вопросы не имеют options и correctAnswer в том же смысле, как multiple-choice
-    // Их оценка будет более сложной, но для начала можем оставить эти поля пустыми или использовать для заметок.
     options: [], 
-    correctAnswer: [], // Кейсы обычно оцениваются вручную или по ключевым словам
+    correctAnswer: [], 
     explanation: 'Для кейсов требуется многоступенчатый анализ, включающий сбор данных, выявление причин и разработку плана действий.',
     sources: 'People Analytics Best Practices',
     difficulty: 2,
-    timeEstimate: 120, // 2 минуты
+    timeEstimate: 120,
   },
   {
     id: 'q3',
