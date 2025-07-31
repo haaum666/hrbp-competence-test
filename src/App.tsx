@@ -1,13 +1,12 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'; // Изменено
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import QuestionRenderer from './components/test/QuestionRenderer';
 import ResultDetailView from './components/test/ResultDetailView';
-import useTestLogic from './hooks/useTestLogic';
+import useTestLogic from './hooks/useTestLogic'; // НОВОЕ: Импорт нашего кастомного хука
+// Удалены неиспользуемые импорты: TestResult, UserAnswer, generateQuestions
 
 const App: React.FC = () => {
-  // const navigate = useNavigate(); // Эту строку удаляем, так как navigate используется внутри useTestLogic
-
-  // Используем наш кастомный хук для всей логики теста
+  // НОВОЕ: Используем наш кастомный хук для всей логики теста
   const {
     currentQuestionIndex,
     userAnswers,
@@ -21,12 +20,9 @@ const App: React.FC = () => {
     handleAnswerSelect,
     handleNextQuestion,
     handlePreviousQuestion,
-    startNewTest, // Эти функции уже содержат навигацию
-    resumeTest,   // Эти функции уже содержат навигацию
+    startNewTest,
+    resumeTest,
   } = useTestLogic();
-
-  // Убрали отдельные handleStartNewTestAndNavigate и handleResumeTestAndNavigate,
-  // так как логика навигации теперь внутри startNewTest и resumeTest в useTestLogic
 
   return (
     <Router>
@@ -49,13 +45,13 @@ const App: React.FC = () => {
                   {showResumeOption ? (
                     <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                       <button
-                        onClick={resumeTest} // Напрямую вызываем resumeTest
+                        onClick={resumeTest}
                         className="bg-gradient-to-r from-green-700 to-green-900 hover:from-green-800 hover:to-green-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 inline-block"
                       >
                         Продолжить Тест
                       </button>
                       <button
-                        onClick={startNewTest} // Напрямую вызываем startNewTest
+                        onClick={startNewTest}
                         className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
                       >
                         Начать Новый Тест
@@ -63,7 +59,7 @@ const App: React.FC = () => {
                     </div>
                   ) : (
                     <Link to="/test"
-                      onClick={startNewTest} // Напрямую вызываем startNewTest
+                      onClick={startNewTest}
                       className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
                     >
                       Начать Тест
@@ -83,12 +79,13 @@ const App: React.FC = () => {
                       totalQuestions={questions.length}
                       onAnswerSelect={handleAnswerSelect}
                       currentUserAnswer={userAnswers.find(ua => ua.questionId === questions[currentQuestionIndex].id)}
-                      onNextQuestion={handleNextQuestion}
-                      onPreviousQuestion={handlePreviousQuestion}
-                      isFirstQuestion={currentQuestionIndex === 0}
-                      isLastQuestion={currentQuestionIndex === questions.length - 1}
-                      remainingTime={remainingTime}
-                      progressPercentage={progressPercentage}
+                      onNextQuestion={handleNextQuestion} // Передаем
+                      onPreviousQuestion={handlePreviousQuestion} // Передаем
+                      isFirstQuestion={currentQuestionIndex === 0} // Передаем
+                      isLastQuestion={currentQuestionIndex === questions.length - 1} // Передаем
+                      remainingTime={remainingTime} // Передаем
+                      progressPercentage={progressPercentage} // Передаем
+                      // timeEstimate больше не передаем, так как он часть объекта question, а не пропс QuestionRenderer
                     />
                   ) : testFinished ? (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
