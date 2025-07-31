@@ -23,5 +23,5 @@ export interface UserAnswer {
   questionId: string;
   selectedOptionId?: string | string[];
   textAnswer?: string;
-  timeSpent: number;
+  timeSpent?: number; // <-- Сделали это поле опциональным
 }
