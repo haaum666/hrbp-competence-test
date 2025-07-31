@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Добавил useCallback
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Question, UserAnswer } from './types/test';
+import { Question, UserAnswer, TestResult } from './types/test'; // Добавил TestResult
 import { generateQuestions } from './data/questions';
 import QuestionRenderer from './components/test/QuestionRenderer';
 
@@ -10,6 +10,7 @@ const App: React.FC = () => {
   const [testFinished, setTestFinished] = useState(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [testStarted, setTestStarted] = useState(false);
+  const [testResult, setTestResult] = useState<TestResult | null>(null); // НОВОЕ: Состояние для результатов теста
 
   const [remainingTime, setRemainingTime] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
@@ -18,6 +19,64 @@ const App: React.FC = () => {
   useEffect(() => {
     setQuestions(generateQuestions());
   }, []);
+
+  // НОВОЕ: Функция для расчета результатов теста
+  const calculateTestResult = useCallback(() => {
+    let correctAnswers = 0;
+    let incorrectAnswers = 0;
+    let unanswered = 0;
+    const resultsDetails: TestResult['answers'] = [];
+
+    questions.forEach(question => {
+      const userAnswer = userAnswers.find(ua => ua.questionId === question.id);
+      let isCorrect = false;
+
+      if (userAnswer && userAnswer.selectedOptionId) {
+        // Только для вопросов с multiple-choice
+        if (question.type === 'multiple-choice') {
+          isCorrect = userAnswer.selectedOptionId === question.correctAnswer;
+        }
+        // Для других типов вопросов (case-study, prioritization) пока считаем их 'правильными'
+        // Или можно оставить их как 'неправильные'/'пропущенные', пока не реализована их логика
+        // Сейчас, если есть какой-то ответ, считаем, что вопрос обработан.
+        // Примечание: Для case-study/prioritization пока нет 'правильного ответа' в данных.
+        // Их оценка будет требовать более сложной логики. Для MVP пока упрощаем.
+        else if (userAnswer.selectedOptionId === '') { // Если ответ есть, но пустой (например, пропустил кейс)
+            unanswered++;
+        } else { // Считаем, что ответил, но без оценки правильности
+            // isCorrect = true; // Можно поставить true, если хотим считать любое действие ответом
+            // Для простоты пока не считаем их ни правильными, ни неправильными, пока нет логики
+        }
+
+        if (isCorrect) {
+          correctAnswers++;
+        } else if (question.type === 'multiple-choice') { // Только multiple-choice могут быть неправильными в этой логике
+          incorrectAnswers++;
+        }
+      } else {
+        unanswered++;
+      }
+
+      resultsDetails.push({
+        question,
+        userAnswer,
+        isCorrect: isCorrect,
+      });
+    });
+
+    const totalQuestions = questions.length;
+    const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+
+    setTestResult({
+      totalQuestions,
+      correctAnswers,
+      incorrectAnswers,
+      unanswered,
+      scorePercentage,
+      answers: resultsDetails,
+    });
+    setTimerActive(false); // Останавливаем таймер
+  }, [questions, userAnswers]); // Добавил зависимости
 
   // Логика таймера
   useEffect(() => {
@@ -29,17 +88,15 @@ const App: React.FC = () => {
       }, 1000);
     } else if (remainingTime === 0 && timerActive) {
       // Время вышло, автоматически переходим к следующему вопросу
-      // Но только если мы в режиме теста и не на последнем вопросе
       if (currentQuestionIndex < questions.length - 1 && testStarted && !testFinished) {
         handleNextQuestion();
       } else if (currentQuestionIndex === questions.length - 1 && testStarted && !testFinished) {
-        // Если время вышло на последнем вопросе, завершаем тест
-        setTestFinished(true);
+        setTestFinished(true); // НОВОЕ: завершаем тест, если время вышло на последнем вопросе
       }
     }
 
     return () => clearInterval(timer);
-  }, [remainingTime, timerActive, currentQuestionIndex, questions.length, testStarted, testFinished]);
+  }, [remainingTime, timerActive, currentQuestionIndex, questions.length, testStarted, testFinished, handleNextQuestion]); // Добавил handleNextQuestion
 
   // Обновляем таймер при смене вопроса
   useEffect(() => {
@@ -52,11 +109,19 @@ const App: React.FC = () => {
     }
   }, [currentQuestionIndex, questions, testStarted, testFinished]);
 
+  // НОВОЕ: Запускаем расчет результатов, когда тест завершен
+  useEffect(() => {
+    if (testFinished && !testResult) { // Проверяем, что результаты еще не рассчитаны
+      calculateTestResult();
+    }
+  }, [testFinished, testResult, calculateTestResult]);
+
   const handleStartTest = () => {
     setTestStarted(true);
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTestFinished(false);
+    setTestResult(null); // Сбрасываем результаты при новом старте
   };
 
   const handleAnswerSelect = (questionId: string, selectedOptionId: string) => {
@@ -93,11 +158,12 @@ const App: React.FC = () => {
     const userAnswered = userAnswers.some(answer => answer.questionId === currentQuestion.id);
 
     if (!userAnswered) {
+      // Если пользователь не ответил, но перешел дальше, сохраняем пустой ответ
       setUserAnswers(prevAnswers => [
         ...prevAnswers,
         {
           questionId: currentQuestion.id,
-          selectedOptionId: '',
+          selectedOptionId: '', // Пустой ответ
           answeredTime: new Date().toISOString(),
         }
       ]);
@@ -165,15 +231,30 @@ const App: React.FC = () => {
                       isFirstQuestion={currentQuestionIndex === 0}
                       isLastQuestion={currentQuestionIndex === questions.length - 1}
                       remainingTime={remainingTime}
-                      progressPercentage={progressPercentage} // УБРАНА ЛИШНЯЯ ЗАПЯТАЯ ЗДЕСЬ
+                      progressPercentage={progressPercentage}
                     />
                   ) : testFinished ? (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
-                      <h2 className="text-4xl font-bold text-white mb-4">Тест завершен!</h2>
-                      <p className="text-xl text-gray-300 mb-8">
-                        Спасибо за прохождение теста. Результаты будут доступны здесь.
-                      </p>
-                      <Link to="/" className="text-blue-400 hover:underline">Вернуться на главную</Link>
+                      {testResult ? ( // НОВОЕ: Отображаем результаты, если они рассчитаны
+                        <>
+                          <h2 className="text-4xl font-bold text-white mb-4">Тест завершен!</h2>
+                          <p className="text-xl text-gray-300 mb-6">
+                            Ваши результаты:
+                          </p>
+                          <div className="text-left mx-auto max-w-md space-y-2 mb-8 text-lg">
+                            <p>Всего вопросов: <span className="font-semibold text-white">{testResult.totalQuestions}</span></p>
+                            <p>Правильных ответов: <span className="font-semibold text-green-400">{testResult.correctAnswers}</span></p>
+                            <p>Неправильных ответов: <span className="font-semibold text-red-400">{testResult.incorrectAnswers}</span></p>
+                            <p>Пропущено вопросов: <span className="font-semibold text-yellow-400">{testResult.unanswered}</span></p>
+                            <p className="text-2xl pt-4">Итоговый балл: <span className="font-extrabold text-white">{testResult.scorePercentage.toFixed(2)}%</span></p>
+                          </div>
+                          <Link to="/" onClick={handleStartTest} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+                            Пройти тест снова
+                          </Link>
+                        </>
+                      ) : (
+                        <p className="text-white text-2xl">Расчет результатов...</p> // Пока результаты рассчитываются
+                      )}
                     </div>
                   ) : (
                     <p className="text-white text-2xl">Загрузка вопросов или тест еще не начат...</p>
