@@ -1,11 +1,11 @@
 // src/components/test/MultipleChoiceQuestion.tsx
 import React from 'react';
-import { Question, Option } from '../../types/test'; // Импортируем типы
+import { Question, Option } from '../../types/test'; // <-- Важный импорт
 
 interface MultipleChoiceQuestionProps {
   question: Question;
   onAnswerSelect: (questionId: string, selectedOptionId: string) => void;
-  selectedAnswerId?: string; // Опционально: для отображения выбранного ответа
+  selectedAnswerId?: string;
 }
 
 const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
@@ -13,17 +13,14 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
   onAnswerSelect,
   selectedAnswerId,
 }) => {
-  // Убедимся, что у вопроса есть опции и он правильного типа
   if (question.type !== 'multiple-choice' || !question.options) {
     return <p className="text-red-400">Ошибка: Некорректный тип вопроса или отсутствуют опции для MultipleChoiceQuestion.</p>;
   }
 
   return (
     <div className="space-y-4">
-      {/* Текст вопроса */}
       <p className="text-xl font-medium text-gray-50 mb-6">{question.text}</p>
 
-      {/* Варианты ответов */}
       <div className="space-y-3">
         {question.options.map((option: Option) => (
           <label
@@ -35,7 +32,7 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
           >
             <input
               type="radio"
-              name={`question-${question.id}`} // Используем id вопроса для группировки radio-кнопок
+              name={`question-${question.id}`}
               value={option.id}
               checked={selectedAnswerId === option.id}
               onChange={() => onAnswerSelect(question.id, option.id)}
