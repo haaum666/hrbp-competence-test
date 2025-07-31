@@ -86,9 +86,18 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       </div>
 
       <div className="flex justify-center mt-8">
-        <a href="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+        {/* НОВОЕ: Используем Link из react-router-dom и вызываем handleStartNewTest */}
+        <Link to="/" onClick={() => {
+          // Просто вызываем handleStartNewTest. navigate должен быть в родительском компоненте (ResultsScreen.tsx),
+          // который передает testResult в ResultDetailView.
+          // Для упрощения, если testResult приходит из ResultsScreen, handleStartNewTest должен быть определен там.
+          // Здесь мы имитируем очистку localStorage, как если бы это был onClick для кнопки,
+          // а навигация будет обработана Link.
+          localStorage.removeItem('currentTestState');
+          // localStorage.removeItem('allTestResults'); // Возможно, не нужно очищать все результаты
+        }} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
           Вернуться к началу
-        </a>
+        </Link>
       </div>
     </div>
   );
