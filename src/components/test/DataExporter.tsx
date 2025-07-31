@@ -1,14 +1,14 @@
 import React from 'react';
-import { TestResult } from '../../types/test.d'; // Достаточно TestResult
+import { TestResult, Question, UserAnswer } from '../../types/test.d'; // Обновленный импорт для Question, UserAnswer
 import { exportToCsv, exportToXlsx } from '../../utils/exportUtils'; // Импортируем функции экспорта CSV/XLSX
 
 interface DataExporterProps {
   testResult: TestResult | null; // Может быть null
-  // questions: Question[]; // Эти пропсы не нужны для функций exportToCsv/exportToXlsx, т.к. TestResult.answers уже их содержит
-  // userAnswers: UserAnswer[]; // Аналогично
+  questions: Question[]; // ВОЗВРАЩЕНО: для соответствия ResultDetailView
+  userAnswers: UserAnswer[]; // ВОЗВРАЩЕНО: для соответствия ResultDetailView
 }
 
-const DataExporter: React.FC<DataExporterProps> = ({ testResult }) => { // Убираем questions и userAnswers из деструктуризации
+const DataExporter: React.FC<DataExporterProps> = ({ testResult }) => { // questions и userAnswers не деструктурируются, так как они не используются здесь напрямую
   const fileName = `hrbp_test_results_${new Date().toISOString().slice(0,10)}`;
 
   return (
