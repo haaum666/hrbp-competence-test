@@ -8,6 +8,12 @@ on:
 jobs:
   build-and-deploy: # Название задачи
     runs-on: ubuntu-latest # Виртуальная машина, на которой будет выполняться задача
+    
+    permissions:
+      contents: write # Разрешает боту записывать файлы в репозиторий
+      pages: write    # Разрешает боту управлять GitHub Pages
+      id-token: write # Необходимо для аутентификации в OIDC, если используется (безопасно добавить)
+
 
     steps:
       - name: Checkout code # Шаг 1: Клонирование репозитория
