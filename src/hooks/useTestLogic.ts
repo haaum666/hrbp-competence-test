@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'; // Добавлен useRef
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Question, UserAnswer, TestResult, AnswerDetail } from '../types/test.d';
 import { generateQuestions } from '../data/questions';
 
@@ -6,7 +6,8 @@ import { generateQuestions } from '../data/questions';
 const LOCAL_STORAGE_KEY_ANSWERS = 'testUserAnswers';
 const LOCAL_STORAGE_KEY_CURRENT_INDEX = 'testCurrentQuestionIndex';
 const LOCAL_STORAGE_KEY_TEST_STARTED = 'testStarted';
-const LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME = 'testLastQuestionStartTime'; // Обновлено имя ключа
+const LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME = 'testLastQuestionStartTime';
+const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults'; // НОВОЕ: Ключ для всех результатов
 
 const INITIAL_TIME_PER_QUESTION = 60; // Время на вопрос по умолчанию в секундах
 
@@ -72,6 +73,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
+    // LOCAL_STORAGE_KEY_ALL_RESULTS не очищается здесь, так как это история
   }, []);
 
   /**
@@ -118,17 +120,34 @@ const useTestLogic = (): UseTestLogicReturn => {
     const totalQuestions = questions.length;
     const scorePercentage = (correctAnswers / totalQuestions) * 100;
 
-    setTestResult({
+    const finalResult: TestResult = { // Создаем переменную для нового результата
       totalQuestions,
       correctAnswers,
       incorrectAnswers,
       unanswered,
       scorePercentage,
       answers: answersDetails,
-    });
+    };
+
+    setTestResult(finalResult); // Устанавливаем его в состояние
+
+    // НОВОЕ: Сохраняем результат в localStorage для аналитики
+    const savedResultsString = localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
+    let allResults: TestResult[] = [];
+    if (savedResultsString) {
+      try {
+        allResults = JSON.parse(savedResultsString);
+      } catch (e) {
+        console.error('Ошибка парсинга сохраненных результатов тестов:', e);
+        // В случае ошибки парсинга, начинаем с пустого массива
+        allResults = [];
+      }
+    }
+    allResults.push(finalResult); // Добавляем текущий результат
+    localStorage.setItem(LOCAL_STORAGE_KEY_ALL_RESULTS, JSON.stringify(allResults)); // Сохраняем обновленный массив
 
     setTestFinished(true);
-    clearLocalStorage(); // Очищаем localStorage после завершения теста
+    clearLocalStorage(); // Очищаем localStorage связанных с текущим тестом
   }, [questions, userAnswers, clearLocalStorage]);
 
   /**
@@ -257,7 +276,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     } else {
       startNewTest();
     }
-  }, [startNewTest]); // Зависимость от startNewTest
+  }, [startNewTest]);
 
   // --- КОНЕЦ: Все функции useCallback определены ---
 
@@ -287,7 +306,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         clearLocalStorage(); // Данные повреждены, очищаем
       }
     }
-  }, [clearLocalStorage]); // Зависит от clearLocalStorage
+  }, [clearLocalStorage]);
 
   // Effect для обработки таймера
   useEffect(() => {
@@ -325,7 +344,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         window.clearInterval(timerId);
       }
     };
-  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]); // Добавлены зависимости
+  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]);
 
   // Effect для сохранения прогресса и сброса таймера при смене вопроса или при выборе ответа
   useEffect(() => {
@@ -340,7 +359,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         setRemainingTime(questions[currentQuestionIndex].timeEstimate || INITIAL_TIME_PER_QUESTION);
       }
     }
-  }, [userAnswers, currentQuestionIndex, testStarted, testFinished, questions]); // Добавлены зависимости
+  }, [userAnswers, currentQuestionIndex, testStarted, testFinished, questions]);
 
   const progressPercentage = questions.length > 0 ? ((currentQuestionIndex) / questions.length) * 100 : 0;
 
