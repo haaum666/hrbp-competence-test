@@ -16,7 +16,7 @@ interface QuestionRendererProps {
   isFirstQuestion: boolean;
   isLastQuestion: boolean;
   remainingTime: number;
-  // timeEstimate: number; // УДАЛЕН: Этот пропс больше не нужен здесь
+  progressPercentage: number; // НОВОЕ: Пропс для процента прогресса
 }
 
 const QuestionRenderer: React.FC<QuestionRendererProps> = ({
@@ -30,7 +30,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   isFirstQuestion,
   isLastQuestion,
   remainingTime,
-  // timeEstimate, // УДАЛЕН: Этот пропс больше не нужен здесь
+  progressPercentage, // НОВОЕ: Принимаем процент прогресса
 }) => {
   const cardTitle = `Вопрос ${currentQuestionIndex + 1} из ${totalQuestions}`;
 
@@ -48,8 +48,19 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     <QuestionCard
       title={cardTitle}
       level={question.level}
-      timeEstimate={question.timeEstimate} // Используем question.timeEstimate
+      timeEstimate={question.timeEstimate}
     >
+      {/* НОВОЕ: Прогресс-бар */}
+      <div className="w-full bg-gray-700 rounded-full h-2.5 mb-4 overflow-hidden">
+        <div
+          className="bg-blue-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+          style={{ width: `${progressPercentage}%` }}
+        ></div>
+      </div>
+      <p className="text-center text-gray-400 text-sm mb-4">
+        Прогресс: {Math.round(progressPercentage)}%
+      </p>
+
       {/* Отображение вопроса (MultipleChoiceQuestion, CaseStudy, Prioritization) */}
       {question.type === 'multiple-choice' && (
         <MultipleChoiceQuestion
