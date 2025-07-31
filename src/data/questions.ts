@@ -1,6 +1,6 @@
 // src/data/questions.ts
 
-import { Question } from '../types/test';
+import { Question } from '../types/test.d'; // Убеждаемся, что импортируем из test.d.ts
 
 export const generateQuestions = (): Question[] => {
   return [
@@ -17,9 +17,9 @@ export const generateQuestions = (): Question[] => {
       correctAnswer: 'a',
       explanation: 'Согласно статье 180 Трудового кодекса РФ, при увольнении работника в связи с ликвидацией организации либо сокращением численности или штата работников организации о предстоящем увольнении работники предупреждаются работодателем персонально и под роспись не менее чем за два месяца до увольнения.',
       timeEstimate: 60,
-      categoryid: 'legal', // categoryid должен быть строкой
-      level: 'junior', // level должен быть 'junior', 'middle' или 'senior'
-      sources: ['ТК РФ Статья 180'], // sources должен быть массивом строк
+      categoryid: 'legal', // Исправлено на lowercase 'categoryid'
+      level: 'junior',
+      sources: ['ТК РФ Статья 180'], // Должен быть массив строк
       relatedCompetencies: ['Трудовое законодательство', 'Кадровое делопроизводство'],
     },
     {
@@ -35,9 +35,9 @@ export const generateQuestions = (): Question[] => {
       correctAnswer: 'c',
       explanation: 'Оценка 360 градусов - это метод оценки компетенций сотрудника, при котором обратная связь собирается не только от непосредственного руководителя, но и от коллег, подчиненных и клиентов. Основная цель - предоставить сотруднику полную картину его компетенций и определить зоны для развития.',
       timeEstimate: 75,
-      categoryid: 'development', // categoryid должен быть строкой
-      level: 'middle', // level должен быть 'junior', 'middle' или 'senior'
-      sources: ['https://www.hr-director.ru/article/66304-otsenka-360-gradusov-metodika-provedeniya-i-instrumenty'], // sources должен быть массивом строк
+      categoryid: 'development', // Исправлено на lowercase 'categoryid'
+      level: 'middle',
+      sources: ['https://www.hr-director.ru/article/66304-otsenka-360-gradusov-metodika-provedeniya-i-instrumenty'], // Должен быть массив строк
       relatedCompetencies: ['Развитие персонала', 'Оценка эффективности'],
     },
     {
@@ -48,9 +48,9 @@ export const generateQuestions = (): Question[] => {
       correctAnswer: 'Не применимо',
       explanation: 'В условиях удаленной работы HRBP может: 1. Организовать регулярные онлайн-встречи для команды (тимбилдинги, кофе-брейки, неформальное общение). 2. Внедрить системы признания и поощрения, адаптированные под удаленный формат (виртуальные награды, публичное признание в общих чатах). 3. Обеспечить доступ к инструментам для совместной работы и удаленного обучения. 4. Проводить индивидуальные беседы для выявления проблем и потребностей сотрудников.',
       timeEstimate: 180,
-      categoryid: 'remote-work', // categoryid должен быть строкой
-      level: 'senior', // level должен быть 'junior', 'middle' или 'senior'
-      sources: ['HR-порталы', 'Статьи по управлению удаленными командами'], // sources должен быть массивом строк
+      categoryid: 'remote-work', // Исправлено на lowercase 'categoryid'
+      level: 'senior',
+      sources: ['HR-порталы', 'Статьи по управлению удаленными командами'], // Должен быть массив строк
       relatedCompetencies: ['Управление изменениями', 'Корпоративная культура', 'Коммуникации'],
     },
   ];
