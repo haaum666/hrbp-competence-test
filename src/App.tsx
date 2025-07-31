@@ -1,10 +1,12 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // React здесь используется неявно через JSX и React.FC
 
 import { mockQuestions } from './data/questions'; 
 import QuestionRenderer from './components/test/QuestionRenderer';
 
-const TestPage = () => {
+// Определение компонента TestPage
+// Используем React.FC для явного указания типа функционального компонента
+const TestPage: React.FC = () => { 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<{ [key: string]: string | string[] }>({}); 
 
@@ -54,7 +56,8 @@ const TestPage = () => {
           currentQuestionIndex={currentQuestionIndex}
           totalQuestions={mockQuestions.length}
           onAnswerSelect={handleAnswerSelect}
-          currentUserAnswer={{ questionId: currentQuestion.id, selectedOptionId: userAnswers[currentQuestion.id] }}
+          // Теперь timeSpent необязателен, поэтому эта строка не вызывает ошибку
+          currentUserAnswer={{ questionId: currentQuestion.id, selectedOptionId: userAnswers[currentQuestion.id] }} 
         />
 
         <div className="flex mt-8 space-x-4">
@@ -79,7 +82,8 @@ const TestPage = () => {
   );
 };
 
-function App() {
+// Основной компонент App
+const App: React.FC = () => { // Используем React.FC здесь также
   return (
     <Router>
       <Routes>
