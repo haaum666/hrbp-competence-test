@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Question, UserAnswer, TestResult } from './types/test';
 import { generateQuestions } from './data/questions';
 import QuestionRenderer from './components/test/QuestionRenderer';
+import ResultDetailView from './components/test/ResultDetailView'; // НОВОЕ: Импорт компонента детального просмотра
 
 const App: React.FC = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -91,20 +92,23 @@ const App: React.FC = () => {
       const userAnswer = userAnswers.find(ua => ua.questionId === question.id);
       let isCorrect = false;
 
-      if (userAnswer && userAnswer.selectedOptionId) {
-        if (question.type === 'multiple-choice') {
-          isCorrect = userAnswer.selectedOptionId === question.correctAnswer;
-        }
-        // Для других типов вопросов (case-study, prioritization) пока считаем их 'правильными',
-        // если есть хоть какой-то выбранный ответ.
-        // Это упрощение до реализации полноценной логики их оценки.
-        if (isCorrect) {
-          correctAnswers++;
-        } else if (question.type === 'multiple-choice') { // Только multiple-choice могут быть неправильными
-          incorrectAnswers++;
-        }
-      } else {
-        unanswered++;
+      // Проверка только для multiple-choice вопросов
+      if (question.type === 'multiple-choice') {
+          if (userAnswer && userAnswer.selectedOptionId) {
+              isCorrect = userAnswer.selectedOptionId === question.correctAnswer;
+          }
+      }
+
+      if (userAnswer && userAnswer.selectedOptionId !== '') { // Если пользователь выбрал что-то (даже для кейсов)
+          if (isCorrect) {
+              correctAnswers++;
+          } else if (question.type === 'multiple-choice') { // Неправильный ответ только для multiple-choice
+              incorrectAnswers++;
+          }
+          // Для кейсов и приоритизации, если выбран ответ (не пустой), они не попадают в unanswered/incorrect
+          // Их правильность оценивается через 'explanation' в детальном просмотре
+      } else { // Если ответа нет или он пустой
+          unanswered++;
       }
 
       resultsDetails.push({
@@ -166,11 +170,13 @@ const App: React.FC = () => {
   }, [testFinished, testResult, calculateTestResult]);
 
   const handleStartTest = () => {
-    setTestStarted(true);
+    setTestStarted(false); // Сначала сбрасываем, чтобы страница начала теста обновилась
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTestFinished(false);
     setTestResult(null); // Сбрасываем результаты при новом старте
+    // Не устанавливаем testStarted сразу в true, т.к. Link ведет на /test,
+    // где testStarted уже будет установлен через проход по Route.
   };
 
   // Расчет процента прогресса
@@ -226,7 +232,7 @@ const App: React.FC = () => {
                   ) : testFinished ? (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
                       {testResult ? (
-                        <> {/* НОВОЕ: Обертка во фрагмент */}
+                        <>
                           <h2 className="text-4xl font-bold text-white mb-4">Тест завершен!</h2>
                           <p className="text-xl text-gray-300 mb-6">
                             Ваши результаты:
@@ -238,16 +244,40 @@ const App: React.FC = () => {
                             <p>Пропущено вопросов: <span className="font-semibold text-yellow-400">{testResult.unanswered}</span></p>
                             <p className="text-2xl pt-4">Итоговый балл: <span className="font-extrabold text-white">{testResult.scorePercentage.toFixed(2)}%</span></p>
                           </div>
-                          <Link to="/" onClick={handleStartTest} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+                          {/* НОВОЕ: Кнопка для перехода к детальным результатам */}
+                          <Link to="/results"
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block mt-4 mr-4"
+                          >
+                            Посмотреть детальные результаты
+                          </Link>
+                          <Link to="/" onClick={handleStartTest} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block mt-4">
                             Пройти тест снова
                           </Link>
-                        </> // НОВОЕ: Закрывающий фрагмент
+                        </>
                       ) : (
                         <p className="text-white text-2xl">Расчет результатов...</p>
                       )}
                     </div>
                   ) : (
                     <p className="text-white text-2xl">Загрузка вопросов или тест еще не начат...</p>
+                  )}
+                </div>
+              }
+            />
+            {/* НОВОЕ: Маршрут для детального просмотра результатов */}
+            <Route
+              path="/results"
+              element={
+                <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center items-center">
+                  {testResult ? (
+                    <ResultDetailView testResult={testResult} />
+                  ) : (
+                    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
+                      <p className="text-white text-2xl">Результаты не найдены. Пожалуйста, пройдите тест.</p>
+                      <Link to="/" onClick={handleStartTest} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+                        Начать Тест
+                      </Link>
+                    </div>
                   )}
                 </div>
               }
