@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom'; // Добавил useNavigate
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import { Question, UserAnswer, TestResult } from './types/test';
 import { generateQuestions } from './data/questions';
 import QuestionRenderer from './components/test/QuestionRenderer';
@@ -12,32 +12,41 @@ const App: React.FC = () => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [testStarted, setTestStarted] = useState(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
-  const [showResumeOption, setShowResumeOption] = useState(false); // НОВОЕ: для показа опции продолжения теста
+  const [showResumeOption, setShowResumeOption] = useState(false);
 
   const [remainingTime, setRemainingTime] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
 
-  const navigate = useNavigate(); // НОВОЕ: для программной навигации
+  const navigate = useNavigate();
 
   // При загрузке компонента генерируем вопросы
   useEffect(() => {
     setQuestions(generateQuestions());
   }, []);
 
-  // НОВОЕ: Загрузка состояния из localStorage при первом рендере
+  // Загрузка состояния из localStorage при первом рендере
   useEffect(() => {
     const savedProgress = localStorage.getItem('hrbpTestProgress');
     if (savedProgress) {
-      const { savedCurrentQuestionIndex, savedUserAnswers } = JSON.parse(savedProgress);
-      if (savedUserAnswers.length > 0 && savedCurrentQuestionIndex < questions.length) {
-        setCurrentQuestionIndex(savedCurrentQuestionIndex);
-        setUserAnswers(savedUserAnswers);
-        setShowResumeOption(true); // Показываем кнопку "Продолжить тест"
+      try {
+        const { savedCurrentQuestionIndex, savedUserAnswers } = JSON.parse(savedProgress);
+        // Проверяем, что есть вопросы и сохраненный индекс в разумных пределах
+        if (questions.length > 0 && savedUserAnswers.length > 0 && savedCurrentQuestionIndex < questions.length) {
+          setCurrentQuestionIndex(savedCurrentQuestionIndex);
+          setUserAnswers(savedUserAnswers);
+          setShowResumeOption(true);
+        } else {
+            // Если сохраненный прогресс некорректен (например, вопросы поменялись или индекс вышел за границы), очищаем его
+            localStorage.removeItem('hrbpTestProgress');
+        }
+      } catch (e) {
+        console.error("Failed to parse saved progress from localStorage", e);
+        localStorage.removeItem('hrbpTestProgress'); // Очищаем некорректные данные
       }
     }
-  }, [questions.length]); // Зависимость от questions.length, чтобы убедиться, что вопросы загружены
+  }, [questions.length]);
 
-  // НОВОЕ: Сохранение состояния в localStorage при изменении currentQuestionIndex или userAnswers
+  // Сохранение состояния в localStorage при изменении currentQuestionIndex или userAnswers
   useEffect(() => {
     if (testStarted && !testFinished && questions.length > 0) {
       const progressToSave = {
@@ -48,8 +57,6 @@ const App: React.FC = () => {
     }
   }, [currentQuestionIndex, userAnswers, testStarted, testFinished, questions.length]);
 
-
-  // Функции-обработчики объявлены выше, обернуты в useCallback
   const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
     setUserAnswers(prevAnswers => {
       const existingAnswerIndex = prevAnswers.findIndex(
@@ -88,7 +95,7 @@ const App: React.FC = () => {
         ...prevAnswers,
         {
           questionId: currentQuestion.id,
-          selectedOptionId: '', // Пустой ответ
+          selectedOptionId: '',
           answeredTime: new Date().toISOString(),
         }
       ]);
@@ -108,7 +115,6 @@ const App: React.FC = () => {
     }
   }, [currentQuestionIndex]);
 
-  // Функция для расчета результатов теста
   const calculateTestResult = useCallback(() => {
     let correctAnswers = 0;
     let incorrectAnswers = 0;
@@ -119,20 +125,19 @@ const App: React.FC = () => {
       const userAnswer = userAnswers.find(ua => ua.questionId === question.id);
       let isCorrect = false;
 
-      // Проверка только для multiple-choice вопросов
       if (question.type === 'multiple-choice') {
           if (userAnswer && userAnswer.selectedOptionId) {
               isCorrect = userAnswer.selectedOptionId === question.correctAnswer;
           }
       }
 
-      if (userAnswer && userAnswer.selectedOptionId !== '') { // Если пользователь выбрал что-то (даже для кейсов)
+      if (userAnswer && userAnswer.selectedOptionId !== '') {
           if (isCorrect) {
               correctAnswers++;
-          } else if (question.type === 'multiple-choice') { // Неправильный ответ только для multiple-choice
+          } else if (question.type === 'multiple-choice') {
               incorrectAnswers++;
           }
-      } else { // Если ответа нет или он пустой
+      } else {
           unanswered++;
       }
 
@@ -154,8 +159,8 @@ const App: React.FC = () => {
       scorePercentage,
       answers: resultsDetails,
     });
-    setTimerActive(false); // Останавливаем таймер
-    localStorage.removeItem('hrbpTestProgress'); // НОВОЕ: Удаляем сохраненный прогресс после завершения теста
+    setTimerActive(false);
+    localStorage.removeItem('hrbpTestProgress');
   }, [questions, userAnswers]);
 
   // Логика таймера
@@ -195,23 +200,22 @@ const App: React.FC = () => {
     }
   }, [testFinished, testResult, calculateTestResult]);
 
-  const startNewTest = () => { // НОВОЕ: Функция для начала нового теста
+  const startNewTest = () => {
     setTestStarted(true);
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTestFinished(false);
     setTestResult(null);
-    setShowResumeOption(false); // Скрываем опцию продолжения
-    localStorage.removeItem('hrbpTestProgress'); // Очищаем прогресс
-    navigate('/test'); // Переходим на страницу теста
+    setShowResumeOption(false);
+    localStorage.removeItem('hrbpTestProgress');
+    navigate('/test');
   };
 
-  const resumeTest = () => { // НОВОЕ: Функция для продолжения теста
+  const resumeTest = () => {
     setTestStarted(true);
-    setShowResumeOption(false); // Скрываем опцию продолжения
-    navigate('/test'); // Переходим на страницу теста с загруженными данными
+    setShowResumeOption(false);
+    navigate('/test');
   };
-
 
   // Расчет процента прогресса
   const progressPercentage = questions.length > 0
@@ -236,21 +240,7 @@ const App: React.FC = () => {
                     Этот тест поможет оценить ваши компетенции HR Business Partner для российского рынка.
                     Разработан как инструмент уровня специализированных образовательных учреждений.
                   </p>
-                  {showResumeOption ? ( // НОВОЕ: Условное отображение кнопок
+                  {showResumeOption ? (
                     <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                       <button
-                        onClick={resumeTest}
-                        className="bg-gradient-to-r from-green-700 to-green-900 hover:from-green-800 hover:to-green-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 inline-block"
-                      >
-                        Продолжить Тест
-                      </button>
-                      <button
-                        onClick={startNewTest}
-                        className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
-                      >
-                        Начать Новый Тест
-                      </button>
-                    </div>
-                  ) : (
-                    <Link to="/test"
-                      onClick={startNewTest} //
+                        onClick={resumeTest
