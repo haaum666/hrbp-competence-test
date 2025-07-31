@@ -16,7 +16,7 @@ interface QuestionRendererProps {
   isFirstQuestion: boolean;
   isLastQuestion: boolean;
   remainingTime: number;
-  timeEstimate: number;
+  // timeEstimate: number; // УДАЛЕН: Этот пропс больше не нужен здесь
 }
 
 const QuestionRenderer: React.FC<QuestionRendererProps> = ({
@@ -30,7 +30,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   isFirstQuestion,
   isLastQuestion,
   remainingTime,
-  timeEstimate,
+  // timeEstimate, // УДАЛЕН: Этот пропс больше не нужен здесь
 }) => {
   const cardTitle = `Вопрос ${currentQuestionIndex + 1} из ${totalQuestions}`;
 
@@ -48,7 +48,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     <QuestionCard
       title={cardTitle}
       level={question.level}
-      timeEstimate={question.timeEstimate} // Передаем timeEstimate в QuestionCard
+      timeEstimate={question.timeEstimate} // Используем question.timeEstimate
     >
       {/* Отображение вопроса (MultipleChoiceQuestion, CaseStudy, Prioritization) */}
       {question.type === 'multiple-choice' && (
@@ -102,11 +102,11 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
         <button
           onClick={onNextQuestion}
-          disabled={isLastQuestion && remainingTime > 0} // Кнопка "Завершить Тест" становится неактивной, если это последний вопрос и время не истекло.
+          disabled={isLastQuestion && remainingTime > 0}
           className={`px-6 py-3 rounded-lg font-bold transition duration-300
                       ${isLastQuestion
-                          ? 'bg-purple-600 hover:bg-purple-700 text-white' // Цвет для кнопки "Завершить тест"
-                          : 'bg-blue-600 hover:bg-blue-700 text-white' // Цвет для кнопки "Далее"
+                          ? 'bg-purple-600 hover:bg-purple-700 text-white'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
                       }`}
         >
           {isLastQuestion ? 'Завершить Тест' : 'Далее'}
