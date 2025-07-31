@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App'; // ИЗМЕНЕНО здесь: убрано .tsx
+import App from './App'; // <-- ИЗМЕНЕНИЕ: убрано .tsx
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
