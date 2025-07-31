@@ -115,9 +115,7 @@ const App: React.FC = () => { // Используем React.FC здесь так
                 Начать Тест
               </Link>
 
-              <div className="mt-12 p-6 bg-white bg-opacity-5 rounded-lg backdrop-blur-sm shadow-xl border border-gray-700/30">
-                <p className="text-lg text-gray-300">Нажмите "Начать Тест", чтобы перейти!</p>
-              </div>
+              
 
             </div>
           </div>
