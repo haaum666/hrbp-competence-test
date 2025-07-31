@@ -2,11 +2,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import QuestionRenderer from './components/test/QuestionRenderer';
 import ResultDetailView from './components/test/ResultDetailView';
-import useTestLogic from './hooks/useTestLogic'; // НОВОЕ: Импорт нашего кастомного хука
-// Удалены неиспользуемые импорты: TestResult, UserAnswer, generateQuestions
+import useTestLogic from './hooks/useTestLogic';
+import AnalyticsDashboard from './components/analytics/AnalyticsDashboard'; // НОВОЕ: Импорт дашборда аналитики
 
 const App: React.FC = () => {
-  // НОВОЕ: Используем наш кастомный хук для всей логики теста
   const {
     currentQuestionIndex,
     userAnswers,
@@ -26,13 +25,13 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-900 font-sans text-gray-100 p-4">
+      <div className="min-h-screen bg-gray-900 font-sans text-gray-100 p-4 flex flex-col"> {/* Добавлен flex-col для вертикального размещения контента и кнопки */}
         <header className="text-center py-8">
           <h1 className="text-5xl font-extrabold text-white mb-4">HRBP-Тест</h1>
           <p className="text-xl text-gray-300">Оценка компетенций HR Business Partner</p>
         </header>
 
-        <main className="container mx-auto mt-8">
+        <main className="container mx-auto mt-8 flex-grow"> {/* Добавлен flex-grow, чтобы контент занимал доступное пространство */}
           <Routes>
             <Route
               path="/"
@@ -79,13 +78,12 @@ const App: React.FC = () => {
                       totalQuestions={questions.length}
                       onAnswerSelect={handleAnswerSelect}
                       currentUserAnswer={userAnswers.find(ua => ua.questionId === questions[currentQuestionIndex].id)}
-                      onNextQuestion={handleNextQuestion} // Передаем
-                      onPreviousQuestion={handlePreviousQuestion} // Передаем
-                      isFirstQuestion={currentQuestionIndex === 0} // Передаем
-                      isLastQuestion={currentQuestionIndex === questions.length - 1} // Передаем
-                      remainingTime={remainingTime} // Передаем
-                      progressPercentage={progressPercentage} // Передаем
-                      // timeEstimate больше не передаем, так как он часть объекта question, а не пропс QuestionRenderer
+                      onNextQuestion={handleNextQuestion}
+                      onPreviousQuestion={handlePreviousQuestion}
+                      isFirstQuestion={currentQuestionIndex === 0}
+                      isLastQuestion={currentQuestionIndex === questions.length - 1}
+                      remainingTime={remainingTime}
+                      progressPercentage={progressPercentage}
                     />
                   ) : testFinished ? (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
@@ -138,8 +136,19 @@ const App: React.FC = () => {
                 </div>
               }
             />
+            <Route path="/analytics" element={<AnalyticsDashboard />} /> {/* НОВОЕ: Маршрут для дашборда */}
           </Routes>
         </main>
+
+        {/* НОВОЕ: Кнопка для перехода на дашборд, расположена после main */}
+        <div className="mt-8 text-center pb-4"> {/* Добавлен pb-4 для отступа снизу */}
+          <Link
+            to="/analytics"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+          >
+            Посмотреть Аналитику
+          </Link>
+        </div>
       </div>
     </Router>
   );
