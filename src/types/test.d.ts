@@ -1,4 +1,4 @@
-// src/types/test.ts
+// src/types/test.d.ts
 
 /**
  * @typedef {'multiple-choice' | 'case-study' | 'prioritization'} QuestionType
@@ -8,6 +8,12 @@
  * - 'prioritization': Вопрос на ранжирование или приоритизацию.
  */
 export type QuestionType = 'multiple-choice' | 'case-study' | 'prioritization';
+
+/**
+ * @typedef {'junior' | 'middle' | 'senior'} QuestionLevel
+ * @description Уровни сложности вопросов.
+ */
+export type QuestionLevel = 'junior' | 'middle' | 'senior';
 
 /**
  * @interface Option
@@ -31,7 +37,7 @@ export interface Option {
  * @property {string} explanation - Подробное объяснение правильного ответа или решения кейса.
  * @property {number} timeEstimate - Оценочное время на ответ в секундах.
  * @property {string} categoryid - Идентификатор категории вопроса.
- * @property {number} level - Уровень сложности вопроса.
+ * @property {QuestionLevel} level - Уровень сложности вопроса (junior, middle, senior).
  * @property {string[]} sources - Массив ссылок на источники информации, связанные с вопросом.
  * @property {string[]} [relatedCompetencies] - Опциональный массив компетенций, к которым относится вопрос.
  */
@@ -43,10 +49,10 @@ export interface Question {
   correctAnswer: string;
   explanation: string;
   timeEstimate: number;
-  categoryid: string; // Добавлено
-  level: number;       // Добавлено
-  sources: string[];   // Добавлено
-  relatedCompetencies?: string[]; // Опционально: компетенции, к которым относится вопрос
+  categoryid: string;
+  level: QuestionLevel; // Здесь используется новый тип QuestionLevel
+  sources: string[];
+  relatedCompetencies?: string[];
 }
 
 /**
