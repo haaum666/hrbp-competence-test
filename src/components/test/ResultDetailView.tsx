@@ -1,106 +1,118 @@
-// src/components/test/ResultDetailView.tsx
-
 import React from 'react';
-import { TestResult } from '../../types/test';
-import { Link } from 'react-router-dom';
+import { TestResult, QuestionLevel } from '../../types/test.d'; // Импортируем QuestionLevel
 
+/**
+ * @interface ResultDetailViewProps
+ * @description Пропсы для компонента ResultDetailView.
+ * @property {TestResult} testResult - Объект с полными результатами теста.
+ */
 interface ResultDetailViewProps {
   testResult: TestResult;
 }
 
+/**
+ * @function getLevelColor
+ * @description Возвращает класс цвета для уровня сложности вопроса.
+ * @param {QuestionLevel} level - Уровень сложности ('junior', 'middle', 'senior').
+ * @returns {string} Класс Tailwind CSS.
+ */
+const getLevelColor = (level: QuestionLevel): string => {
+    switch (level) {
+        case 'junior': return 'text-green-400';
+        case 'middle': return 'text-yellow-400';
+        case 'senior': return 'text-red-400';
+        default: return 'text-gray-400';
+    }
+};
+
+/**
+ * @function ResultDetailView
+ * @description React компонент для отображения детальных результатов теста.
+ * Показывает каждый вопрос, ответ пользователя, правильный ответ и объяснение.
+ * @param {ResultDetailViewProps} props - Пропсы компонента.
+ * @returns {JSX.Element} Рендеринг компонента детальных результатов.
+ */
 const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult }) => {
   if (!testResult) {
-    return (
-      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
-        <h2 className="text-3xl font-bold text-white mb-4">Результаты не найдены</h2>
-        <p className="text-xl text-gray-300">Пожалуйста, пройдите тест сначала.</p>
-        <Link to="/" className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
-          Начать Тест
-        </Link>
-      </div>
-    );
+    return <p className="text-white text-xl">Результаты теста не найдены.</p>;
   }
 
   return (
-    <div className="w-full max-w-4xl bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 border border-gray-700/50">
-      <h2 className="text-4xl font-bold text-white mb-6 text-center">Детальные Результаты Теста</h2>
+    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-4xl w-full mx-auto text-white border border-gray-700/50">
+      <h2 className="text-4xl font-bold text-center mb-6">Детальные Результаты Теста</h2>
 
       <div className="text-center mb-8">
-        <p className="text-xl text-gray-300 mb-2">Общий балл: <span className="font-extrabold text-white">{testResult.scorePercentage.toFixed(2)}%</span></p>
-        <p className="text-lg text-gray-400">Правильных: <span className="text-green-400">{testResult.correctAnswers}</span> / Неправильных: <span className="text-red-400">{testResult.incorrectAnswers}</span> / Пропущено: <span className="text-yellow-400">{testResult.unanswered}</span></p>
+        <p className="text-xl">Итоговый балл: <span className="font-extrabold text-purple-400">{testResult.scorePercentage.toFixed(2)}%</span></p>
+        <p className="text-lg text-gray-300">Правильных: <span className="text-green-400">{testResult.correctAnswers}</span> | Неправильных: <span className="text-red-400">{testResult.incorrectAnswers}</span> | Пропущено: <span className="text-yellow-400">{testResult.unanswered}</span></p>
       </div>
 
       <div className="space-y-8">
-        {testResult.answers.map((item, index) => (
-          <div key={item.question.id} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
-            <h3 className="text-xl font-semibold text-white mb-3">Вопрос {index + 1}: {item.question.text}</h3>
-            <p className="text-sm text-gray-400 mb-2">Уровень: <span className="capitalize">{item.question.level}</span> | Категория: <span className="capitalize">{item.question.categoryid}</span></p>
-
-            {/* Ответ пользователя */}
-            <div className="mt-4">
-              <p className="text-lg font-medium text-gray-300 mb-2">Ваш ответ:</p>
-              {item.question.type === 'multiple-choice' && item.userAnswer ? (
-                item.userAnswer.selectedOptionId ? (
-                  <p className={`p-3 rounded-md ${item.isCorrect ? 'bg-green-700/30 text-green-300' : 'bg-red-700/30 text-red-300'}`}>
-                    {item.question.options?.find(opt => opt.id === item.userAnswer?.selectedOptionId)?.text || 'Ответ не найден'}
-                    {item.isCorrect ? ' (Верно)' : ' (Неверно)'}
-                  </p>
-                ) : (
-                  <p className="p-3 rounded-md bg-yellow-700/30 text-yellow-300">
-                    Вопрос пропущен
-                  </p>
-                )
-              ) : item.question.type === 'case-study' || item.question.type === 'prioritization' ? (
-                // Для кейсов и приоритизации, пока нет текстового поля для ответа, просто показываем статус
-                item.userAnswer && item.userAnswer.selectedOptionId !== '' ? (
-                    <p className="p-3 rounded-md bg-blue-700/30 text-blue-300">
-                        Вы просмотрели этот вопрос.
-                    </p>
-                ) : (
-                    <p className="p-3 rounded-md bg-yellow-700/30 text-yellow-300">
-                        Вопрос пропущен (кейс/приоритизация)
-                    </p>
-                )
-              ) : (
-                <p className="p-3 rounded-md bg-yellow-700/30 text-yellow-300">
-                  Ответ не зафиксирован или тип вопроса не поддерживается для отображения
-                </p>
-              )}
+        {testResult.answers.map((detail, index) => (
+          <div key={detail.question.id} className="bg-gray-800 bg-opacity-60 rounded-lg p-6 shadow-xl border border-gray-700">
+            <h3 className="text-xl font-bold mb-3">
+                Вопрос {index + 1}: {detail.question.text}
+            </h3>
+            <div className="mb-4 text-sm text-gray-400 flex justify-between">
+                <span>Категория: {detail.question.categoryid}</span>
+                <span className={`font-semibold ${getLevelColor(detail.question.level)}`}>
+                    Уровень: {detail.question.level.charAt(0).toUpperCase() + detail.question.level.slice(1)}
+                </span>
             </div>
 
-            {/* Правильный ответ и объяснение (для multiple-choice) */}
-            {item.question.type === 'multiple-choice' && item.question.correctAnswer && (
-              <div className="mt-4">
-                <p className="text-lg font-medium text-gray-300 mb-2">Правильный ответ:</p>
-                <p className="p-3 rounded-md bg-green-700/30 text-green-300">
-                  {item.question.options?.find(opt => opt.id === item.question.correctAnswer)?.text || 'Правильный ответ не найден'}
+            {detail.question.type === 'multiple-choice' && (
+              <>
+                <p className="mb-2">
+                  <span className="font-semibold text-gray-300">Ваш ответ: </span>
+                  <span className={detail.isCorrect ? 'text-green-400' : 'text-red-400'}>
+                    {detail.userAnswer?.selectedOptionId
+                      ? detail.question.options.find(opt => opt.id === detail.userAnswer?.selectedOptionId)?.text
+                      : 'Ответ не выбран / Пропущено'}
+                  </span>
                 </p>
-              </div>
+                <p className="mb-4">
+                  <span className="font-semibold text-gray-300">Правильный ответ: </span>
+                  <span className="text-green-400">
+                    {detail.question.options.find(opt => opt.id === detail.question.correctAnswer)?.text}
+                  </span>
+                </p>
+              </>
             )}
 
-            {/* Объяснение (для всех типов вопросов) */}
-            {item.question.explanation && (
-              <div className="mt-4">
-                <p className="text-lg font-medium text-gray-300 mb-2">Объяснение:</p>
-                <p className="p-3 rounded-md bg-gray-700 text-gray-300">
-                  {item.question.explanation}
-                </p>
-              </div>
+            {/* Для других типов вопросов (case-study, prioritization) можно выводить только объяснение */}
+            {detail.question.type !== 'multiple-choice' && (
+              <p className="mb-4">
+                <span className="font-semibold text-gray-300">Ваш ответ (неприменимо к этому типу): </span>
+                <span className="text-gray-400">
+                  {detail.userAnswer?.selectedOptionId ? 'Отвечено' : 'Пропущено'}
+                </span>
+              </p>
             )}
 
-            {item.question.sources && (
-              <div className="mt-4 text-sm text-gray-500">
-                Источник: {item.question.sources}
-              </div>
+            <p className="mb-4">
+              <span className="font-semibold text-gray-300">Объяснение: </span>
+              <span className="text-gray-200">{detail.question.explanation}</span>
+            </p>
+
+            {detail.question.sources && detail.question.sources.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-700">
+                    <p className="font-semibold text-gray-300 mb-2">Источники:</p>
+                    <ul className="list-disc list-inside text-sm text-gray-400">
+                        {detail.question.sources.map((source, srcIndex) => (
+                            <li key={srcIndex}>
+                                {source.startsWith('http') ? (
+                                    <a href={source} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                                        {source}
+                                    </a>
+                                ) : (
+                                    source
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             )}
           </div>
         ))}
-      </div>
-
-      <div className="text-center mt-8">
-        <Link to="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
-          Вернуться на главную
-        </Link>
       </div>
     </div>
   );
