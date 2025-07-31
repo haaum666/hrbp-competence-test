@@ -1,29 +1,33 @@
-// src/hooks/useTestLogic.ts
-
 import { useState, useEffect, useCallback } from 'react';
-import { Question, UserAnswer, TestResult } from '../types/test';
+import { Question, UserAnswer, TestResult, AnswerDetail } from '../types/test.d';
 import { generateQuestions } from '../data/questions';
-import { useNavigate } from 'react-router-dom'; // Добавляем импорт useNavigate обратно сюда
+
+// Константы для localStorage
+const LOCAL_STORAGE_KEY_ANSWERS = 'testUserAnswers';
+const LOCAL_STORAGE_KEY_CURRENT_INDEX = 'testCurrentQuestionIndex';
+const LOCAL_STORAGE_KEY_TEST_STARTED = 'testStarted';
+const LOCAL_STORAGE_KEY_START_TIME = 'testStartTime';
+
+const INITIAL_TIME_PER_QUESTION = 60; // Время на вопрос по умолчанию в секундах
 
 /**
- * @interface UseTestLogicResult
- * @description Интерфейс, описывающий значения и функции, возвращаемые хуком useTestLogic.
- * @property {number} currentQuestionIndex - Текущий индекс вопроса в тесте.
+ * @typedef {Object} UseTestLogicReturn
+ * @property {number} currentQuestionIndex - Текущий индекс вопроса.
  * @property {UserAnswer[]} userAnswers - Массив ответов пользователя.
- * @property {boolean} testFinished - Флаг, указывающий, завершен ли тест.
+ * @property {boolean} testFinished - Флаг завершения теста.
  * @property {Question[]} questions - Массив вопросов теста.
- * @property {boolean} testStarted - Флаг, указывающий, начат ли тест.
- * @property {TestResult | null} testResult - Результаты теста после его завершения, или null.
- * @property {boolean} showResumeOption - Флаг, показывающий опцию "Продолжить тест" на главной странице.
- * @property {number} remainingTime - Оставшееся время для текущего вопроса в секундах.
- * @property {number} progressPercentage - Процент завершения теста.
- * @property {(questionId: string, selectedOptionId: string) => void} handleAnswerSelect - Функция для записи ответа пользователя.
+ * @property {boolean} testStarted - Флаг начала теста.
+ * @property {TestResult | null} testResult - Результаты теста после завершения.
+ * @property {boolean} showResumeOption - Флаг, показывающий возможность продолжить тест.
+ * @property {number} remainingTime - Оставшееся время на текущий вопрос.
+ * @property {number} progressPercentage - Процент выполнения теста.
+ * @property {(questionId: string, selectedOptionId: string) => void} handleAnswerSelect - Функция для обработки выбора ответа.
  * @property {() => void} handleNextQuestion - Функция для перехода к следующему вопросу.
  * @property {() => void} handlePreviousQuestion - Функция для перехода к предыдущему вопросу.
  * @property {() => void} startNewTest - Функция для начала нового теста.
- * @property {() => void} resumeTest - Функция для продолжения ранее начатого теста.
+ * @property {() => void} resumeTest - Функция для продолжения прерванного теста.
  */
-interface UseTestLogicResult {
+interface UseTestLogicReturn {
   currentQuestionIndex: number;
   userAnswers: UserAnswer[];
   testFinished: boolean;
@@ -42,184 +46,161 @@ interface UseTestLogicResult {
 
 /**
  * @function useTestLogic
- * @description Кастомный React хук, инкапсулирующий всю логику прохождения HRBP-теста.
- * Управляет состоянием теста, таймером, сохранением/загрузкой прогресса и обработкой действий пользователя.
- * @returns {UseTestLogicResult} Объект, содержащий текущее состояние теста и функции для управления им.
+ * @description Пользовательский React хук, инкапсулирующий всю логику теста:
+ * управление состоянием, таймером, ответами пользователя, сохранением/загрузкой прогресса.
+ * @returns {UseTestLogicReturn} Объект с состоянием и функциями для управления тестом.
  */
-const useTestLogic = (): UseTestLogicResult => {
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
-  const [testFinished, setTestFinished] = useState(false);
+const useTestLogic = (): UseTestLogicReturn => {
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [testStarted, setTestStarted] = useState(false);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
+  const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
+  const [testStarted, setTestStarted] = useState<boolean>(false);
+  const [testFinished, setTestFinished] = useState<boolean>(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
-  const [showResumeOption, setShowResumeOption] = useState(false);
+  const [showResumeOption, setShowResumeOption] = useState<boolean>(false);
+  const [remainingTime, setRemainingTime] = useState<number>(INITIAL_TIME_PER_QUESTION);
 
-  const [remainingTime, setRemainingTime] = useState(0);
-  const [timerActive, setTimerActive] = useState(false);
-
-  const navigate = useNavigate(); // Переносим useNavigate сюда, где он используется
-
-  // При загрузке компонента генерируем вопросы
+  // Effect для инициализации вопросов при первом рендере
   useEffect(() => {
     setQuestions(generateQuestions());
   }, []);
 
-  // Загрузка состояния из localStorage при первом рендере
+  // Effect для проверки сохраненного прогресса при загрузке
   useEffect(() => {
-    const savedProgress = localStorage.getItem('hrbpTestProgress');
-    if (savedProgress) {
+    const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
+    const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+    const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
+
+    if (savedAnswers && savedIndex && savedTestStarted === 'true') {
       try {
-        const { savedCurrentQuestionIndex, savedUserAnswers } = JSON.parse(savedProgress);
-        // Проверяем, что есть вопросы и сохраненный индекс в разумных пределах
-        if (questions.length > 0 && savedUserAnswers.length > 0 && savedCurrentQuestionIndex < questions.length) {
-          setCurrentQuestionIndex(savedCurrentQuestionIndex);
-          setUserAnswers(savedUserAnswers);
+        const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
+        const parsedIndex: number = parseInt(savedIndex, 10);
+
+        if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < questions.length) {
           setShowResumeOption(true);
-        } else {
-            // Если сохраненный прогресс некорректен (например, вопросы поменялись или индекс вышел за границы), очищаем его
-            localStorage.removeItem('hrbpTestProgress');
         }
       } catch (e) {
-        console.error("Failed to parse saved progress from localStorage", e);
-        localStorage.removeItem('hrbpTestProgress'); // Очищаем некорректные данные
+        console.error('Failed to parse saved test data:', e);
+        // Очищаем localStorage, если данные повреждены
+        clearLocalStorage();
       }
     }
-  }, [questions.length]);
+  }, [questions.length]); // Зависит от questions.length, чтобы убедиться, что вопросы загружены
 
-  // Сохранение состояния в localStorage при изменении currentQuestionIndex или userAnswers
-  useEffect(() => {
-    if (testStarted && !testFinished && questions.length > 0) {
-      const progressToSave = {
-        savedCurrentQuestionIndex: currentQuestionIndex,
-        savedUserAnswers: userAnswers,
-      };
-      localStorage.setItem('hrbpTestProgress', JSON.stringify(progressToSave));
-    }
-  }, [currentQuestionIndex, userAnswers, testStarted, testFinished, questions.length]);
-
-  /**
-   * @function handleAnswerSelect
-   * @description Обрабатывает выбор ответа пользователем для заданного вопроса.
-   * Обновляет массив userAnswers, либо добавляя новый ответ, либо изменяя существующий.
-   * @param {string} questionId - Уникальный идентификатор вопроса.
-   * @param {string} selectedOptionId - Идентификатор выбранного варианта ответа.
-   * @returns {void}
-   */
-  const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
-    setUserAnswers(prevAnswers => {
-      const existingAnswerIndex = prevAnswers.findIndex(
-        (answer) => answer.questionId === questionId
-      );
-
-      if (existingAnswerIndex !== -1) {
-        const updatedAnswers = [...prevAnswers];
-        updatedAnswers[existingAnswerIndex] = {
-          questionId,
-          selectedOptionId,
-          answeredTime: new Date().toISOString(),
-        };
-        return updatedAnswers;
-      } else {
-        return [
-          ...prevAnswers,
-          {
-            questionId,
-            selectedOptionId,
-            answeredTime: new Date().toISOString(),
-          },
-        ];
-      }
-    });
+  // Функция для очистки localStorage связанных с тестом
+  const clearLocalStorage = useCallback(() => {
+    localStorage.removeItem(LOCAL_STORAGE_KEY_ANSWERS);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_START_TIME);
   }, []);
 
   /**
-   * @function handleNextQuestion
-   * @description Переходит к следующему вопросу теста.
-   * Если текущий вопрос последний, завершает тест.
-   * Если на текущий вопрос не был дан ответ, добавляет пустой ответ (пропуск).
-   * @returns {void}
+   * @function startNewTest
+   * @description Инициализирует новый тест, сбрасывая все состояния и очищая localStorage.
    */
-  const handleNextQuestion = useCallback(() => {
-    setTimerActive(false);
-
-    const currentQuestion = questions[currentQuestionIndex];
-    const userAnswered = userAnswers.some(answer => answer.questionId === currentQuestion.id);
-
-    // Если на вопрос не ответили, добавляем пустой ответ
-    if (!userAnswered) {
-      setUserAnswers(prevAnswers => [
-        ...prevAnswers,
-        {
-          questionId: currentQuestion.id,
-          selectedOptionId: '', // Пустая строка означает, что вопрос пропущен
-          answeredTime: new Date().toISOString(),
-        }
-      ]);
-    }
-
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prevIndex => prevIndex + 1);
-    } else {
-      // Если это последний вопрос, завершаем тест
-      setTestFinished(true);
-    }
-  }, [currentQuestionIndex, questions, userAnswers]);
+  const startNewTest = useCallback(() => {
+    clearLocalStorage();
+    setQuestions(generateQuestions()); // Перезагружаем вопросы для чистоты
+    setCurrentQuestionIndex(0);
+    setUserAnswers([]);
+    setTestStarted(true);
+    setTestFinished(false);
+    setTestResult(null);
+    setShowResumeOption(false);
+    localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
+    localStorage.setItem(LOCAL_STORAGE_KEY_START_TIME, Date.now().toString()); // Записываем время начала
+    setRemainingTime(questions[0]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
+  }, [clearLocalStorage, questions]); // Добавлена зависимость questions
 
   /**
-   * @function handlePreviousQuestion
-   * @description Переходит к предыдущему вопросу теста.
-   * Работает только если текущий вопрос не первый.
-   * @returns {void}
+   * @function resumeTest
+   * @description Продолжает тест с сохраненного состояния из localStorage.
    */
-  const handlePreviousQuestion = useCallback(() => {
-    setTimerActive(false);
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prevIndex => prevIndex - 1);
+  const resumeTest = useCallback(() => {
+    const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
+    const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+    const savedStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_START_TIME);
+
+    if (savedAnswers && savedIndex) {
+      try {
+        const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
+        const parsedIndex: number = parseInt(savedIndex, 10);
+        const parsedStartTime: number = parseInt(savedStartTime || '0', 10);
+
+        if (parsedIndex < questions.length) {
+          setUserAnswers(parsedAnswers);
+          setCurrentQuestionIndex(parsedIndex);
+          setTestStarted(true);
+          setTestFinished(false);
+          setTestResult(null);
+          setShowResumeOption(false);
+
+          // Рассчитываем оставшееся время
+          const elapsed = (Date.now() - parsedStartTime) / 1000; // Прошло времени в секундах
+          const questionTime = questions[parsedIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION;
+          const remaining = Math.max(0, questionTime - elapsed);
+          setRemainingTime(remaining);
+
+          localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true'); // Подтверждаем, что тест продолжен
+        } else {
+          // Если сохраненный индекс больше или равен количеству вопросов, начинаем новый тест
+          console.warn('Saved index out of bounds, starting a new test.');
+          startNewTest();
+        }
+      } catch (e) {
+        console.error('Failed to resume test:', e);
+        startNewTest(); // В случае ошибки парсинга, начинаем новый тест
+      }
+    } else {
+      startNewTest(); // Если нет сохраненных данных, начинаем новый тест
     }
-  }, [currentQuestionIndex]);
+  }, [questions, startNewTest]);
 
   /**
    * @function calculateTestResult
-   * @description Вычисляет итоговые результаты теста на основе ответов пользователя и вопросов.
-   * Устанавливает состояние `testResult` и очищает сохраненный прогресс.
-   * @returns {void}
+   * @description Вычисляет итоговые результаты теста.
    */
   const calculateTestResult = useCallback(() => {
+    if (questions.length === 0) return;
+
     let correctAnswers = 0;
     let incorrectAnswers = 0;
     let unanswered = 0;
-    const resultsDetails: TestResult['answers'] = [];
+    const answersDetails: AnswerDetail[] = [];
 
-    questions.forEach(question => {
-      const userAnswer = userAnswers.find(ua => ua.questionId === question.id);
+    questions.forEach((question) => {
+      const userAnswer = userAnswers.find((ans) => ans.questionId === question.id);
       let isCorrect = false;
 
-      if (question.type === 'multiple-choice') {
-          if (userAnswer && userAnswer.selectedOptionId) {
-              isCorrect = userAnswer.selectedOptionId === question.correctAnswer;
-          }
+      if (userAnswer && userAnswer.selectedOptionId) {
+        if (question.type === 'multiple-choice') {
+          isCorrect = userAnswer.selectedOptionId === question.correctAnswer;
+        } else {
+          // Для кейсов или приоритизации, где нет однозначного "правильного" ответа
+          // можно считать ответ правильным, если он просто был дан.
+          // Или внедрить более сложную логику оценки.
+          isCorrect = true; // Считаем, что если пользователь дал ответ, то он "правильный" для этого типа
+        }
       }
 
-      if (userAnswer && userAnswer.selectedOptionId !== '') {
-          if (isCorrect) {
-              correctAnswers++;
-          } else if (question.type === 'multiple-choice') { // Проверяем некорректные только для multiple-choice
-              incorrectAnswers++;
-          }
+      if (isCorrect) {
+        correctAnswers++;
+      } else if (userAnswer && userAnswer.selectedOptionId) {
+        incorrectAnswers++;
       } else {
-          unanswered++;
+        unanswered++;
       }
 
-      resultsDetails.push({
+      answersDetails.push({
         question,
         userAnswer,
-        isCorrect: isCorrect,
+        isCorrect,
       });
     });
 
     const totalQuestions = questions.length;
-    const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+    const scorePercentage = (correctAnswers / totalQuestions) * 100;
 
     setTestResult({
       totalQuestions,
@@ -227,85 +208,117 @@ const useTestLogic = (): UseTestLogicResult => {
       incorrectAnswers,
       unanswered,
       scorePercentage,
-      answers: resultsDetails,
+      answers: answersDetails,
     });
-    setTimerActive(false);
-    localStorage.removeItem('hrbpTestProgress'); // Очищаем прогресс после завершения теста
-  }, [questions, userAnswers]);
 
-  // Логика таймера: уменьшает remainingTime каждую секунду
+    setTestFinished(true);
+    clearLocalStorage(); // Очищаем localStorage после завершения теста
+  }, [questions, userAnswers, clearLocalStorage]);
+
+  // Effect для обработки таймера
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timerId: number | null = null; // ИЗМЕНЕНО здесь: NodeJS.Timeout заменен на number
 
-    if (timerActive && remainingTime > 0) {
-      timer = setInterval(() => {
-        setRemainingTime(prevTime => prevTime - 1);
+    if (testStarted && !testFinished && questions[currentQuestionIndex]) {
+      const questionStartTime = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_START_TIME) || Date.now().toString(), 10);
+      const elapsedSinceStart = (Date.now() - questionStartTime) / 1000;
+      const initialTimeForCurrentQuestion = questions[currentQuestionIndex].timeEstimate || INITIAL_TIME_PER_QUESTION;
+      const timeLeftOnLoad = Math.max(0, initialTimeTimeForCurrentQuestion - elapsedSinceStart);
+
+      setRemainingTime(timeLeftOnLoad);
+
+      timerId = window.setInterval(() => {
+        setRemainingTime((prevTime) => {
+          if (prevTime <= 1) {
+            window.clearInterval(timerId!);
+            // Если время вышло, автоматически переходим к следующему вопросу
+            handleNextQuestion();
+            return 0;
+          }
+          return prevTime - 1;
+        });
       }, 1000);
-    } else if (remainingTime === 0 && timerActive) {
-      // Если время вышло и тест еще не завершен, автоматически переходим к следующему вопросу
-      if (currentQuestionIndex < questions.length - 1 && testStarted && !testFinished) {
-        handleNextQuestion();
-      } else if (currentQuestionIndex === questions.length - 1 && testStarted && !testFinished) {
-        setTestFinished(true); // Если время вышло на последнем вопросе, завершаем тест
+    } else if (timerId) {
+      window.clearInterval(timerId);
+    }
+
+    // Cleanup function
+    return () => {
+      if (timerId) {
+        window.clearInterval(timerId);
+      }
+    };
+  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]);
+
+
+  // Effect для сохранения прогресса и сброса таймера при смене вопроса
+  useEffect(() => {
+    if (testStarted && !testFinished) {
+      localStorage.setItem(LOCAL_STORAGE_KEY_ANSWERS, JSON.stringify(userAnswers));
+      localStorage.setItem(LOCAL_STORAGE_KEY_CURRENT_INDEX, currentQuestionIndex.toString());
+      // Сбрасываем время начала для нового вопроса, чтобы таймер отсчитывал правильно
+      localStorage.setItem(LOCAL_STORAGE_KEY_START_TIME, Date.now().toString());
+
+      // Устанавливаем время для нового вопроса
+      if (questions[currentQuestionIndex]) {
+        setRemainingTime(questions[currentQuestionIndex].timeEstimate || INITIAL_TIME_PER_QUESTION);
       }
     }
+  }, [userAnswers, currentQuestionIndex, testStarted, testFinished, questions]);
 
-    // Очистка интервала при размонтировании или изменении зависимостей
-    return () => clearInterval(timer);
-  }, [remainingTime, timerActive, currentQuestionIndex, questions.length, testStarted, testFinished, handleNextQuestion]);
+  /**
+   * @function handleAnswerSelect
+   * @description Обрабатывает выбор ответа пользователем, сохраняет его и переходит к следующему вопросу.
+   * @param {string} questionId - ID вопроса, на который был дан ответ.
+   * @param {string} selectedOptionId - ID выбранного варианта ответа.
+   */
+  const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
+    setUserAnswers((prevAnswers) => {
+      const existingAnswerIndex = prevAnswers.findIndex(
+        (answer) => answer.questionId === questionId
+      );
 
-  // Обновляем таймер при смене вопроса или начале теста
-  useEffect(() => {
-    if (testStarted && questions.length > 0 && currentQuestionIndex < questions.length && !testFinished) {
-      const currentQuestion = questions[currentQuestionIndex];
-      setRemainingTime(currentQuestion.timeEstimate);
-      setTimerActive(true);
-    } else if (testFinished) {
-      setTimerActive(false);
-    }
-  }, [currentQuestionIndex, questions, testStarted, testFinished]);
+      const newAnswer: UserAnswer = {
+        questionId,
+        selectedOptionId,
+        answeredTime: new Date().toISOString(),
+      };
 
-  // Запускаем расчет результатов, когда тест завершен
-  useEffect(() => {
-    if (testFinished && !testResult) {
+      if (existingAnswerIndex > -1) {
+        const updatedAnswers = [...prevAnswers];
+        updatedAnswers[existingAnswerIndex] = newAnswer;
+        return updatedAnswers;
+      } else {
+        return [...prevAnswers, newAnswer];
+      }
+    });
+  }, []);
+
+  /**
+   * @function handleNextQuestion
+   * @description Переходит к следующему вопросу или завершает тест, если это последний вопрос.
+   */
+  const handleNextQuestion = useCallback(() => {
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+    } else {
+      // Если это последний вопрос, завершаем тест
       calculateTestResult();
-      navigate('/results'); // Перенаправляем на страницу результатов после расчета
     }
-  }, [testFinished, testResult, calculateTestResult, navigate]);
+  }, [currentQuestionIndex, questions.length, calculateTestResult]);
 
   /**
-   * @function startNewTest
-   * @description Инициализирует все состояния для начала нового теста.
-   * Очищает предыдущий прогресс и перенаправляет на страницу теста.
-   * @returns {void}
+   * @function handlePreviousQuestion
+   * @description Переходит к предыдущему вопросу.
    */
-  const startNewTest = useCallback(() => {
-    setTestStarted(true);
-    setCurrentQuestionIndex(0);
-    setUserAnswers([]);
-    setTestFinished(false);
-    setTestResult(null);
-    setShowResumeOption(false);
-    localStorage.removeItem('hrbpTestProgress');
-    navigate('/test'); // Перенаправляем на страницу теста при старте
-  }, [navigate]); // Зависимость от navigate
+  const handlePreviousQuestion = useCallback(() => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
+    }
+  }, [currentQuestionIndex]);
 
-  /**
-   * @function resumeTest
-   * @description Продолжает тест с сохраненного прогресса.
-   * Активирует тест и перенаправляет на страницу теста.
-   * @returns {void}
-   */
-  const resumeTest = useCallback(() => {
-    setTestStarted(true);
-    setShowResumeOption(false);
-    navigate('/test'); // Перенаправляем на страницу теста при продолжении
-  }, [navigate]); // Зависимость от navigate
+  const progressPercentage = questions.length > 0 ? ((currentQuestionIndex) / questions.length) * 100 : 0;
 
-  // Расчет процента прогресса теста
-  const progressPercentage = questions.length > 0
-    ? ((currentQuestionIndex + 1) / questions.length) * 100
-    : 0;
 
   return {
     currentQuestionIndex,
