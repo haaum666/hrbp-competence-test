@@ -30,6 +30,9 @@ export interface Option {
  * @property {string} correctAnswer - ID правильного варианта ответа (для multiple-choice).
  * @property {string} explanation - Подробное объяснение правильного ответа или решения кейса.
  * @property {number} timeEstimate - Оценочное время на ответ в секундах.
+ * @property {string} categoryid - Идентификатор категории вопроса.
+ * @property {number} level - Уровень сложности вопроса.
+ * @property {string[]} sources - Массив ссылок на источники информации, связанные с вопросом.
  * @property {string[]} [relatedCompetencies] - Опциональный массив компетенций, к которым относится вопрос.
  */
 export interface Question {
@@ -40,6 +43,9 @@ export interface Question {
   correctAnswer: string;
   explanation: string;
   timeEstimate: number;
+  categoryid: string; // Добавлено
+  level: number;       // Добавлено
+  sources: string[];   // Добавлено
   relatedCompetencies?: string[]; // Опционально: компетенции, к которым относится вопрос
 }
 
