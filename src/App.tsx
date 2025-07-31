@@ -243,4 +243,103 @@ const App: React.FC = () => {
                   {showResumeOption ? (
                     <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                       <button
-                        onClick={resumeTest
+                        onClick={resumeTest}
+                        className="bg-gradient-to-r from-green-700 to-green-900 hover:from-green-800 hover:to-green-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 inline-block"
+                      >
+                        Продолжить Тест
+                      </button>
+                      <button
+                        onClick={startNewTest}
+                        className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
+                      >
+                        Начать Новый Тест
+                      </button>
+                    </div>
+                  ) : (
+                    <Link to="/test"
+                      onClick={startNewTest}
+                      className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
+                    >
+                      Начать Тест
+                    </Link>
+                  )}
+                </div> // Закрывающий div для главного блока
+              }
+            />
+            <Route
+              path="/test"
+              element={
+                <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center items-center">
+                  {testStarted && questions.length > 0 && !testFinished ? (
+                    <QuestionRenderer
+                      question={questions[currentQuestionIndex]}
+                      currentQuestionIndex={currentQuestionIndex}
+                      totalQuestions={questions.length}
+                      onAnswerSelect={handleAnswerSelect}
+                      currentUserAnswer={userAnswers.find(ua => ua.questionId === questions[currentQuestionIndex].id)}
+                      onNextQuestion={handleNextQuestion}
+                      onPreviousQuestion={handlePreviousQuestion}
+                      isFirstQuestion={currentQuestionIndex === 0}
+                      isLastQuestion={currentQuestionIndex === questions.length - 1}
+                      remainingTime={remainingTime}
+                      progressPercentage={progressPercentage}
+                    />
+                  ) : testFinished ? (
+                    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
+                      {testResult ? (
+                        <>
+                          <h2 className="text-4xl font-bold text-white mb-4">Тест завершен!</h2>
+                          <p className="text-xl text-gray-300 mb-6">
+                            Ваши результаты:
+                          </p>
+                          <div className="text-left mx-auto max-w-md space-y-2 mb-8 text-lg">
+                            <p>Всего вопросов: <span className="font-semibold text-white">{testResult.totalQuestions}</span></p>
+                            <p>Правильных ответов: <span className="font-semibold text-green-400">{testResult.correctAnswers}</span></p>
+                            <p>Неправильных ответов: <span className="font-semibold text-red-400">{testResult.incorrectAnswers}</span></p>
+                            <p>Пропущено вопросов: <span className="font-semibold text-yellow-400">{testResult.unanswered}</span></p>
+                            <p className="text-2xl pt-4">Итоговый балл: <span className="font-extrabold text-white">{testResult.scorePercentage.toFixed(2)}%</span></p>
+                          </div>
+                          <Link to="/results"
+                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block mt-4 mr-4"
+                          >
+                            Посмотреть детальные результаты
+                          </Link>
+                          <Link to="/" onClick={startNewTest} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block mt-4">
+                            Пройти тест снова
+                          </Link>
+                        </>
+                      ) : (
+                        <p className="text-white text-2xl">Расчет результатов...</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-white text-2xl">Загрузка вопросов или тест еще не начат...</p>
+                  )}
+                </div> // Закрывающий div для Route /test
+              }
+            />
+            <Route
+              path="/results"
+              element={
+                <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center items-center">
+                  {testResult ? (
+                    <ResultDetailView testResult={testResult} />
+                  ) : (
+                    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
+                      <p className="text-white text-2xl">Результаты не найдены. Пожалуйста, пройдите тест.</p>
+                      <Link to="/" onClick={startNewTest} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+                        Начать Тест
+                      </Link>
+                    </div>
+                  )}
+                </div> // Закрывающий div для Route /results
+              }
+            />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
