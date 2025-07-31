@@ -117,7 +117,7 @@ const App: React.FC = () => {
     }
   };
 
-  // НОВОЕ: Расчет процента прогресса
+  // Расчет процента прогресса
   const progressPercentage = questions.length > 0
     ? ((currentQuestionIndex + 1) / questions.length) * 100
     : 0;
@@ -165,7 +165,7 @@ const App: React.FC = () => {
                       isFirstQuestion={currentQuestionIndex === 0}
                       isLastQuestion={currentQuestionIndex === questions.length - 1}
                       remainingTime={remainingTime}
-                      progressPercentage={progressPercentage} {/* НОВОЕ: Передаем процент прогресса */}
+                      progressPercentage={progressPercentage} // УБРАНА ЛИШНЯЯ ЗАПЯТАЯ ЗДЕСЬ
                     />
                   ) : testFinished ? (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
