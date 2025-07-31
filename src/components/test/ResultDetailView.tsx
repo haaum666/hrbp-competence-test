@@ -1,6 +1,7 @@
 import React from 'react';
-import { TestResult, AnswerDetail, Question, UserAnswer } from '../../types/test.d'; // Обновленный импорт
+import { TestResult, AnswerDetail, Question, UserAnswer } from '../../types/test.d';
 import DataExporter from './DataExporter'; // Импортируем наш новый компонент DataExporter
+import { Link } from 'react-router-dom'; // НОВОЕ: Импорт Link
 
 interface ResultDetailViewProps {
   testResult: TestResult | null; // Теперь может быть null, если результаты еще не загружены
@@ -37,8 +38,8 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       <div className="flex justify-center mb-8">
         <DataExporter
           testResult={testResult}
-          questions={questions}
-          userAnswers={userAnswers}
+          questions={questions} // Передаем questions
+          userAnswers={userAnswers} // Передаем userAnswers
         />
       </div>
 
@@ -86,15 +87,9 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       </div>
 
       <div className="flex justify-center mt-8">
-        {/* НОВОЕ: Используем Link из react-router-dom и вызываем handleStartNewTest */}
+        {/* НОВОЕ: Используем Link из react-router-dom и очищаем localStorage */}
         <Link to="/" onClick={() => {
-          // Просто вызываем handleStartNewTest. navigate должен быть в родительском компоненте (ResultsScreen.tsx),
-          // который передает testResult в ResultDetailView.
-          // Для упрощения, если testResult приходит из ResultsScreen, handleStartNewTest должен быть определен там.
-          // Здесь мы имитируем очистку localStorage, как если бы это был onClick для кнопки,
-          // а навигация будет обработана Link.
           localStorage.removeItem('currentTestState');
-          // localStorage.removeItem('allTestResults'); // Возможно, не нужно очищать все результаты
         }} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
           Вернуться к началу
         </Link>
