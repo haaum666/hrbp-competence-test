@@ -64,8 +64,9 @@ export interface Question {
  */
 export interface UserAnswer {
   questionId: string;
-  selectedOptionId: string;
-  answeredTime: string; // ISO string
+  selectedOptionId?: string; // Используем '?' для необязательного свойства
+  timeSpent?: number; // НОВОЕ: Время, затраченное на вопрос в секундах
+  // Другие свойства, если они есть
 }
 
 /**
