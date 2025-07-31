@@ -1,11 +1,12 @@
 // src/components/test/MultipleChoiceQuestion.tsx
+
 import React from 'react';
-import { Question, Option } from '../../types/test'; // <-- Важный импорт
+import { Question, Option } from '../../types/test';
 
 interface MultipleChoiceQuestionProps {
   question: Question;
   onAnswerSelect: (questionId: string, selectedOptionId: string) => void;
-  selectedAnswerId?: string;
+  selectedAnswerId?: string; // Пропс для текущего выбранного ответа
 }
 
 const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
@@ -13,35 +14,39 @@ const MultipleChoiceQuestion: React.FC<MultipleChoiceQuestionProps> = ({
   onAnswerSelect,
   selectedAnswerId,
 }) => {
-  if (question.type !== 'multiple-choice' || !question.options) {
-    return <p className="text-red-400">Ошибка: Некорректный тип вопроса или отсутствуют опции для MultipleChoiceQuestion.</p>;
-  }
+  // --- ДОБАВЬТЕ ЭТУ СТРОКУ ---
+  console.log(`Вопрос "${question.text.substring(0, 30)}...": selectedAnswerId =`, selectedAnswerId);
+  // --- КОНЕЦ ДОБАВЛЯЕМОЙ СТРОКИ ---
 
   return (
     <div className="space-y-4">
-      <p className="text-xl font-medium text-gray-50 mb-6">{question.text}</p>
-
-      <div className="space-y-3">
-        {question.options.map((option: Option) => (
-          <label
-            key={option.id}
-            className={`flex items-center p-4 rounded-lg cursor-pointer transition duration-200 ease-in-out
-                       ${selectedAnswerId === option.id
-                          ? 'bg-blue-700 bg-opacity-70 text-white shadow-md border-blue-500 border'
-                          : 'bg-gray-700 bg-opacity-50 text-gray-200 hover:bg-gray-600 hover:bg-opacity-70'}`}
+      <p className="text-xl text-gray-200 mb-8 leading-relaxed">{question.text}</p>
+      {question.options && question.options.map((option: Option) => (
+        <div
+          key={option.id}
+          className={`relative flex items-center p-4 rounded-lg cursor-pointer transition duration-200 ease-in-out
+                      ${selectedAnswerId === option.id
+                          ? 'bg-blue-700/70 text-white shadow-lg border-blue-600'
+                          : 'bg-gray-700/50 hover:bg-gray-600/70 border-gray-600'
+                      }
+                      border`}
+          onClick={() => onAnswerSelect(question.id, option.id)}
+        >
+          <div
+            className={`w-5 h-5 rounded-full flex items-center justify-center mr-4 flex-shrink-0
+                        ${selectedAnswerId === option.id
+                            ? 'bg-white border-blue-400'
+                            : 'bg-gray-600 border-gray-500'
+                        }
+                        border-2`}
           >
-            <input
-              type="radio"
-              name={`question-${question.id}`}
-              value={option.id}
-              checked={selectedAnswerId === option.id}
-              onChange={() => onAnswerSelect(question.id, option.id)}
-              className="form-radio h-5 w-5 text-blue-500 bg-gray-900 border-gray-500 focus:ring-blue-400"
-            />
-            <span className="ml-4 text-lg">{option.text}</span>
-          </label>
-        ))}
-      </div>
+            {selectedAnswerId === option.id && (
+              <div className="w-2.5 h-2.5 bg-blue-700 rounded-full"></div>
+            )}
+          </div>
+          <span className="text-lg">{option.text}</span>
+        </div>
+      ))}
     </div>
   );
 };
