@@ -2,14 +2,13 @@
 import React from 'react';
 
 interface QuestionCardProps {
-  children: React.ReactNode; // Сюда будет передаваться содержимое вопроса
-  title?: string; // Заголовок карточки (например, "Вопрос 1 из 76")
-  level?: 'junior' | 'middle' | 'senior'; // Уровень сложности
-  timeEstimate?: number; // Оценка времени на вопрос
+  children: React.ReactNode;
+  title?: string;
+  level?: 'junior' | 'middle' | 'senior';
+  timeEstimate?: number;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ children, title, level, timeEstimate }) => {
-  // Определяем цвет границы в зависимости от уровня
   let borderColorClass = '';
   switch (level) {
     case 'junior':
