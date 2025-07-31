@@ -1,10 +1,10 @@
 // src/data/questions.ts
-import { Question } from '../types/test'; // <-- Важный импорт
+import { Question } from '../types/test';
 
-export const mockQuestions: Question[] = [
+export const generateQuestions = (): Question[] => [
   {
     id: 'q1',
-    categoryId: 'strategy',
+    categoryid: 'strategy', // Исправлено на categoryid
     level: 'junior',
     type: 'multiple-choice',
     text: 'Какова основная роль HRBP в стратегическом планировании бизнеса?',
@@ -22,12 +22,13 @@ export const mockQuestions: Question[] = [
   },
   {
     id: 'q2',
-    categoryId: 'analytics',
+    categoryid: 'analytics', // Исправлено на categoryid
     level: 'middle',
     type: 'case-study',
     text: 'Ваша компания столкнулась с высокой текучестью кадров в отделе продаж (25% за последний год). Какие три ключевых шага вы предпримете для анализа и решения этой проблемы?',
-    options: [], 
-    correctAnswer: [], 
+    // Для case-study и prioritization типов вопросов options и correctAnswer не нужны
+    // options: [],
+    // correctAnswer: [],
     explanation: 'Для кейсов требуется многоступенчатый анализ, включающий сбор данных, выявление причин и разработку плана действий.',
     sources: 'People Analytics Best Practices',
     difficulty: 2,
@@ -35,7 +36,7 @@ export const mockQuestions: Question[] = [
   },
   {
     id: 'q3',
-    categoryId: 'talent',
+    categoryid: 'talent', // Исправлено на categoryid
     level: 'senior',
     type: 'multiple-choice',
     text: 'Какой подход наиболее эффективен для развития лидерских компетенций у топ-менеджеров?',
