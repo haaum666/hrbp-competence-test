@@ -217,13 +217,13 @@ const useTestLogic = (): UseTestLogicReturn => {
 
   // Effect для обработки таймера
   useEffect(() => {
-    let timerId: number | null = null; // ИЗМЕНЕНО здесь: NodeJS.Timeout заменен на number
+    let timerId: number | null = null; // <-- ИЗМЕНЕНИЕ: NodeJS.Timeout заменен на number
 
     if (testStarted && !testFinished && questions[currentQuestionIndex]) {
       const questionStartTime = parseInt(localStorage.getItem(LOCAL_STORAGE_KEY_START_TIME) || Date.now().toString(), 10);
       const elapsedSinceStart = (Date.now() - questionStartTime) / 1000;
       const initialTimeForCurrentQuestion = questions[currentQuestionIndex].timeEstimate || INITIAL_TIME_PER_QUESTION;
-      const timeLeftOnLoad = Math.max(0, initialTimeTimeForCurrentQuestion - elapsedSinceStart);
+      const timeLeftOnLoad = Math.max(0, initialTimeForCurrentQuestion - elapsedSinceStart);
 
       setRemainingTime(timeLeftOnLoad);
 
