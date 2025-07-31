@@ -20,7 +20,7 @@ const App: React.FC = () => {
     setQuestions(generateQuestions());
   }, []);
 
-  // НОВОЕ: Функции-обработчики объявлены выше, обернуты в useCallback
+  // Функции-обработчики объявлены выше, обернуты в useCallback
   const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
     setUserAnswers(prevAnswers => {
       const existingAnswerIndex = prevAnswers.findIndex(
@@ -46,7 +46,7 @@ const App: React.FC = () => {
         ];
       }
     });
-  }, []); // Зависимостей нет, так как setUserAnswers стабилен
+  }, []);
 
   const handleNextQuestion = useCallback(() => {
     setTimerActive(false);
@@ -71,14 +71,14 @@ const App: React.FC = () => {
     } else {
       setTestFinished(true);
     }
-  }, [currentQuestionIndex, questions, userAnswers]); // Добавил зависимости
+  }, [currentQuestionIndex, questions, userAnswers]);
 
   const handlePreviousQuestion = useCallback(() => {
     setTimerActive(false);
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex(prevIndex => prevIndex - 1);
     }
-  }, [currentQuestionIndex]); // Добавил зависимость
+  }, [currentQuestionIndex]);
 
   // Функция для расчета результатов теста
   const calculateTestResult = useCallback(() => {
@@ -226,11 +226,37 @@ const App: React.FC = () => {
                   ) : testFinished ? (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
                       {testResult ? (
-                        <>
+                        <> {/* НОВОЕ: Обертка во фрагмент */}
                           <h2 className="text-4xl font-bold text-white mb-4">Тест завершен!</h2>
                           <p className="text-xl text-gray-300 mb-6">
                             Ваши результаты:
                           </p>
                           <div className="text-left mx-auto max-w-md space-y-2 mb-8 text-lg">
                             <p>Всего вопросов: <span className="font-semibold text-white">{testResult.totalQuestions}</span></p>
-                            <p>Правильных ответов: <span className="font-semibold text-green-400">{testResult.correctAnswers}</span></p
+                            <p>Правильных ответов: <span className="font-semibold text-green-400">{testResult.correctAnswers}</span></p>
+                            <p>Неправильных ответов: <span className="font-semibold text-red-400">{testResult.incorrectAnswers}</span></p>
+                            <p>Пропущено вопросов: <span className="font-semibold text-yellow-400">{testResult.unanswered}</span></p>
+                            <p className="text-2xl pt-4">Итоговый балл: <span className="font-extrabold text-white">{testResult.scorePercentage.toFixed(2)}%</span></p>
+                          </div>
+                          <Link to="/" onClick={handleStartTest} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+                            Пройти тест снова
+                          </Link>
+                        </> // НОВОЕ: Закрывающий фрагмент
+                      ) : (
+                        <p className="text-white text-2xl">Расчет результатов...</p>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-white text-2xl">Загрузка вопросов или тест еще не начат...</p>
+                  )}
+                </div>
+              }
+            />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+  );
+};
+
+export default App;
