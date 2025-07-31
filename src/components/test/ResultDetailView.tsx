@@ -1,7 +1,7 @@
 // src/components/test/ResultDetailView.tsx
 
 import React from 'react';
-import { TestResult, QuestionType } from '../../types/test';
+import { TestResult } from '../../types/test';
 import { Link } from 'react-router-dom';
 
 interface ResultDetailViewProps {
