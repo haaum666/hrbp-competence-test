@@ -126,7 +126,7 @@ const App: React.FC = () => {
               element={
                 <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center items-center">
                   {testResult ? (
-                    <ResultDetailView testResult={testResult} />
+                    <ResultDetailView testResult={testResult} questions={questions} userAnswers={userAnswers} />
                   ) : (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
                       <p className="text-white text-2xl">Результаты не найдены. Пожалуйста, пройдите тест.</p>
