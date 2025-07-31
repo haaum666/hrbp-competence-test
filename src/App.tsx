@@ -1,13 +1,13 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'; // Изменено
 import QuestionRenderer from './components/test/QuestionRenderer';
 import ResultDetailView from './components/test/ResultDetailView';
-import useTestLogic from './hooks/useTestLogic'; // НОВОЕ: Импорт нашего кастомного хука
+import useTestLogic from './hooks/useTestLogic';
 
 const App: React.FC = () => {
-  const navigate = useNavigate(); // Для программной навигации
+  // const navigate = useNavigate(); // Эту строку удаляем, так как navigate используется внутри useTestLogic
 
-  // НОВОЕ: Используем наш кастомный хук для всей логики теста
+  // Используем наш кастомный хук для всей логики теста
   const {
     currentQuestionIndex,
     userAnswers,
@@ -21,23 +21,12 @@ const App: React.FC = () => {
     handleAnswerSelect,
     handleNextQuestion,
     handlePreviousQuestion,
-    startNewTest,
-    resumeTest,
+    startNewTest, // Эти функции уже содержат навигацию
+    resumeTest,   // Эти функции уже содержат навигацию
   } = useTestLogic();
 
-  // Функция для старта нового теста, которая также перенаправляет
-  const handleStartNewTestAndNavigate = () => {
-    startNewTest();
-    // Навигация уже внутри startNewTest, но оставим для ясности
-    // navigate('/test');
-  };
-
-  // Функция для продолжения теста, которая также перенаправляет
-  const handleResumeTestAndNavigate = () => {
-    resumeTest();
-    // Навигация уже внутри resumeTest, но оставим для ясности
-    // navigate('/test');
-  };
+  // Убрали отдельные handleStartNewTestAndNavigate и handleResumeTestAndNavigate,
+  // так как логика навигации теперь внутри startNewTest и resumeTest в useTestLogic
 
   return (
     <Router>
@@ -60,13 +49,13 @@ const App: React.FC = () => {
                   {showResumeOption ? (
                     <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
                       <button
-                        onClick={handleResumeTestAndNavigate}
+                        onClick={resumeTest} // Напрямую вызываем resumeTest
                         className="bg-gradient-to-r from-green-700 to-green-900 hover:from-green-800 hover:to-green-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 inline-block"
                       >
                         Продолжить Тест
                       </button>
                       <button
-                        onClick={handleStartNewTestAndNavigate}
+                        onClick={startNewTest} // Напрямую вызываем startNewTest
                         className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
                       >
                         Начать Новый Тест
@@ -74,7 +63,7 @@ const App: React.FC = () => {
                     </div>
                   ) : (
                     <Link to="/test"
-                      onClick={handleStartNewTestAndNavigate}
+                      onClick={startNewTest} // Напрямую вызываем startNewTest
                       className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
                     >
                       Начать Тест
@@ -121,7 +110,7 @@ const App: React.FC = () => {
                           >
                             Посмотреть детальные результаты
                           </Link>
-                          <Link to="/" onClick={handleStartNewTestAndNavigate} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block mt-4">
+                          <Link to="/" onClick={startNewTest} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block mt-4">
                             Пройти тест снова
                           </Link>
                         </>
@@ -144,7 +133,7 @@ const App: React.FC = () => {
                   ) : (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
                       <p className="text-white text-2xl">Результаты не найдены. Пожалуйста, пройдите тест.</p>
-                      <Link to="/" onClick={handleStartNewTestAndNavigate} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+                      <Link to="/" onClick={startNewTest} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
                         Начать Тест
                       </Link>
                     </div>
