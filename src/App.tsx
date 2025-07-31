@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Question, UserAnswer } from './types/test'; // Убрал TestResult из импорта, т.к. пока не используется здесь
-import { generateQuestions } from './data/questions'; // Исправлен импорт generateQuestions
+import { Question, UserAnswer } from './types/test';
+import { generateQuestions } from './data/questions';
 import QuestionRenderer from './components/test/QuestionRenderer';
 
 const App: React.FC = () => {
@@ -39,7 +39,7 @@ const App: React.FC = () => {
     }
 
     return () => clearInterval(timer);
-  }, [remainingTime, timerActive, currentQuestionIndex, questions.length, testStarted, testFinished]); // Добавил зависимости
+  }, [remainingTime, timerActive, currentQuestionIndex, questions.length, testStarted, testFinished]);
 
   // Обновляем таймер при смене вопроса
   useEffect(() => {
@@ -117,8 +117,6 @@ const App: React.FC = () => {
     }
   };
 
-  // Удалил функцию formatTime отсюда, она теперь в QuestionRenderer.tsx
-
   return (
     <Router>
       <div className="min-h-screen bg-gray-900 font-sans text-gray-100 p-4">
@@ -162,7 +160,7 @@ const App: React.FC = () => {
                       isFirstQuestion={currentQuestionIndex === 0}
                       isLastQuestion={currentQuestionIndex === questions.length - 1}
                       remainingTime={remainingTime}
-                      timeEstimate={questions[currentQuestionIndex].timeEstimate}
+                      // timeEstimate={questions[currentQuestionIndex].timeEstimate} // УДАЛЕН: Этот пропс больше не передается
                     />
                   ) : testFinished ? (
                     <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
