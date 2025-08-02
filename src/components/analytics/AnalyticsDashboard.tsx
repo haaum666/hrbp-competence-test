@@ -47,7 +47,7 @@ const AnalyticsDashboard: React.FC = () => {
     }
   }, []);
 
-  // НОВОЕ: Функция для очистки всех результатов
+  // Функция для очистки всех результатов
   const handleClearAllResults = () => {
     if (window.confirm('Вы уверены, что хотите удалить все данные о пройденных тестах? Это действие необратимо.')) {
       localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
@@ -55,7 +55,6 @@ const AnalyticsDashboard: React.FC = () => {
       setTotalTestsCompleted(0);
       setAverageScore('0.00');
       setError(null); // Сбрасываем ошибку, если была
-      // Можно добавить временное сообщение об успехе, если это необходимо для UX
     }
   };
 
@@ -123,7 +122,7 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* НОВОЕ: Блок с кнопками, включая "Очистить все результаты" */}
+      {/* Блок с кнопками, включая "Очистить все результаты" */}
       <div className="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
         <button
           onClick={handleClearAllResults}
@@ -131,4 +130,12 @@ const AnalyticsDashboard: React.FC = () => {
         >
           Очистить все результаты
         </button>
-        <Link to="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-
+        <Link to="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto">
+          Вернуться к началу
+        </Link>
+      </div>
+    </div> // Возможно, здесь была проблема: этот div должен закрывать корневой div.
+  );
+};
+
+export default AnalyticsDashboard;
