@@ -8,16 +8,16 @@
 @tailwind utilities;
 
 :root {
-  --color-background-light-beige: #28486e;
-  --color-background-card: #e1b183;
+  --color-background-light-beige: #28486e; /* Темно-синий фон */
+  --color-background-card: #fadeb1; /* НОВОЕ: Более светлый бежевый для карточек и хедера */
   --color-text-primary: #3A4232;
   --color-text-secondary: #6E7766;
   --color-accent-primary: #67A1BF;
   --color-accent-secondary: #A3C690;
   --color-success: #A3C690;
   --color-error: #E07A5F;
-  --color-neutral: #C8C8BC;
-  --color-button-start-test-bg: #e1b183;
+  --color-neutral: #FFF5E0; /* НОВОЕ: Очень светлый оттенок для каёмочки и нейтральных элементов */
+  --color-button-start-test-bg: #fadeb1; /* НОВОЕ: Цвет кнопки старта соответствует цвету карточки */
   --color-button-start-test-text: #3A4232;
   --color-button-text-dark: #3A4232;
   --color-option-border: #A3C690;
@@ -25,9 +25,9 @@
   --color-level-middle: #A3C690;
   --color-level-senior: #E07A5F;
   --color-level-default: #6E7766;
-  --texture-grain: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch" result="fractal"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix><feComponentTransfer><feFuncA type="linear" slope="0.1"></feFuncA></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#noise)"></rect></svg>');
+  --texture-grain: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="2" stitchTiles="stitch" result="fractal"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix><feComponentTransfer><feFuncA type="linear" slope="0.15"></feFuncA></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#noise)"></rect></svg>');
   
-  --color-button-text: var(--color-button-start-test-text); /* НОВОЕ: Определяем универсальный цвет текста для кнопок */
+  --color-button-text: var(--color-button-start-test-text);
 }
 
 body {
