@@ -24,9 +24,7 @@ const Header: React.FC = () => {
     >
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         {/* Логотип / Название проекта */}
-        <Link to="/" className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center"
-          style={{ color: 'var(--color-text-primary)' }} // Темный, землистый цвет для текста логотипа
-        >
+        <Link to="/" className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center">
           {/* Замена иконки мозга на SVG-иконку "структурный ромб" */}
           <svg
             width="32" // Увеличил размер для лучшей видимости, можете настроить
@@ -41,7 +39,12 @@ const Header: React.FC = () => {
             <path d="M2 7L12 1L22 7L12 13L2 7Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
             <path d="M12 13L2 7M12 13L22 7M12 13L12 23" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
           </svg>
-          HRBP-Тест
+          {/* ИСПРАВЛЕНО: Буквы HRBP с разными цветами */}
+          <span style={{ color: 'var(--color-accent-primary)' }}>H</span>
+          <span style={{ color: 'var(--color-error)' }}>R</span>
+          <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
+          <span style={{ color: 'var(--color-text-primary)' }}>P</span>
+          <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span>
         </Link>
 
         {/* Навигационные ссылки */}
