@@ -5,22 +5,26 @@
 /* CSS-переменные для новой цветовой палитры и текстуры */
 :root {
   /* Основные цвета */
-  --color-background-light-beige: #F5F5DC; /* Светлый бежевый фон */
-  --color-background-card: #FAF0E6; /* Кремовый фон для карточек */
-  --color-text-primary: #333333; /* Темно-серый для основного текста */
-  --color-text-secondary: #696969; /* Серо-коричневый для вторичного текста */
+  --color-background-light-beige: #F0EAD6;       /* Светло-бежевый фон страницы */
+  --color-background-card: #E8DCCB;              /* Более насыщенный кремовый для карточек */
+  --color-text-primary: #3A4232;                  /* Темный, землистый зеленый/коричневый для основного текста */
+  --color-text-secondary: #6E7766;                /* Приглушенный средне-серый/зеленый для вторичного текста */
 
   /* Акцентные цвета */
-  --color-accent-primary: #ADD8E6; /* Приглушенный серо-голубой (для прогресса, активных) */
-  --color-accent-secondary: #8FBC8F; /* Мягкий оливково-зеленый (для кнопок) */
-  --color-success: #98FB98; /* Светлый серо-зеленый для правильных ответов */
-  --color-error: #CD5C5C; /* Приглушенный серо-красный для неправильных ответов */
-  --color-neutral: #D3D3D3; /* Светло-серый для неактивных/нейтральных элементов */
+  --color-accent-primary: #67A1BF;                /* Приглушенный синий (для прогресса, выбранных опций) */
+  --color-accent-secondary: #A3C690;              /* Светлый оливково-зеленый (для основных кнопок "Next", "Start") */
+  --color-success: #A3C690;                       /* Такой же оливково-зеленый для правильных ответов */
+  --color-error: #E07A5F;                         /* Приглушенный оранжево-красный (для неправильных ответов и "Завершить тест") */
+  --color-neutral: #C8C8BC;                       /* Серо-бежевый для неактивных/нейтральных элементов, кнопок "Back" */
+  --color-button-text: #3A4232;                   /* Темный текст для кнопок, чтобы был контраст на светлых кнопках */
+  --color-button-text-light: #FFFFFF;             /* Белый текст для темных кнопок */
+  --color-option-border: #A3C690;                 /* Граница для неотмеченных опций */
 
-  /* Цвета для интерактивных элементов (например, текст на кнопках) */
-  --color-button-text: #FFFFFF; /* Белый или почти белый для текста на кнопках */
-  --color-option-border: #D3D3D3; /* Граница для неотмеченных опций */
-
+  /* Цвета для уровней сложности вопросов */
+  --color-level-junior: #67A1BF;                  /* Приглушенный синий */
+  --color-level-middle: #A3C690;                  /* Светлый оливково-зеленый */
+  --color-level-senior: #E07A5F;                  /* Приглушенный оранжево-красный */
+  --color-level-default: #6E7766;                 /* Приглушенный средне-серый/зеленый */
 
   /* Текстура зернистости (SVG-фильтр) */
   --texture-grain: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch" result="fractal"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix><feComponentTransfer><feFuncA type="linear" slope="0.1"></feFuncA></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#noise)"></rect></svg>');
@@ -28,11 +32,13 @@
 
 /* Основные глобальные стили */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  /* Для font-family можно использовать Tailwind-классы (font-sans, font-heading) или оставить это как глобальное правило */
+  font-family: 'Inter', sans-serif; /* Убедимся, что Inter используется */
   background-color: var(--color-background-light-beige); /* Применяем основной фон */
   background-image: var(--texture-grain); /* Применяем зернистость */
   background-size: 4px 4px; /* Размер зерна */
   background-repeat: repeat; /* Повторяем по всему фону */
+  color: var(--color-text-primary); /* Установим дефолтный цвет текста для body */
 }
 
 /* Анимации для абстрактных фоновых элементов (эффект "клякс") */
