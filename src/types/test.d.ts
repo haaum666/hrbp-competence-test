@@ -99,4 +99,5 @@ export interface TestResult {
   unanswered: number;
   scorePercentage: number;
   answers: AnswerDetail[];
+  timestamp: string; // НОВОЕ: Добавляем timestamp как строку ISO
 }
