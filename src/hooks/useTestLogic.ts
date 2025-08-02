@@ -273,11 +273,11 @@ const useTestLogic = (): UseTestLogicReturn => {
           }
 
           // Рассчитываем оставшееся время для текущего вопроса
-          const elapsed = (Date.now() - parsedLastQuestionStartTime) / 1000;
+          const elapsed = (Date.now() - parseInt(savedLastQuestionStartTime || '0', 10)) / 1000;
           const questionTime = loadedQuestions[parsedIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION;
           const remaining = Math.max(0, questionTime - elapsed);
           setRemainingTime(remaining);
-          questionStartTimeRef.current = parsedLastQuestionStartTime;
+          questionStartTimeRef.current = parseInt(savedLastQuestionStartTime || '0', 10);
 
           localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
         } else {
