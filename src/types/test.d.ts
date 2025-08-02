@@ -1,108 +1,56 @@
 // src/types/test.d.ts
 
-/**
- * @typedef {'multiple-choice' | 'case-study' | 'prioritization'} QuestionType
- * @description Типы вопросов, которые могут быть в тесте.
- * - 'multiple-choice': Вопрос с одним правильным вариантом ответа из нескольких.
- * - 'case-study': Ситуационный вопрос, требующий анализа.
- * - 'prioritization': Вопрос на ранжирование или приоритизацию.
- */
-export type QuestionType = 'multiple-choice' | 'case-study' | 'prioritization';
-
-/**
- * @typedef {'junior' | 'middle' | 'senior'} QuestionLevel
- * @description Уровни сложности вопросов.
- */
 export type QuestionLevel = 'junior' | 'middle' | 'senior';
 
-/**
- * @interface Option
- * @description Интерфейс, описывающий один вариант ответа для вопроса.
- * @property {string} id - Уникальный идентификатор варианта ответа.
- * @property {string} text - Текст варианта ответа.
- */
 export interface Option {
   id: string;
   text: string;
+  isCorrect?: boolean; // Добавлено/скорректировано: может быть опциональным, но для ResultDetailView нужно.
+                       // Если Question всегда содержит isCorrect для своей правильной опции, то для Option это
+                       // свойство нужно, чтобы понять, является ли данная опция правильной.
 }
 
-/**
- * @interface Question
- * @description Интерфейс, описывающий структуру вопроса теста.
- * @property {string} id - Уникальный идентификатор вопроса.
- * @property {string} text - Текст вопроса.
- * @property {QuestionType} type - Тип вопроса (например, 'multiple-choice', 'case-study').
- * @property {Option[]} options - Массив вариантов ответов для вопроса (для multiple-choice).
- * @property {string} correctAnswer - ID правильного варианта ответа (для multiple-choice).
- * @property {string} explanation - Подробное объяснение правильного ответа или решения кейса.
- * @property {number} timeEstimate - Оценочное время на ответ в секундах.
- * @property {string} categoryid - Идентификатор категории вопроса.
- * @property {QuestionLevel} level - Уровень сложности вопроса (junior, middle, senior).
- * @property {string[]} sources - Массив ссылок на источники информации, связанные с вопросом.
- * @property {string[]} [relatedCompetencies] - Опциональный массив компетенций, к которым относится вопрос.
- */
 export interface Question {
   id: string;
   text: string;
-  type: QuestionType;
+  type: 'multiple-choice';
   options: Option[];
-  correctAnswer: string;
-  explanation: string;
-  timeEstimate: number;
-  categoryid: string;
-  level: QuestionLevel; // Здесь используется новый тип QuestionLevel
-  sources: string[];
-  relatedCompetencies?: string[];
+  correctAnswer: string; // ID правильного ответа
+  explanation?: string; // Поле для объяснения правильного ответа
+  level: QuestionLevel; // Уровень сложности вопроса
+  timeLimitSeconds?: number; // Ограничение по времени для вопроса
 }
 
-/**
- * @interface UserAnswer
- * @description Интерфейс, описывающий ответ пользователя на вопрос.
- * @property {string} questionId - ID вопроса, на который был дан ответ.
- * @property {string} selectedOptionId - ID выбранного пользователем варианта ответа (пустая строка для пропущенных).
- * @property {string} answeredTime - Время, когда был дан ответ, в формате ISO 8601 (например, "2023-10-27T10:00:00.000Z").
- */
 export interface UserAnswer {
   questionId: string;
-  selectedOptionId?: string; // Используем '?' для необязательного свойства
-  timeSpent?: number; // Время, затраченное на вопрос в секундах
-  // Другие свойства, если они есть
+  selectedOptionId: string | null; // null, если вопрос пропущен
+  isCorrect: boolean; // ДОБАВЛЕНО: Булево значение, указывающее, был ли ответ правильным
+  timeSpent: number; // Время, затраченное на ответ в секундах
 }
 
-/**
- * @interface AnswerDetail
- * @description Детальная информация об ответе на один вопрос для страницы результатов.
- * @property {Question} question - Объект вопроса.
- * @property {UserAnswer | undefined} userAnswer - Ответ пользователя на этот вопрос, или undefined если нет.
- * @property {boolean} isCorrect - True, если ответ пользователя правильный.
- */
 export interface AnswerDetail {
   question: Question;
-  userAnswer: UserAnswer | undefined;
-  isCorrect: boolean;
+  userAnswer: UserAnswer | null; // null, если пользователь не ответил
+  isCorrect: boolean; // Является ли ответ пользователя правильным для этого вопроса
 }
 
-/**
- * @interface TestResult
- * @description Интерфейс, описывающий полные результаты завершенного теста.
- * @property {number} totalQuestions - Общее количество вопросов в тесте.
- * @property {number} correctAnswers - Количество правильных ответов.
- * @property {number} incorrectAnswers - Количество неправильных ответов.
- * @property {number} unanswered - Количество вопросов, оставшихся без ответа.
- * @property {number} scorePercentage - Процент правильных ответов от общего числа вопросов.
- * @property {AnswerDetail[]} answers - Массив с детальной информацией по каждому вопросу и ответу.
- * @property {string} timestamp - Время завершения теста (ISO string).
- * @property {string} startTime - НОВОЕ: Время начала теста (ISO string).
- * @property {string} endTime - НОВОЕ: Время завершения теста (ISO string).
- */
 export interface TestResult {
   totalQuestions: number;
   correctAnswers: number;
   incorrectAnswers: number;
   unanswered: number;
   scorePercentage: number;
-  answers: AnswerDetail[];
-  timestamp: string;
-  startTime: string; // НОВОЕ: Время начала теста (ISO string)
-  endTime: string;   // НОВОЕ: Время завершения теста (ISO string)
+  answers: AnswerDetail[]; // Детали по каждому вопросу
+  timestamp: string; // Дата и время завершения теста (ISO string)
+  completionTime?: number; // Общее время выполнения теста в секундах
+  startTime?: string; // Время начала теста (ISO string)
+  endTime?: string; // Время окончания теста (ISO string)
+}
+
+// Дополнительные типы для общего состояния теста
+export interface TestState {
+  currentQuestionIndex: number;
+  userAnswers: UserAnswer[];
+  startTime: string; // Время начала теста для расчета общей длительности
+  remainingTimeCurrentQuestion: number; // Оставшееся время для текущего вопроса
 }
