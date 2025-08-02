@@ -22,8 +22,8 @@
   --color-neutral: #C8C8BC;                    /* Серо-бежевый для неактивных/нейтральных элементов, кнопок "Back" */
 
   /* Цвета кнопок и текста на них */
-  --color-button-start-test-bg: #2391a8;       /* Фон кнопки "Начать Тест" (бирюзово-синий) */
-  --color-button-start-test-text: #FFFFFF;     /* Текст на кнопке "Начать Тест" (белый, для контраста) */
+  --color-button-start-test-bg: #e1b183;       // **ОБНОВЛЕНО:** Цвет кнопки "Начать Тест" теперь как у карточек/шапки
+  --color-button-start-test-text: #3A4232;     // **ОБНОВЛЕНО:** Текст на кнопке "Начать Тест" теперь темный
   --color-button-text-dark: #3A4232;           /* Темный текст для других кнопок (напр. нейтральных) */
   --color-option-border: #A3C690;              /* Граница для неотмеченных опций */
 
@@ -39,8 +39,6 @@
 
 /* Основные глобальные стили */
 body {
-  /* Использование Tailwind font-sans по умолчанию настроит Inter */
-  /* Если нужно переопределить для body: font-family: 'Inter', sans-serif; */
   background-color: var(--color-background-light-beige); /* Применяем основной фон */
   background-image: var(--texture-grain); /* Применяем зернистость */
   background-size: 4px 4px; /* Размер зерна */
