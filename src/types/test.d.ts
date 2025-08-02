@@ -65,7 +65,7 @@ export interface Question {
 export interface UserAnswer {
   questionId: string;
   selectedOptionId?: string; // Используем '?' для необязательного свойства
-  timeSpent?: number; // НОВОЕ: Время, затраченное на вопрос в секундах
+  timeSpent?: number; // Время, затраченное на вопрос в секундах
   // Другие свойства, если они есть
 }
 
@@ -91,6 +91,9 @@ export interface AnswerDetail {
  * @property {number} unanswered - Количество вопросов, оставшихся без ответа.
  * @property {number} scorePercentage - Процент правильных ответов от общего числа вопросов.
  * @property {AnswerDetail[]} answers - Массив с детальной информацией по каждому вопросу и ответу.
+ * @property {string} timestamp - Время завершения теста (ISO string).
+ * @property {string} startTime - НОВОЕ: Время начала теста (ISO string).
+ * @property {string} endTime - НОВОЕ: Время завершения теста (ISO string).
  */
 export interface TestResult {
   totalQuestions: number;
@@ -99,5 +102,7 @@ export interface TestResult {
   unanswered: number;
   scorePercentage: number;
   answers: AnswerDetail[];
-  timestamp: string; // НОВОЕ: Добавляем timestamp как строку ISO
+  timestamp: string;
+  startTime: string; // НОВОЕ: Время начала теста (ISO string)
+  endTime: string;   // НОВОЕ: Время завершения теста (ISO string)
 }
