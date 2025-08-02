@@ -278,7 +278,7 @@ const useTestLogic = (): UseTestLogicReturn => {
           const remaining = Math.max(0, questionTime - elapsed);
           setRemainingTime(remaining);
           questionStartTimeRef.current = parseInt(savedLastQuestionStartTime || '0', 10); // ИСПРАВЛЕНО
-          
+
           localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
         } else {
           console.warn('Saved index out of bounds, starting a new test.');
@@ -320,7 +320,7 @@ const useTestLogic = (): UseTestLogicReturn => {
       try {
         const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
         const parsedIndex: number = parseInt(savedIndex, 10);
-        
+
         // Генерируем вопросы здесь, чтобы проверить их длину для showResumeOption
         // Но НЕ устанавливаем их в состояние questions, это делает startNewTest/resumeTest
         const initialQuestionsCheck = generateQuestions(); 
