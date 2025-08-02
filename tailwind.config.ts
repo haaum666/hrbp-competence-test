@@ -1,85 +1,58 @@
-/* src/index.css */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+// tailwind.config.ts
+import type { Config } from 'tailwindcss';
 
-/* Импорт шрифтов Inter (основной) и Montserrat (для заголовков) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@400;700&display=swap');
+const config: Config = {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}", // Расширения уже исправлены на jsx,tsx
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        // Указываем основной шрифт Inter
+        sans: ['Inter', 'sans-serif'],
+        // Указываем шрифт Montserrat для заголовков
+        heading: ['Montserrat', 'sans-serif'],
+      },
+      colors: {
+        // --- Новая Цветовая Палитра ---
+        // Эти цвета будут использоваться Tailwind CSS классами (например, bg-background-card)
 
-/* CSS-переменные для новой цветовой палитры и текстуры */
-:root {
-  /* Основные цвета */
-  --color-background-light-beige: #28486e;     /* Обновленный фон страницы (темный сине-зеленый) */
-  --color-background-card: #e1b183;           /* Обновленный фон карточек (светлый оранжево-коричневый) */
-  --color-text-primary: #3A4232;               /* Темный, землистый зеленый/коричневый для основного текста */
-  --color-text-secondary: #6E7766;             /* Приглушенный средне-серый/зеленый для вторичного текста */
+        // Фон и основные элементы
+        'background-light-beige': '#28486e', // Новый цвет фона страницы (темный сине-зеленый)
+        'background-card': '#e1b183',       // Новый цвет для карточек/блоков и теперь для шапки
+        // Цвет для шапки будет браться из 'background-card'
 
-  /* Акцентные цвета */
-  --color-accent-primary: #67A1BF;             /* Приглушенный синий (для прогресса, выбранных опций) */
-  --color-accent-secondary: #A3C690;           /* Светлый оливково-зеленый (для основных кнопок "Next", "Start") */
-  --color-success: #A3C690;                    /* Такой же оливково-зеленый для правильных ответов */
-  --color-error: #E07A5F;                      /* Приглушенный оранжево-красный (для неправильных ответов и "Завершить тест") */
-  --color-neutral: #C8C8BC;                    /* Серо-бежевый для неактивных/нейтральных элементов, кнопок "Back" */
+        // Цвета текста
+        'text-primary': '#3A4232',           // Темный, землистый зелено-коричневый для основного текста
+        'text-secondary': '#6E7766',         // Приглушенный средне-серо-зеленый для вторичного текста
 
-  /* Цвета кнопок и текста на них */
-  --color-button-start-test-bg: #e1b183;       // **ОБНОВЛЕНО:** Цвет кнопки "Начать Тест" теперь как у карточек/шапки
-  --color-button-start-test-text: #3A4232;     // **ОБНОВЛЕНО:** Текст на кнопке "Начать Тест" теперь темный
-  --color-button-text-dark: #3A4232;           /* Темный текст для других кнопок (напр. нейтральных) */
-  --color-option-border: #A3C690;              /* Граница для неотмеченных опций */
+        // Акцентные цвета
+        'accent-primary': '#67A1BF',         // Приглушенный синий (для прогресса, выбранных опций)
+        'accent-secondary': '#A3C690',       // Светлый оливково-зеленый (для кнопок "Next", "Start" - основной акцент)
 
-  /* Цвета для уровней сложности вопросов */
-  --color-level-junior: #67A1BF;               /* Приглушенный синий */
-  --color-level-middle: #A3C690;               /* Светлый оливково-зеленый */
-  --color-level-senior: #E07A5F;               /* Приглушенный оранжево-красный */
-  --color-level-default: #6E7766;              /* Приглушенный средне-серый/зеленый */
+        // Состояния
+        'success': '#A3C690',                // Такой же оливково-зеленый для правильных ответов
+        'error': '#E07A5F',                  // Приглушенный оранжево-красный (для неправильных ответов и "Завершить тест")
+        'neutral': '#C8C8BC',                // Серо-бежевый для неактивных/нейтральных элементов, кнопок "Back"
 
-  /* Текстура зернистости (SVG-фильтр) - сохраняется */
-  --texture-grain: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch" result="fractal"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix><feComponentTransfer><feFuncA type="linear" slope="0.1"></feFuncA></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#noise)"></rect></svg>');
-}
+        // Цвета кнопок и текста на них
+        'button-start-test-bg': '#e1b183',   // **ОБНОВЛЕНО:** Фон кнопки "Начать Тест" теперь как у карточек/шапки
+        'button-start-test-text': '#3A4232', // **ОБНОВЛЕНО:** Текст на кнопке "Начать Тест" теперь темный
+        'button-text-dark': '#3A4232',       // Темный текст для других кнопок (напр. нейтральных)
 
-/* Основные глобальные стили */
-body {
-  background-color: var(--color-background-light-beige); /* Применяем основной фон */
-  background-image: var(--texture-grain); /* Применяем зернистость */
-  background-size: 4px 4px; /* Размер зерна */
-  background-repeat: repeat; /* Повторяем по всему фону */
-  color: var(--color-text-primary); /* Установим дефолтный цвет текста для body */
-}
+        // Другие элементы
+        'option-border': '#A3C690',          // Граница для неотмеченных опций
 
-/* Применение шрифта Montserrat для заголовков */
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Montserrat', sans-serif;
-}
+        // Цвета для уровней сложности вопросов
+        'level-junior': '#67A1BF',           // Приглушенный синий
+        'level-middle': '#A3C690',           // Светлый оливково-зеленый
+        'level-senior': '#E07A5F',           // Приглушенный оранжево-красный
+        'level-default': '#6E7766',          // Приглушенный средне-серый/зеленый
+      },
+    },
+  },
+  plugins: [],
+};
 
-/* Анимации для абстрактных фоновых элементов (эффект "клякс") - сохраняются */
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
-.animate-blob {
-  animation: blob 7s infinite cubic-bezier(0.6, 0.4, 0.4, 0.8);
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Кастомная тень для текста, если drop-shadow-lg недостаточно - сохраняется */
-.text-shadow-lg {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
-}
+export default config;
