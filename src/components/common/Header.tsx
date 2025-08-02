@@ -6,20 +6,23 @@ const Header: React.FC = () => {
 
   // Функция для определения, активна ли ссылка
   const isActive = (path: string) => {
+    // Активный: Основной цвет текста, 2px граница снизу с цветом текста, эффект тени для границы
+    // Неактивный: Второстепенный цвет текста, при наведении - основной цвет текста
     return location.pathname === path
-      ? 'text-accent-primary border-b-2 border-accent-primary' // Активный: приглушенный синий
-      : 'text-text-secondary hover:text-text-primary'; // Неактивный: приглушенный средне-серый, при наведении - темный землистый
+      ? 'text-text-primary border-b-2 border-text-primary shadow-sm-bottom' // Использование нового класса для тени границы
+      : 'text-text-secondary hover:text-text-primary';
   };
 
   return (
     <header
-      className="shadow-lg py-4 px-6 sm:px-8 sticky top-0 z-50 border-b"
+      className="py-4 px-6 sm:px-8 sticky top-0 z-50"
       style={{
         backgroundColor: 'var(--color-background-card)', // Фон хедера (кремовый)
         backgroundImage: 'var(--texture-grain)', // Зернистость
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
-        borderColor: 'var(--color-neutral)', // Легкая серая граница снизу (серо-бежевый)
+        borderBottom: '2px solid var(--color-text-primary)', // Более выраженная темная граница снизу
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки" для всего хедера
       }}
     >
       <div className="max-w-4xl mx-auto flex justify-between items-center">
