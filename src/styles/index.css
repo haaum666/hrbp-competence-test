@@ -1,62 +1,73 @@
 /* src/styles/index.css */
 
-/* Все @import правила должны идти в самом начале файла. */
+/* Все @import правила ДОЛЖНЫ идти в самом начале файла. */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@400;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Основные стили для всего приложения */
+
+:root {
+  --color-background-light-beige: #28486e;
+  --color-background-card: #e1b183;
+  --color-text-primary: #3A4232;
+  --color-text-secondary: #6E7766;
+  --color-accent-primary: #67A1BF;
+  --color-accent-secondary: #A3C690;
+  --color-success: #A3C690;
+  --color-error: #E07A5F;
+  --color-neutral: #C8C8BC;
+  --color-button-start-test-bg: #e1b183;
+  --color-button-start-test-text: #3A4232;
+  --color-button-text-dark: #3A4232;
+  --color-option-border: #A3C690;
+  --color-level-junior: #67A1BF;
+  --color-level-middle: #A3C690;
+  --color-level-senior: #E07A5F;
+  --color-level-default: #6E7766;
+  --texture-grain: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="1" stitchTiles="stitch" result="fractal"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix><feComponentTransfer><feFuncA type="linear" slope="0.1"></feFuncA></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#noise)"></rect></svg>');
+}
+
 body {
-  font-family: 'Inter', sans-serif; /* Основной шрифт */
-  background-color: var(--color-background-body); /* Кремовый фон */
-  background-image: var(--texture-grain); /* Зернистая текстура */
+  background-color: var(--color-background-light-beige);
+  background-image: var(--texture-grain);
   background-size: 4px 4px;
   background-repeat: repeat;
-  color: var(--color-text-primary); /* Темный, землистый цвет текста */
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  color: var(--color-text-primary);
 }
 
-/* Определение CSS-переменных для цветовой палитры и текстур */
-:root {
-  /* Основные цвета */
-  --color-accent-primary: #5A7E7A; /* Приглушенный сине-зеленый (для акцентов, активных состояний) */
-  --color-accent-secondary: #8E7D5C; /* Приглушенный оливково-коричневый (основные кнопки) */
-  --color-text-primary: #3B3A36; /* Темный, землистый (основной текст) */
-  --color-text-secondary: #6B6B6B; /* Приглушенный средне-серый (второстепенный текст) */
-  --color-background-body: #F5F5DC; /* Кремовый (фон всей страницы) */
-  --color-background-card: #FFFFFF; /* Белый (фон карточек, панелей) */
-  --color-neutral: #E0E0E0; /* Светлый серо-бежевый (рамки, разделители) */
-  --color-button-text: #FFFFFF; /* Белый (текст на цветных кнопках) */
-
-  /* Цвета состояний */
-  --color-success: #6A9F5C; /* Приглушенный зеленый (успех) */
-  --color-error: #CC7B6E; /* Приглушенный оранжево-красный (ошибка) */
-  --color-warning: #D9A249; /* Приглушенный оранжевый (предупреждение) */
-
-  /* Текстуры */
-  --texture-grain: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%239C9286' fill-opacity='0.15' fill-rule='evenodd'%3E%3Cpath d='M0 0h2v2H0V0zm2 2h2v2H2V2zm0-2h2v2H2V0zM0 2h2v2H0V2z'/%3E%3C/g%3E%3C/svg%3E");
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
 }
 
-/* Дополнительные стили, если они нужны */
-/* Например, для скрытия полосы прокрутки или других глобальных настроек */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: var(--color-background-body);
+.animate-blob {
+  animation: blob 7s infinite cubic-bezier(0.6, 0.4, 0.4, 0.8);
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--color-neutral);
-  border-radius: 4px;
+.animation-delay-2000 {
+  animation-delay: 2s;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-secondary);
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.text-shadow-lg {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
