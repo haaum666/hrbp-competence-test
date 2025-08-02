@@ -47,6 +47,18 @@ const AnalyticsDashboard: React.FC = () => {
     }
   }, []);
 
+  // НОВОЕ: Функция для очистки всех результатов
+  const handleClearAllResults = () => {
+    if (window.confirm('Вы уверены, что хотите удалить все данные о пройденных тестах? Это действие необратимо.')) {
+      localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
+      setAllResults([]);
+      setTotalTestsCompleted(0);
+      setAverageScore('0.00');
+      setError(null); // Сбрасываем ошибку, если была
+      // Можно добавить временное сообщение об успехе, если это необходимо для UX
+    }
+  };
+
   if (loading) {
     return (
       <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-center border border-gray-700/50 text-white">
@@ -71,56 +83,52 @@ const AnalyticsDashboard: React.FC = () => {
       <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white text-center">Панель Аналитики Тестов</h2>
 
       {/* Блок с общей статистикой */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8"> {/* Адаптивные отступы */}
-        <div className="bg-gray-800 p-5 sm:p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center justify-center"> {/* Адаптивные отступы и центрирование */}
-          <p className="text-4xl sm:text-5xl font-extrabold text-blue-400 mb-2">{totalTestsCompleted}</p> {/* Адаптивный размер шрифта */}
-          <p className="text-lg sm:text-xl text-gray-300">Пройдено тестов</p> {/* Адаптивный размер шрифта */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-8">
+        <div className="bg-gray-800 p-5 sm:p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center justify-center">
+          <p className="text-4xl sm:text-5xl font-extrabold text-blue-400 mb-2">{totalTestsCompleted}</p>
+          <p className="text-lg sm:text-xl text-gray-300">Пройдено тестов</p>
         </div>
-        <div className="bg-gray-800 p-5 sm:p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center justify-center"> {/* Адаптивные отступы и центрирование */}
-          <p className="text-4xl sm:text-5xl font-extrabold text-purple-400 mb-2">{averageScore}%</p> {/* Адаптивный размер шрифта */}
-          <p className="text-lg sm:text-xl text-gray-300">Средний балл</p> {/* Адаптивный размер шрифта */}
+        <div className="bg-gray-800 p-5 sm:p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center justify-center">
+          <p className="text-4xl sm:text-5xl font-extrabold text-purple-400 mb-2">{averageScore}%</p>
+          <p className="text-lg sm:text-xl text-gray-300">Средний балл</p>
         </div>
       </div>
 
       {/* Блок со списком пройденных тестов */}
       <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white text-center">История Пройденных Тестов</h3>
       {allResults.length === 0 ? (
-        <div className="text-center text-gray-300 text-base sm:text-lg p-4"> {/* Адаптивный размер шрифта */}
+        <div className="text-center text-gray-300 text-base sm:text-lg p-4">
           <p className="mb-4">Нет данных о пройденных тестах для отображения истории.</p>
           <p>Пройдите несколько тестов, чтобы увидеть их список.</p>
         </div>
       ) : (
-        <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3"> {/* Адаптивные отступы и высота */}
+        <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3">
           {allResults.map((result, index) => (
-            <div key={index} className="bg-gray-800 p-3 sm:p-4 rounded-lg border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center"> {/* Адаптивные отступы */}
+            <div key={index} className="bg-gray-800 p-3 sm:p-4 rounded-lg border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center">
               <div className="mb-1 sm:mb-0">
-                <p className="text-sm sm:text-base font-semibold text-gray-100"> {/* Адаптивный размер шрифта */}
+                <p className="text-sm sm:text-base font-semibold text-gray-100">
                   Тест #{allResults.length - index} (
                   {new Date(result.timestamp).toLocaleDateString()} {new Date(result.timestamp).toLocaleTimeString()}
                   )
                 </p>
-                <p className="text-xs sm:text-sm text-gray-300"> {/* Адаптивный размер шрифта */}
+                <p className="text-xs sm:text-sm text-gray-300">
                   Балл: <span className="font-bold text-white">{result.scorePercentage.toFixed(2)}%</span>
                 </p>
-                <p className="text-xs sm:text-sm text-gray-300"> {/* Адаптивный размер шрифта */}
+                <p className="text-xs sm:text-sm text-gray-300">
                   Правильных: <span className="text-green-400">{result.correctAnswers}</span> / Всего: <span className="text-blue-400">{result.totalQuestions}</span>
                 </p>
               </div>
-              {/* В будущем здесь можно добавить кнопку "Посмотреть детально" для конкретного результата */}
-              {/* Например: <Link to={`/analytics/${result.id}`} className="...">Детали</Link> */}
             </div>
           ))}
         </div>
       )}
 
-      {/* Кнопка "Вернуться к началу" */}
-      <div className="flex justify-center mt-8">
-        <Link to="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg">
-          Вернуться к началу
-        </Link>
-      </div>
-    </div>
-  );
-};
-
-export default AnalyticsDashboard;
+      {/* НОВОЕ: Блок с кнопками, включая "Очистить все результаты" */}
+      <div className="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
+        <button
+          onClick={handleClearAllResults}
+          className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto"
+        >
+          Очистить все результаты
+        </button>
+        <Link to="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-
