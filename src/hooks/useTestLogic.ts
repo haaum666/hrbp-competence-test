@@ -277,8 +277,8 @@ const useTestLogic = (): UseTestLogicReturn => {
           const questionTime = loadedQuestions[parsedIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION;
           const remaining = Math.max(0, questionTime - elapsed);
           setRemainingTime(remaining);
-          questionStartTimeRef.current = parseInt(savedLastQuestionStartTime || '0', 10);
-
+          questionStartTimeRef.current = parseInt(savedLastQuestionStartTime || '0', 10); // ИСПРАВЛЕНО
+          
           localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
         } else {
           console.warn('Saved index out of bounds, starting a new test.');
