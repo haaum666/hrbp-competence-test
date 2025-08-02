@@ -1,3 +1,5 @@
+// tailwind.config.ts
+
 import type { Config } from 'tailwindcss';
 
 const config: Config = {
@@ -9,20 +11,31 @@ const config: Config = {
     extend: {
       fontFamily: {
         // Устанавливаем Inter как основной шрифт по умолчанию для font-sans
-        sans: ['Inter', 'sans-serif'], 
+        sans: ['Inter', 'sans-serif'],
         // Добавляем Montserrat для использования с классом font-heading
-        heading: ['Montserrat', 'sans-serif'], 
+        heading: ['Montserrat', 'sans-serif'],
       },
       colors: {
-        // Добавляем цвета, вдохновленные Баухаусом, для акцентов и фона
-        'bauhaus-red': '#D4002D',    // Насыщенный красный
-        'bauhaus-blue': '#005D9A',   // Глубокий синий
-        'bauhaus-yellow': '#FDBB2F', // Яркий желтый
-        'bauhaus-black': '#1A1A1A',  // Мягкий черный
-        'bauhaus-white': '#F8F8F8',  // Мягкий белый
-        'bauhaus-gray': '#AAAAAA',   // Средний серый
-        'bauhaus-light-gray': '#D0D0D0', // Светло-серый
-        'bauhaus-dark-gray': '#4A4A4A',  // Темно-серый
+        // Новая цветовая палитра: приглушенные, землистые тона
+        // Эти цвета будут использоваться Tailwind CSS классами (например, bg-background-card)
+        'background-light-beige': '#F5F5DC',      // Светлый бежевый фон
+        'background-card': '#FAF0E6',             // Кремовый фон для карточек и элементов
+        'text-primary': '#333333',                 // Темно-серый для основного текста
+        'text-secondary': '#696969',               // Серо-коричневый для вторичного текста
+
+        'accent-primary': '#ADD8E6',               // Приглушенный серо-голубой (для прогресса, выбранных опций)
+        'accent-secondary': '#8FBC8F',             // Мягкий оливково-зеленый (для основных кнопок "Next", "Start")
+        'success': '#98FB98',                      // Светлый серо-зеленый для правильных ответов
+        'error': '#CD5C5C',                        // Приглушенный серо-красный для неправильных ответов и "Завершить тест"
+        'neutral': '#D3D3D3',                      // Светло-серый для неактивных/нейтральных элементов, кнопок "Back"
+        'button-text': '#FFFFFF',                  // Белый текст для кнопок
+        'option-border': '#D3D3D3',                // Граница для неотмеченных опций
+
+        // Обновленные цвета для уровней сложности вопросов, теперь они из новой палитры
+        'level-junior': '#ADD8E6',                 // Приглушенный серо-голубой
+        'level-middle': '#8FBC8F',                 // Мягкий оливково-зеленый
+        'level-senior': '#CD5C5C',                 // Приглушенный серо-красный
+        'level-default': '#696969',                // Серо-коричневый (для случая, если уровень не определен)
       },
     },
   },
