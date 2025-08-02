@@ -8,6 +8,7 @@ const LOCAL_STORAGE_KEY_CURRENT_INDEX = 'testCurrentQuestionIndex';
 const LOCAL_STORAGE_KEY_TEST_STARTED = 'testStarted';
 const LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME = 'testLastQuestionStartTime';
 const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults'; // Ключ для всех результатов
+const LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME = 'overallTestStartTime'; // НОВЫЙ КЛЮЧ: Для общего времени начала теста
 
 const INITIAL_TIME_PER_QUESTION = 60; // Время на вопрос по умолчанию в секундах
 
@@ -35,6 +36,7 @@ const useTestLogic = (): UseTestLogicReturn => {
   const [testStarted, setTestStarted] = useState<boolean>(false);
   const [testFinished, setTestFinished] = useState<boolean>(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
+  const [overallTestStartTime, setOverallTestStartTime] = useState<string | null>(null); // НОВОЕ: Состояние для общего времени начала теста
   const [showResumeOption, setShowResumeOption] = useState<boolean>(false);
   const [remainingTime, setRemainingTime] = useState<number>(INITIAL_TIME_PER_QUESTION);
 
@@ -50,6 +52,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME); // НОВОЕ: Очищаем время начала общего теста
     // LOCAL_STORAGE_KEY_ALL_RESULTS не очищается здесь, так как это история
   }, []);
 
@@ -59,6 +62,8 @@ const useTestLogic = (): UseTestLogicReturn => {
    */
   const calculateTestResult = useCallback(() => {
     if (questions.length === 0) return;
+
+    const currentEndTime = new Date().toISOString(); // Время завершения теста
 
     let correctAnswers = 0;
     let incorrectAnswers = 0;
@@ -104,12 +109,14 @@ const useTestLogic = (): UseTestLogicReturn => {
       unanswered,
       scorePercentage,
       answers: answersDetails,
-      timestamp: new Date().toISOString(), // НОВОЕ: Добавляем временную метку
+      timestamp: currentEndTime, // Это временная метка завершения теста
+      startTime: overallTestStartTime || new Date(0).toISOString(), // Используем общее время начала
+      endTime: currentEndTime,   // Явно устанавливаем время завершения
     };
 
     setTestResult(finalResult);
 
-    // НОВОЕ: Сохраняем результат в localStorage для аналитики
+    // Сохраняем результат в localStorage для аналитики
     const savedResultsString = localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
     let allResults: TestResult[] = [];
     if (savedResultsString) {
@@ -117,16 +124,17 @@ const useTestLogic = (): UseTestLogicReturn => {
         allResults = JSON.parse(savedResultsString);
       } catch (e) {
         console.error('Ошибка парсинга сохраненных результатов тестов:', e);
-        // В случае ошибки парсинга, начинаем с пустого массива
-        allResults = [];
+        allResults = []; // В случае ошибки парсинга, начинаем с пустого массива
       }
     }
     allResults.push(finalResult); // Добавляем текущий результат
     localStorage.setItem(LOCAL_STORAGE_KEY_ALL_RESULTS, JSON.stringify(allResults)); // Сохраняем обновленный массив
 
     setTestFinished(true);
-    clearLocalStorage(); // Очищаем localStorage связанных с текущим тестом
-  }, [questions, userAnswers, clearLocalStorage]); // Зависимости для useCallback
+    setTestStarted(false); // Сбрасываем флаг теста после завершения
+    setOverallTestStartTime(null); // Сбрасываем общее время начала после завершения теста
+    clearLocalStorage(); // Очищаем localStorage связанных с текущим тестом (кроме всех результатов)
+  }, [questions, userAnswers, clearLocalStorage, overallTestStartTime]); // Зависимости для useCallback
 
   /**
    * @function handleNextQuestion
@@ -137,11 +145,13 @@ const useTestLogic = (): UseTestLogicReturn => {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       // При переходе к следующему вопросу, сбрасываем время начала в ref
       questionStartTimeRef.current = Date.now();
+      // И сбрасываем remainingTime для нового вопроса
+      setRemainingTime(questions[currentQuestionIndex + 1]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     } else {
       // Если это последний вопрос, завершаем тест
       calculateTestResult();
     }
-  }, [currentQuestionIndex, questions.length, calculateTestResult]);
+  }, [currentQuestionIndex, questions, calculateTestResult]);
 
   /**
    * @function handlePreviousQuestion
@@ -152,8 +162,10 @@ const useTestLogic = (): UseTestLogicReturn => {
       setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
       // При переходе назад, также сбрасываем время начала в ref
       questionStartTimeRef.current = Date.now();
+      // И сбрасываем remainingTime для предыдущего вопроса
+      setRemainingTime(questions[currentQuestionIndex - 1]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     }
-  }, [currentQuestionIndex]);
+  }, [currentQuestionIndex, questions]);
 
   /**
    * @function handleAnswerSelect
@@ -162,19 +174,19 @@ const useTestLogic = (): UseTestLogicReturn => {
    * @param {string} selectedOptionId - ID выбранного варианта ответа.
    */
   const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
+    // Вычисляем время, потраченное на текущий вопрос
+    const timeSpentOnQuestion = (questions[currentQuestionIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION) - remainingTime;
+    const actualTimeSpent = Math.max(0, timeSpentOnQuestion); // Гарантируем неотрицательное значение
+
     setUserAnswers((prevAnswers) => {
       const existingAnswerIndex = prevAnswers.findIndex(
         (answer) => answer.questionId === questionId
       );
 
-      // Вычисляем время, потраченное на текущий вопрос
-      const initialTime = questions[currentQuestionIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION;
-      const timeSpentOnQuestion = initialTime - remainingTime;
-
       const newAnswer: UserAnswer = {
         questionId,
         selectedOptionId,
-        timeSpent: Math.max(0, timeSpentOnQuestion), // Гарантируем неотрицательное значение
+        timeSpent: actualTimeSpent,
       };
 
       if (existingAnswerIndex > -1) {
@@ -185,7 +197,10 @@ const useTestLogic = (): UseTestLogicReturn => {
         return [...prevAnswers, newAnswer];
       }
     });
-  }, [questions, currentQuestionIndex, remainingTime]); // Добавлены зависимости
+
+    // Автоматический переход к следующему вопросу после выбора ответа
+    handleNextQuestion();
+  }, [questions, currentQuestionIndex, remainingTime, handleNextQuestion]);
 
   /**
    * @function startNewTest
@@ -201,8 +216,13 @@ const useTestLogic = (): UseTestLogicReturn => {
     setTestFinished(false);
     setTestResult(null);
     setShowResumeOption(false);
+
+    // НОВОЕ: Устанавливаем и сохраняем общее время начала теста
+    const now = new Date().toISOString();
+    setOverallTestStartTime(now);
+    localStorage.setItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME, now);
+
     localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
-    // Устанавливаем время начала для первого вопроса
     localStorage.setItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME, Date.now().toString());
     questionStartTimeRef.current = Date.now(); // Обновляем ref
     setRemainingTime(newQuestions[0]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
@@ -215,12 +235,14 @@ const useTestLogic = (): UseTestLogicReturn => {
   const resumeTest = useCallback(() => {
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+    const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     const savedLastQuestionStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
+    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME); // НОВОЕ
 
     const loadedQuestions = generateQuestions(); // Генерируем вопросы для загрузки
     setQuestions(loadedQuestions); // Устанавливаем вопросы, чтобы они были доступны
 
-    if (savedAnswers && savedIndex) {
+    if (savedAnswers && savedIndex && savedTestStarted === 'true') {
       try {
         const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
         const parsedIndex: number = parseInt(savedIndex, 10);
@@ -233,6 +255,17 @@ const useTestLogic = (): UseTestLogicReturn => {
           setTestFinished(false);
           setTestResult(null);
           setShowResumeOption(false);
+
+          // Восстанавливаем общее время начала теста
+          if (savedOverallTestStartTime) {
+            setOverallTestStartTime(savedOverallTestStartTime);
+          } else {
+            // Если по какой-то причине общее время начала не было сохранено, используем текущее
+            // и сохраняем его на всякий случай.
+            const now = new Date().toISOString();
+            setOverallTestStartTime(now);
+            localStorage.setItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME, now);
+          }
 
           // Рассчитываем оставшееся время для текущего вопроса
           const elapsed = (Date.now() - parsedLastQuestionStartTime) / 1000; // Прошло времени в секундах
@@ -267,7 +300,10 @@ const useTestLogic = (): UseTestLogicReturn => {
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
 
-    if (savedAnswers && savedIndex && savedTestStarted === 'true') {
+    // НОВОЕ: Проверяем, есть ли сохраненное общее время начала теста
+    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+
+    if (savedAnswers && savedIndex && savedTestStarted === 'true' && savedOverallTestStartTime) {
       try {
         const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
         const parsedIndex: number = parseInt(savedIndex, 10);
@@ -275,6 +311,8 @@ const useTestLogic = (): UseTestLogicReturn => {
         // Проверяем, что сохраненные данные валидны и не приводят к выходу за пределы массива вопросов
         if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < initialQuestions.length) {
           setShowResumeOption(true);
+          // Устанавливаем startTime из localStorage, если тест можно возобновить
+          setOverallTestStartTime(savedOverallTestStartTime);
         } else {
           clearLocalStorage(); // Данные некорректны, очищаем
         }
@@ -282,6 +320,10 @@ const useTestLogic = (): UseTestLogicReturn => {
         console.error('Failed to parse saved test data during initial load:', e);
         clearLocalStorage(); // Данные повреждены, очищаем
       }
+    } else {
+      // Если нет полного набора данных для возобновления, очищаем все связанные с тестом,
+      // чтобы избежать частичного сохранения или ошибок.
+      clearLocalStorage();
     }
   }, [clearLocalStorage]); // Зависимости для useEffect
 
@@ -290,14 +332,17 @@ const useTestLogic = (): UseTestLogicReturn => {
     let timerId: number | undefined;
 
     if (testStarted && !testFinished && questions[currentQuestionIndex]) {
-      // Если это первый запуск таймера для текущего вопроса, или переход к нему
-      // используем время из ref
+      // При каждом рендере с активным тестом, пересчитываем оставшееся время
+      // на основе последнего сохраненного времени начала вопроса
       const initialTimeForCurrentQuestion = questions[currentQuestionIndex].timeEstimate || INITIAL_TIME_PER_QUESTION;
       const elapsedSinceStart = (Date.now() - questionStartTimeRef.current) / 1000;
       const timeLeftOnLoad = Math.max(0, initialTimeForCurrentQuestion - elapsedSinceStart);
 
-      setRemainingTime(timeLeftOnLoad);
-
+      // Устанавливаем remainingTime только если оно не равно текущему значению, чтобы избежать лишних ререндеров
+      if (Math.round(remainingTime) !== Math.round(timeLeftOnLoad)) {
+        setRemainingTime(timeLeftOnLoad);
+      }
+      
       timerId = window.setInterval(() => {
         setRemainingTime((prevTime) => {
           if (prevTime <= 1) {
@@ -308,11 +353,11 @@ const useTestLogic = (): UseTestLogicReturn => {
           return prevTime - 1;
         });
       }, 1000);
-    } else if (!testStarted || testFinished) { // Если тест не начат или завершен, останавливаем таймер
+    } else { // Если тест не начат или завершен, останавливаем таймер
       if (timerId) {
         window.clearInterval(timerId);
       }
-      setRemainingTime(INITIAL_TIME_PER_QUESTION); // Сбрасываем время при остановке теста
+      // setRemainingTime(INITIAL_TIME_PER_QUESTION); // Это может быть лишним и приводить к миганию
     }
 
     // Cleanup function
@@ -323,20 +368,15 @@ const useTestLogic = (): UseTestLogicReturn => {
     };
   }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]); // Зависимости для useEffect
 
-  // Effect для сохранения прогресса и сброса таймера при смене вопроса или при выборе ответа
+  // Effect для сохранения прогресса при смене вопроса или при выборе ответа
   useEffect(() => {
     if (testStarted && !testFinished) {
       localStorage.setItem(LOCAL_STORAGE_KEY_ANSWERS, JSON.stringify(userAnswers));
       localStorage.setItem(LOCAL_STORAGE_KEY_CURRENT_INDEX, currentQuestionIndex.toString());
-      // Обновляем время начала вопроса при сохранении, чтобы корректно возобновить таймер при перезагрузке
       localStorage.setItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME, questionStartTimeRef.current.toString());
-
-      // Устанавливаем время для нового вопроса, если мы перешли на него
-      if (questions[currentQuestionIndex]) {
-        setRemainingTime(questions[currentQuestionIndex].timeEstimate || INITIAL_TIME_PER_QUESTION);
-      }
+      // LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME уже сохраняется в startNewTest и resumeTest
     }
-  }, [userAnswers, currentQuestionIndex, testStarted, testFinished, questions]); // Зависимости для useEffect
+  }, [userAnswers, currentQuestionIndex, testStarted, testFinished]); // Зависимости для useEffect
 
   const progressPercentage = questions.length > 0 ? ((currentQuestionIndex) / questions.length) * 100 : 0;
 
