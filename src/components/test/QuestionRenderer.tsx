@@ -22,7 +22,7 @@ interface QuestionRendererProps {
   totalQuestions: number;
   onAnswerSelect: (questionId: string, selectedOptionId: string) => void;
   currentUserAnswer: UserAnswer | undefined;
-  onNextQuestion: () => void;
+  onNextQuestion: (isLastQuestion: boolean) => void; // Обновлено для передачи флага завершения теста
   onPreviousQuestion: () => void;
   isFirstQuestion: boolean;
   isLastQuestion: boolean;
@@ -80,7 +80,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   const selectedOptionId = currentUserAnswer?.selectedOptionId || '';
 
   return (
-    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-3xl w-full mx-auto border border-gray-700/50">
+    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto border border-gray-700/50"> {/* Изменен p-8 на p-6 sm:p-8 */}
       {/* Progress Bar */}
       <div className="w-full bg-gray-700 rounded-full h-2.5 mb-6">
         <div
@@ -97,22 +97,24 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         <span className="font-semibold text-white">Время: {formatTime(remainingTime)}</span>
       </div>
 
-      <h2 className="text-2xl font-bold text-white mb-6 leading-relaxed">{question.text}</h2>
+      <h2 className="text-xl sm:text-2xl font-bold text-white mb-6 leading-relaxed">{question.text}</h2> {/* Адаптивный размер текста вопроса */}
 
       {question.type === 'multiple-choice' && (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4"> {/* Адаптивные отступы между опциями */}
           {question.options.map((option) => (
             <button
               key={option.id}
               onClick={() => onAnswerSelect(question.id, option.id)}
               className={`
-                w-full text-left p-4 rounded-lg transition duration-200 ease-in-out
+                w-full text-left py-3 px-4 rounded-lg transition duration-200 ease-in-out
                 ${selectedOptionId === option.id
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-gray-800 hover:bg-gray-700 text-gray-200'
                 }
                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75
+                text-base sm:text-lg {/* Адаптивный размер текста опции */}
               `}
+              disabled={currentUserAnswer !== undefined} // Отключаем кнопки после выбора ответа
             >
               {option.text}
             </button>
@@ -121,29 +123,36 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       )}
 
       {/* Кнопки навигации */}
-      <div className="flex justify-between mt-8">
-        <button
-          onClick={onPreviousQuestion}
-          disabled={isFirstQuestion}
-          className={`
-            bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full shadow-lg
-            transition duration-300 ease-in-out transform hover:scale-105
-            ${isFirstQuestion ? 'opacity-50 cursor-not-allowed' : ''}
-            focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50
-          `}
-        >
-          Предыдущий
-        </button>
-        <button
-          onClick={onNextQuestion}
-          className={`
-            bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full shadow-lg
-            transition duration-300 ease-in-out transform hover:scale-105
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50
-          `}
-        >
-          {isLastQuestion ? 'Завершить Тест' : 'Следующий'}
-        </button>
+      <div className="flex flex-col sm:flex-row justify-between items-center mt-6 space-y-4 sm:space-y-0 sm:space-x-4"> {/* **ОБНОВЛЕННЫЕ КЛАССЫ** */}
+        {!isFirstQuestion && (
+          <button
+            onClick={onPreviousQuestion}
+            className="w-full sm:w-auto bg-gray-600 hover:bg-gray-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50"
+          >
+            Предыдущий
+          </button>
+        )}
+
+        {isLastQuestion ? (
+          <button
+            onClick={() => onNextQuestion(true)} // Передаем true для завершения теста
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50"
+          >
+            Завершить Тест
+          </button>
+        ) : (
+          <button
+            onClick={() => onNextQuestion(false)} // Передаем false, так как тест не завершается
+            disabled={currentUserAnswer === undefined || currentUserAnswer === null} // Отключаем, если нет ответа
+            className={`w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-opacity-50
+              ${(currentUserAnswer === undefined || currentUserAnswer === null)
+                ? 'bg-gray-700 text-gray-400 cursor-not-allowed opacity-70'
+                : 'bg-blue-600 hover:bg-blue-700 text-white focus:ring-blue-500'
+              }`}
+          >
+            Следующий
+          </button>
+        )}
       </div>
     </div>
   );
