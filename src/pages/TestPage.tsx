@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react'; // Убедитесь, что useEffect импортирован
+import { Link, useLocation } from 'react-router-dom'; // Убедитесь, что useLocation импортирован
 import QuestionRenderer from '../components/test/QuestionRenderer';
 import ResultDetailView from '../components/test/ResultDetailView';
 import useTestLogic from '../hooks/useTestLogic';
@@ -20,7 +20,23 @@ const TestPage: React.FC = () => {
     handlePreviousQuestion,
     startNewTest,
     resumeTest,
+    resetTestStateForNavigation, // <-- ДОБАВЛЕНО: Импортируем новую функцию
   } = useTestLogic();
+
+  const location = useLocation(); // <-- ДОБАВЛЕНО: Получаем объект местоположения
+
+  // ДОБАВЛЕНО: Эффект для сброса состояния теста при навигации на главную страницу
+  useEffect(() => {
+    // Этот эффект срабатывает при каждом изменении маршрута.
+    // Если мы находимся на главной странице теста ('/')
+    // и тест был запущен, мы хотим сбросить его состояние
+    // до "стартового экрана", чтобы пользователь мог выбрать
+    // "Продолжить тест" или "Начать новый тест".
+    if (location.pathname === '/' && testStarted) {
+      resetTestStateForNavigation();
+    }
+  }, [location.pathname, testStarted, resetTestStateForNavigation]); // Зависимости useEffect
+
 
   // Функция для стилизации кнопок с нашей палитрой и текстурой
   const getButtonStyle = (isPrimary: boolean, isHoverable: boolean = true) => ({
