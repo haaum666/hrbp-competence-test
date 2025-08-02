@@ -20,46 +20,36 @@ const TestPage: React.FC = () => {
     handlePreviousQuestion,
     startNewTest,
     resumeTest,
-    resetTestStateForNavigation, // <-- ДОБАВЛЕНО: Импортируем новую функцию
+    resetTestStateForNavigation,
   } = useTestLogic();
 
-  const location = useLocation(); // <-- ДОБАВЛЕНО: Получаем объект местоположения
+  const location = useLocation();
 
-  // ДОБАВЛЕНО: Эффект для сброса состояния теста при навигации на главную страницу
   useEffect(() => {
-    // Этот эффект срабатывает при каждом изменении маршрута.
-    // Если мы находимся на главной странице теста ('/')
-    // и тест был запущен, мы хотим сбросить его состояние
-    // до "стартового экрана", чтобы пользователь мог выбрать
-    // "Продолжить тест" или "Начать новый тест".
     if (location.pathname === '/' && testStarted) {
       resetTestStateForNavigation();
     }
-  }, [location.pathname, testStarted, resetTestStateForNavigation]); // Зависимости useEffect
+  }, [location.pathname, testStarted, resetTestStateForNavigation]);
 
-
-  // Функция для стилизации кнопок с нашей палитрой и текстурой
   const getButtonStyle = (isPrimary: boolean, isHoverable: boolean = true) => ({
-    // ИСПРАВЛЕНО: Используем правильные CSS переменные
     backgroundColor: isPrimary ? 'var(--color-button-start-test-bg)' : 'var(--color-neutral)',
-    color: isPrimary ? 'var(--color-button-start-test-text)' : 'var(--color-text-primary)', // ИСПРАВЛЕНО
+    color: isPrimary ? 'var(--color-button-start-test-text)' : 'var(--color-text-primary)',
     backgroundImage: 'var(--texture-grain)',
     backgroundSize: '4px 4px',
     backgroundRepeat: 'repeat',
-    filter: isHoverable ? 'brightness(1.0)' : 'none', // Начальная яркость для hover
+    filter: isHoverable ? 'brightness(1.0)' : 'none',
     transition: isHoverable ? 'filter 0.3s ease' : 'none',
+    // НОВОЕ: Добавляем стилизацию границы для кнопок
+    border: '1px solid var(--color-neutral)', // Тонкая граница для кнопок
   });
 
-  // Функции для обработки hover-эффектов кнопок
   const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, isPrimary: boolean, isEnter: boolean) => {
     if (isPrimary) {
-      // ИСПРАВЛЕНО: Используем более универсальное затемнение/осветление
       e.currentTarget.style.filter = isEnter ? 'brightness(0.9)' : 'brightness(1.0)';
     } else {
       e.currentTarget.style.filter = isEnter ? 'brightness(0.95)' : 'brightness(1.0)';
     }
   };
-
 
   return (
     <>
@@ -68,12 +58,13 @@ const TestPage: React.FC = () => {
         <div
           className="flex flex-col items-center justify-center text-center p-4 rounded-lg shadow-xl max-w-2xl w-full"
           style={{
-            backgroundColor: 'var(--color-background-card)', // Фон карточки
-            backgroundImage: 'var(--texture-grain)', // Зернистость фона карточки
+            backgroundColor: 'var(--color-background-card)', // Фон карточки (теперь #fadeb1)
+            backgroundImage: 'var(--texture-grain)', // Зернистость фона карточки (усиленная)
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
             color: 'var(--color-text-primary)', // Основной цвет текста
-            border: '1px solid var(--color-neutral)' // Легкая рамка
+            border: '2px solid var(--color-neutral)', // НОВОЕ: Более выраженная каёмочка (2px)
+            boxShadow: '4px 4px 0px 0px var(--color-neutral)', // НОВОЕ: Эффект "стенки"
           }}
         >
           <h1 className="text-4xl sm:text-5xl font-extrabold mb-4" style={{ color: 'var(--color-text-primary)' }}>HRBP-Тест</h1>
@@ -86,7 +77,7 @@ const TestPage: React.FC = () => {
               <button
                 onClick={resumeTest}
                 className="w-full font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
-                style={getButtonStyle(true)} // Основная кнопка
+                style={getButtonStyle(true)}
                 onMouseEnter={(e) => handleButtonHover(e, true, true)}
                 onMouseLeave={(e) => handleButtonHover(e, true, false)}
               >
@@ -95,7 +86,7 @@ const TestPage: React.FC = () => {
               <button
                 onClick={startNewTest}
                 className="w-full font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
-                style={getButtonStyle(false)} // Вторичная кнопка
+                style={getButtonStyle(false)}
                 onMouseEnter={(e) => handleButtonHover(e, false, true)}
                 onMouseLeave={(e) => handleButtonHover(e, false, false)}
               >
@@ -106,7 +97,7 @@ const TestPage: React.FC = () => {
             <button
               onClick={startNewTest}
               className="font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 inline-block"
-              style={getButtonStyle(true)} // Основная кнопка
+              style={getButtonStyle(true)}
               onMouseEnter={(e) => handleButtonHover(e, true, true)}
               onMouseLeave={(e) => handleButtonHover(e, true, false)}
             >
@@ -136,14 +127,15 @@ const TestPage: React.FC = () => {
       {/* Отображение общих результатов после завершения теста */}
       {testFinished && testResult && (
         <div
-          className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center border"
+          className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center"
           style={{
-            backgroundColor: 'var(--color-background-card)', // Фон карточки
-            backgroundImage: 'var(--texture-grain)',
+            backgroundColor: 'var(--color-background-card)', // Фон карточки (теперь #fadeb1)
+            backgroundImage: 'var(--texture-grain)', // Зернистость
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
             color: 'var(--color-text-primary)', // Основной цвет текста
-            borderColor: 'var(--color-neutral)', // Цвет рамки
+            border: '2px solid var(--color-neutral)', // НОВОЕ: Более выраженная каёмочка (2px)
+            boxShadow: '4px 4px 0px 0px var(--color-neutral)', // НОВОЕ: Эффект "стенки"
           }}
         >
           <h2 className="text-3xl sm:text-4xl font-bold mb-4" style={{ color: 'var(--color-text-primary)' }}>Тест завершен!</h2>
@@ -161,7 +153,7 @@ const TestPage: React.FC = () => {
             <button
               onClick={() => { /* Логика для детальных результатов */ }}
               className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center cursor-not-allowed opacity-50"
-              style={getButtonStyle(false, false)} // Неактивная кнопка, без hover
+              style={getButtonStyle(false, false)}
               disabled
             >
               Посмотреть детальные результаты (скоро)
@@ -170,7 +162,7 @@ const TestPage: React.FC = () => {
               to="/"
               onClick={startNewTest}
               className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
-              style={getButtonStyle(true)} // Основная кнопка
+              style={getButtonStyle(true)}
               onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true, true)}
               onMouseLeave={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true, false)}
             >
@@ -179,8 +171,6 @@ const TestPage: React.FC = () => {
           </div>
         </div>
       )}
-
-      {/* Удален блок с сообщением "Загрузка вопросов или тест еще не начат..." */}
     </>
   );
 };
