@@ -95,3 +95,55 @@ h1, h2, h3, h4, h5, h6 {
 .shadow-sm-bottom {
   box-shadow: 0px 2px 0px 0px var(--color-text-primary); /* Эффект тени только снизу */
 }
+
+/* Button styles for AnalyticsDashboard */
+.button-primary-style {
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border: 2px solid var(--button-primary-border); /* Более выраженная граница */
+  box-shadow: 4px 4px 0px 0px var(--color-text-primary); /* Эффект "стенки" */
+}
+
+.button-primary-style:hover {
+  background-color: var(--color-accent-secondary); /* Ховер на оливковый */
+  box-shadow: 2px 2px 0px 0px var(--color-text-primary); /* Тень немного уменьшается при наведении */
+}
+
+.button-error-style {
+  background-color: var(--color-error);
+  color: var(--button-primary-text); /* Текст все еще светлый, как у primary */
+  border: 2px solid var(--color-text-primary);
+  box-shadow: 4px 4px 0px 0px var(--color-text-primary);
+}
+
+.button-error-style:hover {
+  background-color: var(--color-accent-primary); /* Ховер на серо-голубой */
+  box-shadow: 2px 2px 0px 0px var(--color-text-primary);
+}
+
+/* Custom scrollbar styles */
+/* Для WebKit-браузеров (Chrome, Safari) */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px; /* Ширина скроллбара */
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: var(--color-background); /* Фон трека */
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: var(--color-text-secondary); /* Цвет ползунка */
+  border-radius: 10px;
+  border: 2px solid var(--color-background-card); /* Граница ползунка */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-primary); /* Цвет ползунка при наведении */
+}
+
+/* Для Firefox */
+.scrollbar-custom {
+  scrollbar-width: thin; /* "auto" или "none" */
+  scrollbar-color: var(--color-text-secondary) var(--color-background); /* Цвет ползунка и трека */
+}
