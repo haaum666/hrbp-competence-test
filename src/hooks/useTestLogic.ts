@@ -7,27 +7,10 @@ const LOCAL_STORAGE_KEY_ANSWERS = 'testUserAnswers';
 const LOCAL_STORAGE_KEY_CURRENT_INDEX = 'testCurrentQuestionIndex';
 const LOCAL_STORAGE_KEY_TEST_STARTED = 'testStarted';
 const LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME = 'testLastQuestionStartTime';
-const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults'; // НОВОЕ: Ключ для всех результатов
+const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults'; // Ключ для всех результатов
 
 const INITIAL_TIME_PER_QUESTION = 60; // Время на вопрос по умолчанию в секундах
 
-/**
- * @typedef {Object} UseTestLogicReturn
- * @property {number} currentQuestionIndex - Текущий индекс вопроса.
- * @property {UserAnswer[]} userAnswers - Массив ответов пользователя.
- * @property {boolean} testFinished - Флаг завершения теста.
- * @property {Question[]} questions - Массив вопросов теста.
- * @property {boolean} testStarted - Флаг начала теста.
- * @property {TestResult | null} testResult - Результаты теста после завершения.
- * @property {boolean} showResumeOption - Флаг, показывающий возможность продолжить тест.
- * @property {number} remainingTime - Оставшееся время на текущий вопрос.
- * @property {number} progressPercentage - Процент выполнения теста.
- * @property {(questionId: string, selectedOptionId: string) => void} handleAnswerSelect - Функция для обработки выбора ответа.
- * @property {() => void} handleNextQuestion - Функция для перехода к следующему вопросу.
- * @property {() => void} handlePreviousQuestion - Функция для перехода к предыдущему вопросу.
- * @property {() => void} startNewTest - Функция для начала нового теста.
- * @property {() => void} resumeTest - Функция для продолжения прерванного теста.
- */
 interface UseTestLogicReturn {
   currentQuestionIndex: number;
   userAnswers: UserAnswer[];
@@ -45,12 +28,6 @@ interface UseTestLogicReturn {
   resumeTest: () => void;
 }
 
-/**
- * @function useTestLogic
- * @description Пользовательский React хук, инкапсулирующий всю логику теста:
- * управление состоянием, таймером, ответами пользователя, сохранением/загрузкой прогресса.
- * @returns {UseTestLogicReturn} Объект с состоянием и функциями для управления тестом.
- */
 const useTestLogic = (): UseTestLogicReturn => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
@@ -98,7 +75,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         } else {
           // Для кейсов или приоритизации, где нет однозначного "правильного" ответа
           // можно считать ответ правильным, если он просто был дан.
-          isCorrect = true;
+          isCorrect = true; // Упрощенно для примера, для реальных кейсов нужно доработать
         }
       }
 
@@ -120,16 +97,17 @@ const useTestLogic = (): UseTestLogicReturn => {
     const totalQuestions = questions.length;
     const scorePercentage = (correctAnswers / totalQuestions) * 100;
 
-    const finalResult: TestResult = { // Создаем переменную для нового результата
+    const finalResult: TestResult = {
       totalQuestions,
       correctAnswers,
       incorrectAnswers,
       unanswered,
       scorePercentage,
       answers: answersDetails,
+      timestamp: new Date().toISOString(), // НОВОЕ: Добавляем временную метку
     };
 
-    setTestResult(finalResult); // Устанавливаем его в состояние
+    setTestResult(finalResult);
 
     // НОВОЕ: Сохраняем результат в localStorage для аналитики
     const savedResultsString = localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
@@ -148,7 +126,7 @@ const useTestLogic = (): UseTestLogicReturn => {
 
     setTestFinished(true);
     clearLocalStorage(); // Очищаем localStorage связанных с текущим тестом
-  }, [questions, userAnswers, clearLocalStorage]);
+  }, [questions, userAnswers, clearLocalStorage]); // Зависимости для useCallback
 
   /**
    * @function handleNextQuestion
@@ -248,7 +226,6 @@ const useTestLogic = (): UseTestLogicReturn => {
         const parsedIndex: number = parseInt(savedIndex, 10);
         const parsedLastQuestionStartTime: number = parseInt(savedLastQuestionStartTime || '0', 10);
 
-
         if (parsedIndex < loadedQuestions.length) {
           setUserAnswers(parsedAnswers);
           setCurrentQuestionIndex(parsedIndex);
@@ -276,7 +253,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     } else {
       startNewTest();
     }
-  }, [startNewTest]);
+  }, [startNewTest]); // Зависимости для useCallback
 
   // --- КОНЕЦ: Все функции useCallback определены ---
 
@@ -306,7 +283,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         clearLocalStorage(); // Данные повреждены, очищаем
       }
     }
-  }, [clearLocalStorage]);
+  }, [clearLocalStorage]); // Зависимости для useEffect
 
   // Effect для обработки таймера
   useEffect(() => {
@@ -344,7 +321,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         window.clearInterval(timerId);
       }
     };
-  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]);
+  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]); // Зависимости для useEffect
 
   // Effect для сохранения прогресса и сброса таймера при смене вопроса или при выборе ответа
   useEffect(() => {
@@ -359,7 +336,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         setRemainingTime(questions[currentQuestionIndex].timeEstimate || INITIAL_TIME_PER_QUESTION);
       }
     }
-  }, [userAnswers, currentQuestionIndex, testStarted, testFinished, questions]);
+  }, [userAnswers, currentQuestionIndex, testStarted, testFinished, questions]); // Зависимости для useEffect
 
   const progressPercentage = questions.length > 0 ? ((currentQuestionIndex) / questions.length) * 100 : 0;
 
