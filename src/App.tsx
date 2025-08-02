@@ -5,7 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/common/Header';
 
 // Импортируем TestPage, который будет содержать логику старта/продолжения теста
-import TestPage from './pages/TestPage'; // Убедитесь, что TestPage.tsx существует в src/pages/
+import TestPage from './pages/TestPage';
 
 // Импортируем AnalyticsDashboard
 import AnalyticsDashboard from './components/analytics/AnalyticsDashboard';
@@ -13,34 +13,40 @@ import AnalyticsDashboard from './components/analytics/AnalyticsDashboard';
 function App() {
   return (
     <Router>
-      {/* Главный контейнер приложения: фон, минимальная высота */}
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white flex flex-col font-sans">
+      {/* Главный контейнер приложения:
+          - min-h-screen для заполнения всей высоты экрана
+          - flex flex-col для вертикального размещения содержимого (Header, main)
+          - font-sans для использования системного шрифта
+          - style={{ color: 'var(--color-text-primary)' }} для применения основного цвета текста из CSS-переменных
+          - ФОН (background-color и background-image) будет применен через стили body в index.css,
+            поэтому здесь удалены классы bg-gradient-to-br и text-white.
+      */}
+      <div className="min-h-screen flex flex-col font-sans" style={{ color: 'var(--color-text-primary)' }}>
         {/* Header находится вне <main>, чтобы быть на всех страницах */}
-        <Header /> 
+        <Header />
 
-        {/* Основной контент, который будет меняться в зависимости от маршрута */}
+        {/* Основной контент, который будет меняться в зависимости от маршрута
+            - flex-grow: чтобы main занимал все доступное пространство
+            - p-4 sm:p-6: отступы для адаптивности
+            - flex items-center justify-center: центрирование содержимого по горизонтали и вертикали
+        */}
         <main className="flex-grow p-4 sm:p-6 flex items-center justify-center">
           <Routes>
             {/* Домашняя страница, использующая TestPage */}
-            <Route path="/" element={<TestPage />} /> 
+            <Route path="/" element={<TestPage />} />
 
             {/* Маршрут для дашборда аналитики */}
             <Route path="/analytics" element={<AnalyticsDashboard />} />
 
-            {/* Внимание: Если у вас есть другие маршруты (например, /test или /results),
-                их также нужно будет перенести в TestPage.tsx или создать для них отдельные компоненты/страницы.
-                В текущем состоянии App.tsx, маршрут '/test' и '/results' удалены, 
-                так как TestPage будет управлять состоянием теста и отображать TestRenderer/ResultDetailView 
-                в зависимости от него, а не через отдельные маршруты.
-                Если TestPage будет управлять отображением, то роуты '/test' и '/results' здесь не нужны.
-                Если же вы хотите сохранить их как отдельные страницы, то нужно будет создать соответствующие файлы.
-
-                На данный момент, предполагается, что TestPage будет отображать логику теста.
+            {/* Важные примечания:
+                - Если у вас появятся другие основные разделы, они должны быть определены здесь как отдельные <Route>.
+                - Логика отображения TestRenderer, StartScreen, ResultDetailView теперь управляется внутри TestPage,
+                  чтобы избежать сложных вложенных маршрутов для каждого состояния теста.
             */}
           </Routes>
         </main>
 
-        {/* Футер или другие глобальные элементы, если они понадобятся */}
+        {/* Здесь можно добавить Футер или другие глобальные элементы, если они понадобятся */}
       </div>
     </Router>
   );
