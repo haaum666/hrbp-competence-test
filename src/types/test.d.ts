@@ -11,14 +11,16 @@ export interface Option {
 export interface Question {
   id: string;
   text: string;
-  type: 'multiple-choice' | 'case-study'; // ИЗМЕНЕНО: Добавлен 'case-study'
+  type: 'multiple-choice' | 'case-study';
   options: Option[];
-  correctAnswer: string;
+  correctAnswer: string | null; // ВАЖНОЕ ИЗМЕНЕНИЕ: Добавлен `| null`
   explanation?: string;
   level: QuestionLevel;
   timeLimitSeconds?: number;
-  timeEstimate?: number; // ДОБАВЛЕНО: Для timeEstimate в минутах (если используется)
-  categoryid?: string; // ДОБАВЛЕНО: Для categoryid, если он нужен для вопросов
+  timeEstimate?: number;
+  categoryid?: string;
+  sources?: string[]; // ВАЖНОЕ ИЗМЕНЕНИЕ: Добавлено
+  relatedCompetencies?: string[]; // ВАЖНОЕ ИЗМЕНЕНИЕ: Добавлено
 }
 
 export interface UserAnswer {
