@@ -3,7 +3,7 @@ import { TestResult } from '../../types/test.d';
 import { Link } from 'react-router-dom';
 
 // НОВЫЕ ИМПОРТЫ ДЛЯ ГРАФИКОВ
-import { Line, Pie } from 'react-chartjs-2'; // Добавляем Pie
+import { Line, Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,10 +13,10 @@ import {
   Title,
   Tooltip,
   Legend,
-  ArcElement, // Для круговой диаграммы
+  ArcElement,
 } from 'chart.js';
 
-// НОВАЯ РЕГИСТРАЦИЯ КОМПОНЕНТОВ CHART.JS (добавляем ArcElement)
+// НОВАЯ РЕГИСТРАЦИЯ КОМПОНЕНТОВ CHART.JS
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -25,7 +25,7 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  ArcElement // Регистрируем ArcElement
+  ArcElement
 );
 
 const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults';
@@ -41,7 +41,7 @@ const AnalyticsDashboard: React.FC = () => {
   const [avgCorrect, setAvgCorrect] = useState<number>(0);
   const [avgIncorrect, setAvgIncorrect] = useState<number>(0);
   const [avgUnanswered, setAvgUnanswered] = useState<number>(0);
-  const [averageTestDuration, setAverageTestDuration] = useState<string>('00:00'); // Среднее время прохождения
+  const [averageTestDuration, setAverageTestDuration] = useState<string>('00:00');
 
   useEffect(() => {
     try {
@@ -60,7 +60,6 @@ const AnalyticsDashboard: React.FC = () => {
           const avgScore = totalScores / sortedResults.length;
           setAverageScore(avgScore.toFixed(2));
 
-          // НОВЫЙ РАСЧЕТ: Среднее количество правильных, неправильных, без ответа
           const totalCorrect = sortedResults.reduce((sum, result) => sum + result.correctAnswers, 0);
           const totalIncorrect = sortedResults.reduce((sum, result) => sum + result.incorrectAnswers, 0);
           const totalUnanswered = sortedResults.reduce((sum, result) => sum + result.unanswered, 0);
@@ -76,17 +75,15 @@ const AnalyticsDashboard: React.FC = () => {
             setAvgUnanswered(0);
           }
 
-          // НОВЫЙ РАСЧЕТ: Среднее время прохождения теста
           let totalDurationSeconds = 0;
           let validDurationsCount = 0;
           sortedResults.forEach(result => {
             try {
-              // Убедимся, что startTime и endTime существуют и являются валидными датами
               if (result.startTime && result.endTime) {
                 const start = new Date(result.startTime).getTime();
                 const end = new Date(result.endTime).getTime();
                 if (!isNaN(start) && !isNaN(end) && end > start) {
-                  totalDurationSeconds += (end - start) / 1000; // Разница в секундах
+                  totalDurationSeconds += (end - start) / 1000;
                   validDurationsCount++;
                 } else {
                     console.warn(`Пропущено некорректное время для теста: startTime=${result.startTime}, endTime=${result.endTime}`);
@@ -110,7 +107,6 @@ const AnalyticsDashboard: React.FC = () => {
 
         } else {
           setAverageScore('0.00');
-          // Сбрасываем значения, если тестов нет
           setAvgCorrect(0);
           setAvgIncorrect(0);
           setAvgUnanswered(0);
@@ -120,7 +116,6 @@ const AnalyticsDashboard: React.FC = () => {
         setAllResults([]);
         setTotalTestsCompleted(0);
         setAverageScore('0.00');
-        // Сбрасываем значения здесь тоже
         setAvgCorrect(0);
         setAvgIncorrect(0);
         setAvgUnanswered(0);
@@ -132,12 +127,11 @@ const AnalyticsDashboard: React.FC = () => {
       setAllResults([]);
       setTotalTestsCompleted(0);
       setAverageScore('0.00');
-      // Сбрасываем значения здесь тоже
       setAvgCorrect(0);
       setAvgIncorrect(0);
       setAvgUnanswered(0);
       setAverageTestDuration('00:00');
-      localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_RESULTS); // Очищаем, если данные повреждены
+      localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
     } finally {
       setLoading(false);
     }
@@ -150,7 +144,6 @@ const AnalyticsDashboard: React.FC = () => {
       setAllResults([]);
       setTotalTestsCompleted(0);
       setAverageScore('0.00');
-      // Сбрасываем также и новые метрики
       setAvgCorrect(0);
       setAvgIncorrect(0);
       setAvgUnanswered(0);
@@ -161,19 +154,19 @@ const AnalyticsDashboard: React.FC = () => {
 
   // НОВАЯ ЛОГИКА ДЛЯ ДАННЫХ ГРАФИКА
   const chartData = {
-    // Labels: номера тестов в порядке возрастания (старые к новым)
-    labels: allResults.map((_, index) => `Тест #${index + 1}`),
+    labels: allResults.map((_, index) => `Тест #${allResults.length - index}`), // Обратный порядок для Labels
     datasets: [
       {
         label: 'Балл теста (%)',
         data: allResults.map(result => result.scorePercentage),
         fill: false,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1,
-        pointBackgroundColor: 'rgb(75, 192, 192)',
-        pointBorderColor: 'rgb(75, 192, 192)',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgb(75, 192, 192)',
+        borderColor: '#005D9A', // bauhaus-blue
+        tension: 0.2, // Немного сглаживаем линию
+        pointBackgroundColor: '#005D9A', // bauhaus-blue
+        pointBorderColor: '#F8F8F8', // bauhaus-white
+        pointHoverBackgroundColor: '#D4002D', // bauhaus-red
+        pointHoverBorderColor: '#F8F8F8', // bauhaus-white
+        borderWidth: 2,
       },
     ],
   };
@@ -185,15 +178,20 @@ const AnalyticsDashboard: React.FC = () => {
       legend: {
         position: 'top' as const,
         labels: {
-          color: 'white',
+          color: '#F8F8F8', // bauhaus-white
+          font: {
+            size: 14,
+          },
         },
       },
       title: {
         display: true,
         text: 'Прогресс по баллам за тесты',
-        color: 'white',
+        color: '#F8F8F8', // bauhaus-white
         font: {
-          size: 18,
+          family: 'Montserrat', // Используем font-heading
+          size: 20,
+          weight: 'bold' as const,
         },
       },
       tooltip: {
@@ -201,30 +199,59 @@ const AnalyticsDashboard: React.FC = () => {
           label: function(context: any) {
             return `Балл: ${context.raw.toFixed(2)}%`;
           }
-        }
+        },
+        backgroundColor: '#1A1A1A', // bauhaus-black
+        titleColor: '#F8F8F8', // bauhaus-white
+        bodyColor: '#D0D0D0', // bauhaus-light-gray
+        borderColor: '#4A4A4A', // bauhaus-dark-gray
+        borderWidth: 1,
       }
     },
     scales: {
       x: {
         ticks: {
-          color: 'lightgray',
-        },
-        grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
-        },
-      },
-      y: {
-        ticks: {
-          color: 'lightgray',
-          callback: function(value: string | number) {
-            return `${value}%`;
+          color: '#D0D0D0', // bauhaus-light-gray
+          font: {
+            family: 'Inter', // font-sans
           }
         },
         grid: {
-          color: 'rgba(255, 255, 255, 0.1)',
+          color: 'rgba(74, 74, 74, 0.4)', // bauhaus-dark-gray с прозрачностью
+        },
+        title: {
+            display: true,
+            text: 'Номер теста (по убыванию даты)', // Уточняем подпись оси X
+            color: '#F8F8F8',
+            font: {
+                family: 'Inter',
+                size: 14,
+            }
+        }
+      },
+      y: {
+        ticks: {
+          color: '#D0D0D0', // bauhaus-light-gray
+          callback: function(value: string | number) {
+            return `${value}%`;
+          },
+          font: {
+            family: 'Inter', // font-sans
+          }
+        },
+        grid: {
+          color: 'rgba(74, 74, 74, 0.4)', // bauhaus-dark-gray с прозрачностью
         },
         min: 0,
         max: 100,
+        title: {
+            display: true,
+            text: 'Процент правильных ответов',
+            color: '#F8F8F8',
+            font: {
+                family: 'Inter',
+                size: 14,
+            }
+        }
       },
     },
   };
@@ -237,16 +264,12 @@ const AnalyticsDashboard: React.FC = () => {
         label: 'Среднее соотношение ответов (%)',
         data: [avgCorrect, avgIncorrect, avgUnanswered],
         backgroundColor: [
-          'rgba(76, 175, 80, 0.8)', // Зеленый для правильных
-          'rgba(244, 67, 54, 0.8)', // Красный для неправильных
-          'rgba(158, 158, 158, 0.8)', // Серый для без ответа
+          '#005D9A', // bauhaus-blue для правильных
+          '#D4002D', // bauhaus-red для неправильных
+          '#AAAAAA', // bauhaus-gray для без ответа
         ],
-        borderColor: [
-          'rgba(76, 175, 80, 1)',
-          'rgba(244, 67, 54, 1)',
-          'rgba(158, 158, 158, 1)',
-        ],
-        borderWidth: 1,
+        borderColor: '#1A1A1A', // bauhaus-black
+        borderWidth: 2,
       },
     ],
   };
@@ -256,17 +279,22 @@ const AnalyticsDashboard: React.FC = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: 'right' as const, // Перемещаем легенду вправо для Pie
         labels: {
-          color: 'white',
+          color: '#F8F8F8', // bauhaus-white
+          font: {
+            size: 14,
+          },
         },
       },
       title: {
         display: true,
         text: 'Среднее соотношение ответов по всем тестам',
-        color: 'white',
+        color: '#F8F8F8', // bauhaus-white
         font: {
-          size: 18,
+          family: 'Montserrat', // font-heading
+          size: 20,
+          weight: 'bold' as const,
         },
       },
       tooltip: {
@@ -276,24 +304,29 @@ const AnalyticsDashboard: React.FC = () => {
             const value = context.raw;
             return `${label}: ${value.toFixed(2)}%`;
           }
-        }
+        },
+        backgroundColor: '#1A1A1A', // bauhaus-black
+        titleColor: '#F8F8F8', // bauhaus-white
+        bodyColor: '#D0D0D0', // bauhaus-light-gray
+        borderColor: '#4A4A4A', // bauhaus-dark-gray
+        borderWidth: 1,
       }
     },
   };
 
   if (loading) {
     return (
-      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-center border border-gray-700/50 text-white">
-        <p className="text-xl sm:text-2xl">Загрузка аналитических данных...</p>
+      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-center border border-bauhaus-dark-gray text-bauhaus-white font-sans">
+        <p className="text-xl sm:text-2xl font-heading">Загрузка аналитических данных...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-center border border-gray-700/50 text-red-400">
-        <p className="text-xl sm:text-2xl">{error}</p>
-        <Link to="/" className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-center border border-bauhaus-dark-gray text-bauhaus-red font-sans">
+        <p className="text-xl sm:text-2xl font-heading">{error}</p>
+        <Link to="/" className="mt-6 bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block">
           Вернуться на главную
         </Link>
       </div>
@@ -301,31 +334,32 @@ const AnalyticsDashboard: React.FC = () => {
   }
 
   return (
-    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto border border-gray-700/50 text-white">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-white text-center">Панель Аналитики Тестов</h2>
+    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto border border-bauhaus-dark-gray text-bauhaus-white font-sans">
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-bauhaus-white text-center font-heading">
+        Панель Аналитики Тестов
+      </h2>
 
       {/* Блок с общей статистикой */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8"> {/* ОБНОВЛЕНО: Добавлено lg:grid-cols-3 */}
-        <div className="bg-gray-800 p-5 sm:p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center justify-center">
-          <p className="text-4xl sm:text-5xl font-extrabold text-blue-400 mb-2">{totalTestsCompleted}</p>
-          <p className="text-lg sm:text-xl text-gray-300">Пройдено тестов</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
+        <div className="bg-bauhaus-black bg-opacity-70 p-5 sm:p-6 rounded-lg border border-bauhaus-dark-gray text-center flex flex-col items-center justify-center shadow-md">
+          <p className="text-4xl sm:text-5xl font-extrabold text-bauhaus-blue mb-2">{totalTestsCompleted}</p>
+          <p className="text-lg sm:text-xl text-bauhaus-light-gray">Пройдено тестов</p>
         </div>
-        <div className="bg-gray-800 p-5 sm:p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center justify-center">
-          <p className="text-4xl sm:text-5xl font-extrabold text-purple-400 mb-2">{averageScore}%</p>
-          <p className="text-lg sm:text-xl text-gray-300">Средний балл</p>
+        <div className="bg-bauhaus-black bg-opacity-70 p-5 sm:p-6 rounded-lg border border-bauhaus-dark-gray text-center flex flex-col items-center justify-center shadow-md">
+          <p className="text-4xl sm:text-5xl font-extrabold text-bauhaus-yellow mb-2">{averageScore}%</p> {/* Изменен цвет на bauhaus-yellow */}
+          <p className="text-lg sm:text-xl text-bauhaus-light-gray">Средний балл</p>
         </div>
         {/* НОВОЕ: Среднее время прохождения теста */}
-        <div className="bg-gray-800 p-5 sm:p-6 rounded-lg border border-gray-700 text-center flex flex-col items-center justify-center">
-          <p className="text-4xl sm:text-5xl font-extrabold text-teal-400 mb-2">{averageTestDuration}</p>
-          <p className="text-lg sm:text-xl text-gray-300">Среднее время теста</p>
+        <div className="bg-bauhaus-black bg-opacity-70 p-5 sm:p-6 rounded-lg border border-bauhaus-dark-gray text-center flex flex-col items-center justify-center shadow-md">
+          <p className="text-4xl sm:text-5xl font-extrabold text-bauhaus-red mb-2">{averageTestDuration}</p> {/* Изменен цвет на bauhaus-red */}
+          <p className="text-lg sm:text-xl text-bauhaus-light-gray">Среднее время теста</p>
         </div>
       </div>
 
-
       {/* Блок с графиком прогресса по баллам (линейный) */}
       {allResults.length > 0 && (
-        <div className="mb-8 p-4 bg-gray-800 rounded-lg border border-gray-700">
-          <div style={{ height: '300px' }}>
+        <div className="mb-8 p-4 bg-bauhaus-black bg-opacity-70 rounded-lg border border-bauhaus-dark-gray shadow-md">
+          <div style={{ height: '350px' }}> {/* Увеличил высоту для лучшей читаемости */}
             <Line data={chartData} options={chartOptions} />
           </div>
         </div>
@@ -333,35 +367,35 @@ const AnalyticsDashboard: React.FC = () => {
 
       {/* НОВОЕ: Блок с круговой диаграммой соотношения ответов */}
       {allResults.length > 0 && (
-        <div className="mb-8 p-4 bg-gray-800 rounded-lg border border-gray-700">
-          <div style={{ height: '300px' }}> {/* Задаем фиксированную высоту для графика */}
+        <div className="mb-8 p-4 bg-bauhaus-black bg-opacity-70 rounded-lg border border-bauhaus-dark-gray shadow-md">
+          <div style={{ height: '350px' }}> {/* Задаем фиксированную высоту для графика */}
             <Pie data={pieChartData} options={pieChartOptions} />
           </div>
         </div>
       )}
 
       {/* Блок со списком пройденных тестов */}
-      <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white text-center">История Пройденных Тестов</h3>
+      <h3 className="text-xl sm:text-2xl font-bold mb-4 text-bauhaus-white text-center font-heading">История Пройденных Тестов</h3>
       {allResults.length === 0 ? (
-        <div className="text-center text-gray-300 text-base sm:text-lg p-4">
+        <div className="text-center text-bauhaus-light-gray text-base sm:text-lg p-4 bg-bauhaus-black bg-opacity-70 rounded-lg border border-bauhaus-dark-gray shadow-md">
           <p className="mb-4">Нет данных о пройденных тестах для отображения истории.</p>
           <p>Пройдите несколько тестов, чтобы увидеть их список.</p>
         </div>
       ) : (
-        <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3">
+        <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3 scrollbar-thin scrollbar-thumb-bauhaus-dark-gray scrollbar-track-bauhaus-black">
           {allResults.map((result, index) => (
-            <div key={index} className="bg-gray-800 p-3 sm:p-4 rounded-lg border border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+            <div key={index} className="bg-bauhaus-dark-gray bg-opacity-50 p-3 sm:p-4 rounded-lg border border-bauhaus-gray flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm">
               <div className="mb-1 sm:mb-0">
-                <p className="text-sm sm:text-base font-semibold text-gray-100">
+                <p className="text-sm sm:text-base font-semibold text-bauhaus-white">
                   Тест #{allResults.length - index} (
                   {new Date(result.timestamp).toLocaleDateString()} {new Date(result.timestamp).toLocaleTimeString()}
                   )
                 </p>
-                <p className="text-xs sm:text-sm text-gray-300">
-                  Балл: <span className="font-bold text-white">{result.scorePercentage.toFixed(2)}%</span>
+                <p className="text-xs sm:text-sm text-bauhaus-light-gray">
+                  Балл: <span className="font-bold text-bauhaus-white">{result.scorePercentage.toFixed(2)}%</span>
                 </p>
-                <p className="text-xs sm:text-sm text-gray-300">
-                  Правильных: <span className="text-green-400">{result.correctAnswers}</span> / Всего: <span className="text-blue-400">{result.totalQuestions}</span>
+                <p className="text-xs sm:text-sm text-bauhaus-light-gray">
+                  Правильных: <span className="text-bauhaus-blue">{result.correctAnswers}</span> / Всего: <span className="text-bauhaus-white">{result.totalQuestions}</span>
                 </p>
               </div>
             </div>
@@ -373,11 +407,11 @@ const AnalyticsDashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
         <button
           onClick={handleClearAllResults}
-          className="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto"
+          className="bg-bauhaus-red hover:bg-red-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-bauhaus-red focus:ring-opacity-50"
         >
           Очистить все результаты
         </button>
-        <Link to="/" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto">
+        <Link to="/" className="bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-bauhaus-blue focus:ring-opacity-50">
           Вернуться к началу
         </Link>
       </div>
