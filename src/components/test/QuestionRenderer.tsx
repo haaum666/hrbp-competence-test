@@ -6,7 +6,7 @@ interface QuestionRendererProps {
   currentQuestionIndex: number;
   totalQuestions: number;
   onAnswerSelect: (questionId: string, selectedOptionId: string) => void;
-  currentUserAnswer: UserAnswer | null; // Исправлено на null
+  currentUserAnswer: UserAnswer | null;
   onNextQuestion: (isLastQuestion: boolean) => void;
   onPreviousQuestion: () => void;
   isFirstQuestion: boolean;
@@ -28,12 +28,12 @@ const formatTime = (seconds: number): string => {
  * @returns {string} Строка с классом Tailwind CSS для цвета.
  */
 const getLevelColor = (level: QuestionLevel): string => {
-    switch (level) {
-        case 'junior': return 'text-level-junior';    // Используем новый серо-голубой
-        case 'middle': return 'text-level-middle';    // Используем новый оливково-зеленый
-        case 'senior': return 'text-level-senior';    // Используем новый приглушенный серо-красный
-        default: return 'text-level-default';        // Используем серо-коричневый для дефолта
-    }
+  switch (level) {
+    case 'junior': return 'text-level-junior';
+    case 'middle': return 'text-level-middle';
+    case 'senior': return 'text-level-senior';
+    default: return 'text-level-default';
+  }
 };
 
 const QuestionRenderer: React.FC<QuestionRendererProps> = ({
@@ -51,29 +51,137 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 }) => {
   const selectedOptionId = currentUserAnswer?.selectedOptionId || '';
 
+  // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК
+  // isPrimary: true - для основных кнопок действия (как "Следующий" в активном состоянии)
+  // isDanger: true - для кнопок опасного действия (как "Завершить тест")
+  // isSecondary: true - для второстепенных кнопок (как "Предыдущий", или "Следующий" в неактивном состоянии)
+  const getButtonStyle = (type: 'primary' | 'secondary' | 'danger', isDisabled: boolean = false) => {
+    let bgColorVar: string;
+    let textColorVar: string;
+    let borderColorVar: string;
+    let hoverFilter: string;
+
+    if (isDisabled) {
+      bgColorVar = 'var(--color-neutral)';
+      textColorVar = 'var(--color-text-secondary)';
+      borderColorVar = 'var(--color-neutral)'; // Или можно var(--color-text-secondary) для более темной рамки
+      hoverFilter = 'brightness(1.0)'; // Нет ховера для disabled
+    } else {
+      switch (type) {
+        case 'primary':
+          bgColorVar = 'var(--button-primary-bg)'; // Акцентный синий
+          textColorVar = 'var(--button-primary-text)'; // Светлый бежевый
+          borderColorVar = 'var(--button-primary-border)'; // Темная рамка
+          hoverFilter = 'brightness(0.9)';
+          break;
+        case 'danger':
+          bgColorVar = 'var(--color-error)'; // Оранжево-красный
+          textColorVar = 'var(--color-neutral)'; // Светлый бежевый
+          borderColorVar = 'var(--color-error)'; // Рамка в цвет кнопки
+          hoverFilter = 'brightness(1.1)'; // Чуть светлее при ховере
+          break;
+        case 'secondary':
+        default:
+          bgColorVar = 'var(--button-secondary-bg)'; // Светлый бежевый (нейтральный)
+          textColorVar = 'var(--button-secondary-text)'; // Темный зеленый
+          borderColorVar = 'var(--button-secondary-border)'; // Светлая рамка
+          hoverFilter = 'brightness(0.95)';
+          break;
+      }
+    }
+
+    return {
+      backgroundColor: bgColorVar,
+      color: textColorVar,
+      backgroundImage: 'var(--texture-grain)',
+      backgroundSize: '4px 4px',
+      backgroundRepeat: 'repeat',
+      filter: 'brightness(1.0)', // Начальная яркость
+      transition: 'filter 0.3s ease',
+      border: `1px solid ${borderColorVar}`,
+      boxShadow: '2px 2px 0px 0px var(--color-text-primary)', // Эффект "стенки" для кнопок
+      cursor: isDisabled ? 'not-allowed' : 'pointer',
+      opacity: isDisabled ? 0.7 : 1, // Немного прозрачности для disabled
+      '--hover-filter': hoverFilter, // Используем CSS Custom Property для ховера
+    };
+  };
+
+  const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, type: 'primary' | 'secondary' | 'danger', isEnter: boolean, isDisabled: boolean) => {
+    if (isDisabled) return;
+    const hoverFilter = e.currentTarget.style.getPropertyValue('--hover-filter');
+    e.currentTarget.style.filter = isEnter ? hoverFilter : 'brightness(1.0)';
+  };
+
+  // Стилизация опций вопросов
+  const getOptionStyle = (optionId: string, isSelected: boolean, hasAnswered: boolean) => {
+    let bgColorVar: string;
+    let textColorVar: string;
+    let borderColorVar: string;
+    let boxShadowVar: string;
+    let hoverFilter: string;
+
+    if (isSelected) {
+      bgColorVar = 'var(--color-accent-primary)'; // Синий
+      textColorVar = 'var(--color-neutral)'; // Светлый бежевый
+      borderColorVar = 'var(--color-accent-primary)'; // Синий
+      boxShadowVar = '2px 2px 0px 0px var(--color-text-primary)'; // Эффект "стенки" для выбранной
+      hoverFilter = 'brightness(1.0)'; // Не менять яркость выбранной при ховере
+    } else {
+      bgColorVar = 'var(--color-neutral)'; // Светлый бежевый (нейтральный)
+      textColorVar = 'var(--color-text-primary)'; // Темный зеленый
+      borderColorVar = 'var(--color-text-primary)'; // Темный зеленый (для контраста)
+      boxShadowVar = '2px 2px 0px 0px var(--color-text-secondary)'; // Эффект "стенки" для невыбранной
+      hoverFilter = 'brightness(0.97)'; // Чуть затемнить при ховере
+    }
+
+    return {
+      backgroundColor: bgColorVar,
+      color: textColorVar,
+      backgroundImage: 'var(--texture-grain)',
+      backgroundSize: '4px 4px',
+      backgroundRepeat: 'repeat',
+      border: `1px solid ${borderColorVar}`,
+      boxShadow: boxShadowVar,
+      filter: 'brightness(1.0)', // Начальная яркость
+      transition: 'filter 0.3s ease',
+      cursor: hasAnswered ? 'not-allowed' : 'pointer', // Курсор для disabled
+      opacity: hasAnswered && !isSelected ? 0.8 : 1, // Невыбранные опции становятся немного прозрачными после ответа
+      '--hover-filter-option': hoverFilter, // CSS Custom Property для ховера опций
+    };
+  };
+
+  const handleOptionHover = (e: React.MouseEvent<HTMLButtonElement>, isSelected: boolean, hasAnswered: boolean, isEnter: boolean) => {
+    if (hasAnswered && !isSelected) return; // Не применять ховер к невыбранным после ответа
+    if (isSelected && hasAnswered) return; // Не менять яркость выбранной после ответа
+
+    const hoverFilter = e.currentTarget.style.getPropertyValue('--hover-filter-option');
+    e.currentTarget.style.filter = isEnter ? hoverFilter : 'brightness(1.0)';
+  };
+
   return (
     <div
-      className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto border"
+      className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto"
       style={{
-        backgroundColor: 'var(--color-background-card)', // Фон карточки
-        backgroundImage: 'var(--texture-grain)', // Зернистость фона карточки
+        backgroundColor: 'var(--color-background-card)',
+        backgroundImage: 'var(--texture-grain)',
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
-        borderColor: 'var(--color-neutral)', // Легкая рамка
-        color: 'var(--color-text-primary)' // Основной цвет текста для всего блока
+        border: '2px solid var(--color-neutral)', // Более выраженная рамка
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки" для карточки
+        color: 'var(--color-text-primary)'
       }}
     >
       {/* Progress Bar */}
       <div
         className="w-full rounded-full h-2.5 mb-6"
-        style={{ backgroundColor: 'var(--color-neutral)' }} // Фон для пустого прогресс-бара
+        style={{ backgroundColor: 'var(--color-neutral)' }}
       >
         <div
           className="h-2.5 rounded-full transition-all duration-500 ease-in-out"
           style={{
             width: `${progressPercentage}%`,
-            backgroundColor: 'var(--color-accent-primary)', // Цвет заполнения
-            backgroundImage: 'var(--texture-grain)', // Зернистость и здесь
+            backgroundColor: 'var(--color-accent-primary)',
+            backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
           }}
@@ -92,50 +200,29 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
 
       {question.type === 'multiple-choice' && (
         <div className="space-y-3 sm:space-y-4">
-          {question.options.map((option) => (
-            <button
-              key={option.id}
-              onClick={() => onAnswerSelect(question.id, option.id)}
-              className={`
-                w-full text-left py-3 px-4 rounded-lg transition duration-200 ease-in-out border
-                ${selectedOptionId === option.id
-                  ? 'shadow-md' // Для выбранной опции
-                  : 'hover:shadow-md' // Для невыбранной опции
-                }
-                focus:outline-none focus:ring-2 focus:ring-offset-2
-                text-base sm:text-lg font-sans
-              `}
-              style={{
-                backgroundColor: selectedOptionId === option.id
-                  ? 'var(--color-accent-primary)' // Выбранная опция - серо-голубой
-                  : 'var(--color-background-card)', // Невыбранная опция - цвет карточки
-                color: selectedOptionId === option.id
-                  ? 'var(--color-button-text)' // Текст на выбранной опции - белый
-                  : 'var(--color-text-primary)', // Текст на невыбранной опции - темно-серый
-                borderColor: selectedOptionId === option.id
-                  ? 'var(--color-accent-primary)' // Рамка выбранной опции - серо-голубой
-                  : 'var(--color-option-border)', // Рамка невыбранной опции - светло-серый
-                backgroundImage: 'var(--texture-grain)', // Зернистость
-                backgroundSize: '4px 4px',
-                backgroundRepeat: 'repeat',
-                filter: selectedOptionId === option.id ? 'brightness(1.0)' : 'brightness(1.0)', // Начальная яркость
-                transition: 'filter 0.3s ease',
-              }}
-              onMouseEnter={(e) => {
-                if (selectedOptionId !== option.id && currentUserAnswer === null) {
-                    e.currentTarget.style.filter = 'brightness(0.97)'; // Чуть затемнить невыбранную при наведении
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (selectedOptionId !== option.id && currentUserAnswer === null) {
-                    e.currentTarget.style.filter = 'brightness(1.0)';
-                }
-              }}
-              disabled={currentUserAnswer !== null} // Отключаем кнопки после выбора ответа
-            >
-              {option.text}
-            </button>
-          ))}
+          {question.options.map((option) => {
+            const isSelected = selectedOptionId === option.id;
+            const hasAnswered = currentUserAnswer !== null; // Пользователь уже выбрал ответ на этот вопрос
+
+            return (
+              <button
+                key={option.id}
+                onClick={() => onAnswerSelect(question.id, option.id)}
+                className={`
+                  w-full text-left py-3 px-4 rounded-lg transition duration-200 ease-in-out
+                  ${isSelected ? 'transform scale-[1.005]' : ''}
+                  focus:outline-none focus:ring-2 focus:ring-offset-2
+                  text-base sm:text-lg font-sans
+                `}
+                style={getOptionStyle(option.id, isSelected, hasAnswered)}
+                onMouseEnter={(e) => handleOptionHover(e, isSelected, hasAnswered, true)}
+                onMouseLeave={(e) => handleOptionHover(e, isSelected, hasAnswered, false)}
+                disabled={hasAnswered}
+              >
+                {option.text}
+              </button>
+            );
+          })}
         </div>
       )}
 
@@ -144,18 +231,10 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         {!isFirstQuestion && (
           <button
             onClick={onPreviousQuestion}
-            className="w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50"
-            style={{
-              backgroundColor: 'var(--color-neutral)', // Светло-серый
-              color: 'var(--color-text-primary)', // Темно-серый текст
-              backgroundImage: 'var(--texture-grain)',
-              backgroundSize: '4px 4px',
-              backgroundRepeat: 'repeat',
-              filter: 'brightness(1.0)',
-              transition: 'filter 0.3s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(0.95)')}
-            onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1.0)')}
+            className="w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50"
+            style={getButtonStyle('secondary')}
+            onMouseEnter={(e) => handleButtonHover(e, 'secondary', true, false)}
+            onMouseLeave={(e) => handleButtonHover(e, 'secondary', false, false)}
           >
             Предыдущий
           </button>
@@ -164,53 +243,21 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         {isLastQuestion ? (
           <button
             onClick={() => onNextQuestion(true)}
-            className="w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50"
-            style={{
-              backgroundColor: 'var(--color-error)', // Приглушенный серо-красный для "Завершить тест"
-              color: 'var(--color-button-text)', // Белый текст
-              backgroundImage: 'var(--texture-grain)',
-              backgroundSize: '4px 4px',
-              backgroundRepeat: 'repeat',
-              filter: 'brightness(1.0)',
-              transition: 'filter 0.3s ease',
-            }}
-            onMouseEnter={(e) => (e.currentTarget.style.filter = 'brightness(1.1)')}
-            onMouseLeave={(e) => (e.currentTarget.style.filter = 'brightness(1.0)')}
+            className="w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50"
+            style={getButtonStyle('danger')}
+            onMouseEnter={(e) => handleButtonHover(e, 'danger', true, false)}
+            onMouseLeave={(e) => handleButtonHover(e, 'danger', false, false)}
           >
             Завершить Тест
           </button>
         ) : (
           <button
             onClick={() => onNextQuestion(false)}
-            disabled={currentUserAnswer === null} // Теперь currentUserAnswer точно null
-            className={`w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50
-              ${(currentUserAnswer === null)
-                  ? 'cursor-not-allowed opacity-70' // Для disabled
-                  : '' // Если не disabled, apply normal styles
-              }`}
-            style={{
-              backgroundColor: (currentUserAnswer === null)
-                ? 'var(--color-neutral)' // Если не ответил - нейтральный серый
-                : 'var(--color-accent-secondary)', // Если ответил - оливково-зеленый
-              color: (currentUserAnswer === null)
-                ? 'var(--color-text-secondary)' // Текст на disabled кнопке
-                : 'var(--color-button-text)', // Текст на активной кнопке
-              backgroundImage: 'var(--texture-grain)',
-              backgroundSize: '4px 4px',
-              backgroundRepeat: 'repeat',
-              filter: (currentUserAnswer === null) ? 'brightness(1.0)' : 'brightness(1.0)',
-              transition: 'filter 0.3s ease',
-            }}
-            onMouseEnter={(e) => {
-              if (currentUserAnswer !== null) { // Только если кнопка активна
-                e.currentTarget.style.filter = 'brightness(1.1)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (currentUserAnswer !== null) { // Только если кнопка активна
-                e.currentTarget.style.filter = 'brightness(1.0)';
-              }
-            }}
+            disabled={currentUserAnswer === null}
+            className={`w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50 ${currentUserAnswer === null ? 'cursor-not-allowed' : ''}`}
+            style={getButtonStyle(currentUserAnswer === null ? 'secondary' : 'primary', currentUserAnswer === null)}
+            onMouseEnter={(e) => handleButtonHover(e, currentUserAnswer === null ? 'secondary' : 'primary', true, currentUserAnswer === null)}
+            onMouseLeave={(e) => handleButtonHover(e, currentUserAnswer === null ? 'secondary' : 'primary', false, currentUserAnswer === null)}
           >
             Следующий
           </button>
