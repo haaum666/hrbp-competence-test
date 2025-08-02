@@ -160,12 +160,12 @@ const AnalyticsDashboard: React.FC = () => {
         label: 'Балл теста (%)',
         data: allResults.map(result => result.scorePercentage),
         fill: false,
-        borderColor: '#005D9A', // bauhaus-blue
-        tension: 0.2, // Немного сглаживаем линию
-        pointBackgroundColor: '#005D9A', // bauhaus-blue
-        pointBorderColor: '#F8F8F8', // bauhaus-white
-        pointHoverBackgroundColor: '#D4002D', // bauhaus-red
-        pointHoverBorderColor: '#F8F8F8', // bauhaus-white
+        borderColor: 'var(--color-accent-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        tension: 0.2,
+        pointBackgroundColor: 'var(--color-accent-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        pointBorderColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        pointHoverBackgroundColor: 'var(--color-error)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        pointHoverBorderColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
         borderWidth: 2,
       },
     ],
@@ -178,7 +178,7 @@ const AnalyticsDashboard: React.FC = () => {
       legend: {
         position: 'top' as const,
         labels: {
-          color: '#F8F8F8', // bauhaus-white
+          color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (темный текст на светлом фоне графика)
           font: {
             size: 14,
           },
@@ -187,9 +187,9 @@ const AnalyticsDashboard: React.FC = () => {
       title: {
         display: true,
         text: 'Прогресс по баллам за тесты',
-        color: '#F8F8F8', // bauhaus-white
+        color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
         font: {
-          family: 'Montserrat', // Используем font-heading
+          family: 'Montserrat',
           size: 20,
           weight: 'bold' as const,
         },
@@ -200,28 +200,28 @@ const AnalyticsDashboard: React.FC = () => {
             return `Балл: ${context.raw.toFixed(2)}%`;
           }
         },
-        backgroundColor: '#1A1A1A', // bauhaus-black
-        titleColor: '#F8F8F8', // bauhaus-white
-        bodyColor: '#D0D0D0', // bauhaus-light-gray
-        borderColor: '#4A4A4A', // bauhaus-dark-gray
+        backgroundColor: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        titleColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        bodyColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        borderColor: 'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
         borderWidth: 1,
       }
     },
     scales: {
       x: {
         ticks: {
-          color: '#D0D0D0', // bauhaus-light-gray
+          color: 'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
           font: {
-            family: 'Inter', // font-sans
+            family: 'Inter',
           }
         },
         grid: {
-          color: 'rgba(74, 74, 74, 0.4)', // bauhaus-dark-gray с прозрачностью
+          color: 'rgba(58, 66, 50, 0.2)', // bauhaus-dark-gray с прозрачностью (изменен цвет)
         },
         title: {
             display: true,
-            text: 'Номер теста (по убыванию даты)', // Уточняем подпись оси X
-            color: '#F8F8F8',
+            text: 'Номер теста (по убыванию даты)',
+            color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
             font: {
                 family: 'Inter',
                 size: 14,
@@ -230,23 +230,23 @@ const AnalyticsDashboard: React.FC = () => {
       },
       y: {
         ticks: {
-          color: '#D0D0D0', // bauhaus-light-gray
+          color: 'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
           callback: function(value: string | number) {
             return `${value}%`;
           },
           font: {
-            family: 'Inter', // font-sans
+            family: 'Inter',
           }
         },
         grid: {
-          color: 'rgba(74, 74, 74, 0.4)', // bauhaus-dark-gray с прозрачностью
+          color: 'rgba(58, 66, 50, 0.2)', // bauhaus-dark-gray с прозрачностью (изменен цвет)
         },
         min: 0,
         max: 100,
         title: {
             display: true,
             text: 'Процент правильных ответов',
-            color: '#F8F8F8',
+            color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
             font: {
                 family: 'Inter',
                 size: 14,
@@ -264,11 +264,11 @@ const AnalyticsDashboard: React.FC = () => {
         label: 'Среднее соотношение ответов (%)',
         data: [avgCorrect, avgIncorrect, avgUnanswered],
         backgroundColor: [
-          '#005D9A', // bauhaus-blue для правильных
-          '#D4002D', // bauhaus-red для неправильных
-          '#AAAAAA', // bauhaus-gray для без ответа
+          'var(--color-accent-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (серо-голубой для правильных)
+          'var(--color-error)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (оранжево-красный для неправильных)
+          'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (приглушенный средне-серый для без ответа)
         ],
-        borderColor: '#1A1A1A', // bauhaus-black
+        borderColor: 'var(--color-background-card)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (светлый бежевый для разделения)
         borderWidth: 2,
       },
     ],
@@ -279,9 +279,9 @@ const AnalyticsDashboard: React.FC = () => {
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'right' as const, // Перемещаем легенду вправо для Pie
+        position: 'right' as const,
         labels: {
-          color: '#F8F8F8', // bauhaus-white
+          color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
           font: {
             size: 14,
           },
@@ -290,9 +290,9 @@ const AnalyticsDashboard: React.FC = () => {
       title: {
         display: true,
         text: 'Среднее соотношение ответов по всем тестам',
-        color: '#F8F8F8', // bauhaus-white
+        color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
         font: {
-          family: 'Montserrat', // font-heading
+          family: 'Montserrat',
           size: 20,
           weight: 'bold' as const,
         },
@@ -305,28 +305,73 @@ const AnalyticsDashboard: React.FC = () => {
             return `${label}: ${value.toFixed(2)}%`;
           }
         },
-        backgroundColor: '#1A1A1A', // bauhaus-black
-        titleColor: '#F8F8F8', // bauhaus-white
-        bodyColor: '#D0D0D0', // bauhaus-light-gray
-        borderColor: '#4A4A4A', // bauhaus-dark-gray
+        backgroundColor: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        titleColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        bodyColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        borderColor: 'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
         borderWidth: 1,
       }
     },
   };
 
+  // Стили кнопок для этой страницы
+  const getButtonStyle = (isPrimary: boolean, isHoverable: boolean = true) => ({
+    backgroundColor: isPrimary ? 'var(--color-accent-primary)' : 'var(--color-error)', // Для кнопок "Вернуться" и "Очистить"
+    color: 'var(--color-neutral)', // Текст всегда светлый на цветной кнопке
+    backgroundImage: 'var(--texture-grain)',
+    backgroundSize: '4px 4px',
+    backgroundRepeat: 'repeat',
+    filter: isHoverable ? 'brightness(1.0)' : 'none',
+    transition: isHoverable ? 'filter 0.3s ease' : 'none',
+    border: '1px solid var(--color-text-primary)', // Тонкая темная граница для кнопок
+  });
+
+  const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, isEnter: boolean) => {
+    e.currentTarget.style.filter = isEnter ? 'brightness(0.9)' : 'brightness(1.0)';
+  };
+
+
   if (loading) {
     return (
-      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-center border border-bauhaus-dark-gray text-bauhaus-white font-sans">
-        <p className="text-xl sm:text-2xl font-heading">Загрузка аналитических данных...</p>
+      <div
+        className="flex flex-col items-center justify-center text-center p-6 sm:p-8 rounded-xl shadow-xl max-w-2xl w-full mx-auto"
+        style={{
+          backgroundColor: 'var(--color-background-card)', // Новый фон
+          backgroundImage: 'var(--texture-grain)', // Зернистость
+          backgroundSize: '4px 4px',
+          backgroundRepeat: 'repeat',
+          color: 'var(--color-text-primary)', // Темный текст
+          border: '2px solid var(--color-neutral)', // Светлая каёмочка
+          boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки"
+        }}
+      >
+        <p className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Загрузка аналитических данных...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-center border border-bauhaus-dark-gray text-bauhaus-red font-sans">
-        <p className="text-xl sm:text-2xl font-heading">{error}</p>
-        <Link to="/" className="mt-6 bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+      <div
+        className="flex flex-col items-center justify-center text-center p-6 sm:p-8 rounded-xl shadow-xl max-w-2xl w-full mx-auto"
+        style={{
+          backgroundColor: 'var(--color-background-card)', // Новый фон
+          backgroundImage: 'var(--texture-grain)', // Зернистость
+          backgroundSize: '4px 4px',
+          backgroundRepeat: 'repeat',
+          color: 'var(--color-error)', // Красный текст для ошибки
+          border: '2px solid var(--color-neutral)', // Светлая каёмочка
+          boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки"
+        }}
+      >
+        <p className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--color-error)' }}>{error}</p>
+        <Link
+          to="/"
+          className="mt-6 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
+          style={getButtonStyle(true)} // Используем акцентный синий
+          onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true)}
+          onMouseLeave={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, false)}
+        >
           Вернуться на главную
         </Link>
       </div>
@@ -334,32 +379,82 @@ const AnalyticsDashboard: React.FC = () => {
   }
 
   return (
-    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto border border-bauhaus-dark-gray text-bauhaus-white font-sans">
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-bauhaus-white text-center font-heading">
+    <div
+      className="rounded-xl shadow-2xl p-6 sm:p-8 max-w-4xl w-full mx-auto" // Удален backdrop-blur-md
+      style={{
+        backgroundColor: 'var(--color-background-card)', // НОВЫЙ ФОН для всей панели
+        backgroundImage: 'var(--texture-grain)', // Зернистость
+        backgroundSize: '4px 4px',
+        backgroundRepeat: 'repeat',
+        color: 'var(--color-text-primary)', // НОВЫЙ ОСНОВНОЙ ЦВЕТ ТЕКСТА
+        border: '2px solid var(--color-neutral)', // НОВАЯ КАЁМОЧКА
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // НОВЫЙ ЭФФЕКТ "СТЕНКИ"
+      }}
+    >
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: 'var(--color-text-primary)' }}>
         Панель Аналитики Тестов
       </h2>
 
       {/* Блок с общей статистикой */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-        <div className="bg-bauhaus-black bg-opacity-70 p-5 sm:p-6 rounded-lg border border-bauhaus-dark-gray text-center flex flex-col items-center justify-center shadow-md">
-          <p className="text-4xl sm:text-5xl font-extrabold text-bauhaus-blue mb-2">{totalTestsCompleted}</p>
-          <p className="text-lg sm:text-xl text-bauhaus-light-gray">Пройдено тестов</p>
+        <div
+          className="p-5 sm:p-6 rounded-lg border shadow-md flex flex-col items-center justify-center text-center"
+          style={{
+            backgroundColor: 'var(--color-background-card)', // Фон остается светлым
+            backgroundImage: 'var(--texture-grain)',
+            backgroundSize: '4px 4px',
+            backgroundRepeat: 'repeat',
+            borderColor: 'var(--color-neutral)', // Тонкая светлая граница
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень
+          }}
+        >
+          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: 'var(--color-accent-primary)' }}>{totalTestsCompleted}</p>
+          <p className="text-lg sm:text-xl" style={{ color: 'var(--color-text-secondary)' }}>Пройдено тестов</p>
         </div>
-        <div className="bg-bauhaus-black bg-opacity-70 p-5 sm:p-6 rounded-lg border border-bauhaus-dark-gray text-center flex flex-col items-center justify-center shadow-md">
-          <p className="text-4xl sm:text-5xl font-extrabold text-bauhaus-yellow mb-2">{averageScore}%</p> {/* Изменен цвет на bauhaus-yellow */}
-          <p className="text-lg sm:text-xl text-bauhaus-light-gray">Средний балл</p>
+        <div
+          className="p-5 sm:p-6 rounded-lg border shadow-md flex flex-col items-center justify-center text-center"
+          style={{
+            backgroundColor: 'var(--color-background-card)',
+            backgroundImage: 'var(--texture-grain)',
+            backgroundSize: '4px 4px',
+            backgroundRepeat: 'repeat',
+            borderColor: 'var(--color-neutral)',
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
+          }}
+        >
+          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: 'var(--color-accent-secondary)' }}>{averageScore}%</p>
+          <p className="text-lg sm:text-xl" style={{ color: 'var(--color-text-secondary)' }}>Средний балл</p>
         </div>
-        {/* НОВОЕ: Среднее время прохождения теста */}
-        <div className="bg-bauhaus-black bg-opacity-70 p-5 sm:p-6 rounded-lg border border-bauhaus-dark-gray text-center flex flex-col items-center justify-center shadow-md">
-          <p className="text-4xl sm:text-5xl font-extrabold text-bauhaus-red mb-2">{averageTestDuration}</p> {/* Изменен цвет на bauhaus-red */}
-          <p className="text-lg sm:text-xl text-bauhaus-light-gray">Среднее время теста</p>
+        <div
+          className="p-5 sm:p-6 rounded-lg border shadow-md flex flex-col items-center justify-center text-center"
+          style={{
+            backgroundColor: 'var(--color-background-card)',
+            backgroundImage: 'var(--texture-grain)',
+            backgroundSize: '4px 4px',
+            backgroundRepeat: 'repeat',
+            borderColor: 'var(--color-neutral)',
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
+          }}
+        >
+          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: 'var(--color-error)' }}>{averageTestDuration}</p>
+          <p className="text-lg sm:text-xl" style={{ color: 'var(--color-text-secondary)' }}>Среднее время теста</p>
         </div>
       </div>
 
       {/* Блок с графиком прогресса по баллам (линейный) */}
       {allResults.length > 0 && (
-        <div className="mb-8 p-4 bg-bauhaus-black bg-opacity-70 rounded-lg border border-bauhaus-dark-gray shadow-md">
-          <div style={{ height: '350px' }}> {/* Увеличил высоту для лучшей читаемости */}
+        <div
+          className="mb-8 p-4 rounded-lg border shadow-md"
+          style={{
+            backgroundColor: 'var(--color-background-card)', // Фон графика
+            backgroundImage: 'var(--texture-grain)',
+            backgroundSize: '4px 4px',
+            backgroundRepeat: 'repeat',
+            borderColor: 'var(--color-neutral)', // Тонкая светлая граница
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень
+          }}
+        >
+          <div style={{ height: '350px' }}>
             <Line data={chartData} options={chartOptions} />
           </div>
         </div>
@@ -367,35 +462,67 @@ const AnalyticsDashboard: React.FC = () => {
 
       {/* НОВОЕ: Блок с круговой диаграммой соотношения ответов */}
       {allResults.length > 0 && (
-        <div className="mb-8 p-4 bg-bauhaus-black bg-opacity-70 rounded-lg border border-bauhaus-dark-gray shadow-md">
-          <div style={{ height: '350px' }}> {/* Задаем фиксированную высоту для графика */}
+        <div
+          className="mb-8 p-4 rounded-lg border shadow-md"
+          style={{
+            backgroundColor: 'var(--color-background-card)', // Фон графика
+            backgroundImage: 'var(--texture-grain)',
+            backgroundSize: '4px 4px',
+            backgroundRepeat: 'repeat',
+            borderColor: 'var(--color-neutral)', // Тонкая светлая граница
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень
+          }}
+        >
+          <div style={{ height: '350px' }}>
             <Pie data={pieChartData} options={pieChartOptions} />
           </div>
         </div>
       )}
 
       {/* Блок со списком пройденных тестов */}
-      <h3 className="text-xl sm:text-2xl font-bold mb-4 text-bauhaus-white text-center font-heading">История Пройденных Тестов</h3>
+      <h3 className="text-xl sm:text-2xl font-bold mb-4 text-center" style={{ color: 'var(--color-text-primary)' }}>История Пройденных Тестов</h3>
       {allResults.length === 0 ? (
-        <div className="text-center text-bauhaus-light-gray text-base sm:text-lg p-4 bg-bauhaus-black bg-opacity-70 rounded-lg border border-bauhaus-dark-gray shadow-md">
+        <div
+          className="text-center text-base sm:text-lg p-4 rounded-lg border shadow-md"
+          style={{
+            backgroundColor: 'var(--color-background-card)', // Фон блока
+            backgroundImage: 'var(--texture-grain)',
+            backgroundSize: '4px 4px',
+            backgroundRepeat: 'repeat',
+            color: 'var(--color-text-secondary)', // Вторичный текст
+            borderColor: 'var(--color-neutral)', // Тонкая светлая граница
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень
+          }}
+        >
           <p className="mb-4">Нет данных о пройденных тестах для отображения истории.</p>
           <p>Пройдите несколько тестов, чтобы увидеть их список.</p>
         </div>
       ) : (
         <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3 scrollbar-thin scrollbar-thumb-bauhaus-dark-gray scrollbar-track-bauhaus-black">
           {allResults.map((result, index) => (
-            <div key={index} className="bg-bauhaus-dark-gray bg-opacity-50 p-3 sm:p-4 rounded-lg border border-bauhaus-gray flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm">
+            <div
+              key={index}
+              className="p-3 sm:p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm"
+              style={{
+                backgroundColor: 'var(--color-background-card)', // Фон каждого элемента списка
+                backgroundImage: 'var(--texture-grain)',
+                backgroundSize: '4px 4px',
+                backgroundRepeat: 'repeat',
+                borderColor: 'var(--color-neutral)', // Тонкая светлая граница
+                boxShadow: '1px 1px 0px 0px var(--color-neutral)', // Еще более легкая тень
+              }}
+            >
               <div className="mb-1 sm:mb-0">
-                <p className="text-sm sm:text-base font-semibold text-bauhaus-white">
+                <p className="text-sm sm:text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
                   Тест #{allResults.length - index} (
                   {new Date(result.timestamp).toLocaleDateString()} {new Date(result.timestamp).toLocaleTimeString()}
                   )
                 </p>
-                <p className="text-xs sm:text-sm text-bauhaus-light-gray">
-                  Балл: <span className="font-bold text-bauhaus-white">{result.scorePercentage.toFixed(2)}%</span>
+                <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  Балл: <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{result.scorePercentage.toFixed(2)}%</span>
                 </p>
-                <p className="text-xs sm:text-sm text-bauhaus-light-gray">
-                  Правильных: <span className="text-bauhaus-blue">{result.correctAnswers}</span> / Всего: <span className="text-bauhaus-white">{result.totalQuestions}</span>
+                <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  Правильных: <span style={{ color: 'var(--color-accent-primary)' }}>{result.correctAnswers}</span> / Всего: <span style={{ color: 'var(--color-text-primary)' }}>{result.totalQuestions}</span>
                 </p>
               </div>
             </div>
@@ -407,11 +534,20 @@ const AnalyticsDashboard: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
         <button
           onClick={handleClearAllResults}
-          className="bg-bauhaus-red hover:bg-red-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-bauhaus-red focus:ring-opacity-50"
+          className="font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-opacity-50"
+          style={getButtonStyle(false)} // Используем error-цвет
+          onMouseEnter={(e) => handleButtonHover(e, true)}
+          onMouseLeave={(e) => handleButtonHover(e, false)}
         >
           Очистить все результаты
         </button>
-        <Link to="/" className="bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-bauhaus-blue focus:ring-opacity-50">
+        <Link
+          to="/"
+          className="font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-opacity-50"
+          style={getButtonStyle(true)} // Используем accent-primary
+          onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true)}
+          onMouseLeave={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, false)}
+        >
           Вернуться к началу
         </Link>
       </div>
