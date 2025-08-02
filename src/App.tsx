@@ -25,33 +25,37 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="min-h-screen bg-gray-900 font-sans text-gray-100 p-4 flex flex-col"> {/* Добавлен flex-col для вертикального размещения контента и кнопки */}
+      {/* Главный контейнер приложения: фон, минимальная высота, центрирование, отступы */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex flex-col items-center justify-center p-4">
+        {/* Шапка приложения */}
         <header className="text-center py-8">
-          <h1 className="text-5xl font-extrabold text-white mb-4">HRBP-Тест</h1>
-          <p className="text-xl text-gray-300">Оценка компетенций HR Business Partner</p>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-4">HRBP-Тест</h1> {/* Адаптивный размер заголовка */}
+          <p className="text-lg sm:text-xl text-gray-300">Оценка компетенций HR Business Partner</p> {/* Адаптивный размер текста */}
         </header>
 
-        <main className="container mx-auto mt-8 flex-grow"> {/* Добавлен flex-grow, чтобы контент занимал доступное пространство */}
+        {/* Основной контент (динамически отображаемый через Routes) */}
+        <main className="container mx-auto mt-8 flex-grow max-w-4xl px-4 sm:px-6 lg:px-8"> {/* Добавлены max-w и padding для адаптивности */}
           <Routes>
+            {/* Домашняя страница */}
             <Route
               path="/"
               element={
-                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)]">
-                  <p className="text-3xl font-semibold text-white mb-8 text-center max-w-2xl leading-relaxed">
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-200px)] text-center p-4"> {/* Добавлен p-4 */}
+                  <p className="text-xl sm:text-3xl font-semibold text-white mb-8 max-w-2xl leading-relaxed"> {/* Адаптивный размер текста */}
                     Этот тест поможет оценить ваши компетенции HR Business Partner для российского рынка.
                     Разработан как инструмент уровня специализированных образовательных учреждений.
                   </p>
                   {showResumeOption ? (
-                    <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                    <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full max-w-md"> {/* Адаптивные классы */}
                       <button
                         onClick={resumeTest}
-                        className="bg-gradient-to-r from-green-700 to-green-900 hover:from-green-800 hover:to-green-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 inline-block"
+                        className="w-full bg-gradient-to-r from-green-700 to-green-900 hover:from-green-800 hover:to-green-950 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50"
                       >
                         Продолжить Тест
                       </button>
                       <button
                         onClick={startNewTest}
-                        className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
+                        className="w-full bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50"
                       >
                         Начать Новый Тест
                       </button>
@@ -59,7 +63,7 @@ const App: React.FC = () => {
                   ) : (
                     <Link to="/test"
                       onClick={startNewTest}
-                      className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-4 px-12 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
+                      className="bg-gradient-to-r from-red-700 to-red-900 hover:from-red-800 hover:to-red-950 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-red-500 focus:ring-opacity-50 inline-block"
                     >
                       Начать Тест
                     </Link>
@@ -67,10 +71,11 @@ const App: React.FC = () => {
                 </div>
               }
             />
+            {/* Экран теста */}
             <Route
               path="/test"
               element={
-                <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center items-center">
+                <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center items-center p-4"> {/* Добавлен p-4 */}
                   {testStarted && questions.length > 0 && !testFinished ? (
                     <QuestionRenderer
                       question={questions[currentQuestionIndex]}
@@ -86,49 +91,53 @@ const App: React.FC = () => {
                       progressPercentage={progressPercentage}
                     />
                   ) : testFinished ? (
-                    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
+                    /* Блок отображения общих результатов после завершения теста */
+                    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center border border-gray-700/50"> {/* Адаптивные отступы и max-w */}
                       {testResult ? (
                         <>
-                          <h2 className="text-4xl font-bold text-white mb-4">Тест завершен!</h2>
-                          <p className="text-xl text-gray-300 mb-6">
+                          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Тест завершен!</h2> {/* Адаптивный размер заголовка */}
+                          <p className="text-lg sm:text-xl text-gray-300 mb-6">
                             Ваши результаты:
                           </p>
-                          <div className="text-left mx-auto max-w-md space-y-2 mb-8 text-lg">
+                          <div className="text-left mx-auto max-w-sm space-y-2 mb-8 text-base sm:text-lg"> {/* Адаптивный размер текста */}
                             <p>Всего вопросов: <span className="font-semibold text-white">{testResult.totalQuestions}</span></p>
                             <p>Правильных ответов: <span className="font-semibold text-green-400">{testResult.correctAnswers}</span></p>
                             <p>Неправильных ответов: <span className="font-semibold text-red-400">{testResult.incorrectAnswers}</span></p>
                             <p>Пропущено вопросов: <span className="font-semibold text-yellow-400">{testResult.unanswered}</span></p>
-                            <p className="text-2xl pt-4">Итоговый балл: <span className="font-extrabold text-white">{testResult.scorePercentage.toFixed(2)}%</span></p>
+                            <p className="text-xl sm:text-2xl pt-4">Итоговый балл: <span className="font-extrabold text-white">{testResult.scorePercentage.toFixed(2)}%</span></p>
                           </div>
-                          <Link to="/results"
-                            className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block mt-4 mr-4"
-                          >
-                            Посмотреть детальные результаты
-                          </Link>
-                          <Link to="/" onClick={startNewTest} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block mt-4">
-                            Пройти тест снова
-                          </Link>
+                          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6"> {/* Адаптивные классы для кнопок */}
+                            <Link to="/results"
+                              className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
+                            >
+                              Посмотреть детальные результаты
+                            </Link>
+                            <Link to="/" onClick={startNewTest} className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center">
+                              Пройти тест снова
+                            </Link>
+                          </div>
                         </>
                       ) : (
-                        <p className="text-white text-2xl">Расчет результатов...</p>
+                        <p className="text-white text-xl sm:text-2xl">Расчет результатов...</p>
                       )}
                     </div>
                   ) : (
-                    <p className="text-white text-2xl">Загрузка вопросов или тест еще не начат...</p>
+                    <p className="text-white text-xl sm:text-2xl">Загрузка вопросов или тест еще не начат...</p>
                   )}
                 </div>
               }
             />
+            {/* Экран детальных результатов */}
             <Route
               path="/results"
               element={
-                <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center items-center">
+                <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center items-center p-4"> {/* Добавлен p-4 */}
                   {testResult ? (
                     <ResultDetailView testResult={testResult} questions={questions} userAnswers={userAnswers} />
                   ) : (
-                    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-8 max-w-2xl w-full mx-auto text-center border border-gray-700/50">
-                      <p className="text-white text-2xl">Результаты не найдены. Пожалуйста, пройдите тест.</p>
-                      <Link to="/" onClick={startNewTest} className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
+                    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center border border-gray-700/50"> {/* Адаптивные отступы и max-w */}
+                      <p className="text-white text-xl sm:text-2xl">Результаты не найдены. Пожалуйста, пройдите тест.</p> {/* Адаптивный размер текста */}
+                      <Link to="/" onClick={startNewTest} className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block">
                         Начать Тест
                       </Link>
                     </div>
@@ -136,15 +145,16 @@ const App: React.FC = () => {
                 </div>
               }
             />
-            <Route path="/analytics" element={<AnalyticsDashboard />} /> {/* НОВОЕ: Маршрут для дашборда */}
+            {/* Маршрут для дашборда аналитики */}
+            <Route path="/analytics" element={<AnalyticsDashboard />} />
           </Routes>
         </main>
 
-        {/* НОВОЕ: Кнопка для перехода на дашборд, расположена после main */}
-        <div className="mt-8 text-center pb-4"> {/* Добавлен pb-4 для отступа снизу */}
+        {/* Кнопка для перехода на дашборд (расположена после main) */}
+        <div className="mt-8 text-center pb-4 px-4 sm:px-6 lg:px-8"> {/* Добавлены адаптивные отступы */}
           <Link
             to="/analytics"
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105"
+            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 text-base sm:text-lg" {/* Адаптивный размер текста */}
           >
             Посмотреть Аналитику
           </Link>
