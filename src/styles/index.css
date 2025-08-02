@@ -7,32 +7,50 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --color-background-light-beige: #28486e; /* Темно-синий фон */
-  --color-background-card: #fadeb1; /* НОВОЕ: Более светлый бежевый для карточек и хедера */
-  --color-text-primary: #3A4232;
-  --color-text-secondary: #6E7766;
-  --color-accent-primary: #67A1BF;
-  --color-accent-secondary: #A3C690;
-  --color-success: #A3C690;
-  --color-error: #E07A5F;
-  --color-neutral: #FFF5E0; /* НОВОЕ: Очень светлый оттенок для каёмочки и нейтральных элементов */
-  --color-button-start-test-bg: #fadeb1; /* НОВОЕ: Цвет кнопки старта соответствует цвету карточки */
-  --color-button-start-test-text: #3A4232;
-  --color-button-text-dark: #3A4232;
-  --color-option-border: #A3C690;
-  --color-level-junior: #67A1BF;
-  --color-level-middle: #A3C690;
-  --color-level-senior: #E07A5F;
-  --color-level-default: #6E7766;
-  --texture-grain: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4" viewBox="0 0 4 4"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="2" stitchTiles="stitch" result="fractal"></feTurbulence><feColorMatrix type="saturate" values="0"></feColorMatrix><feComponentTransfer><feFuncA type="linear" slope="0.15"></feFuncA></feComponentTransfer></filter><rect width="100%" height="100%" filter="url(#noise)"></rect></svg>');
-  
-  --color-button-text: var(--color-button-start-test-text);
+@layer base {
+  :root {
+    /* Основные цвета новой палитры */
+    --color-background: #28486e; /* Темно-синий фон страницы */
+    --color-background-card: #fadeb1; /* Светло-бежевый для карточек, хедера, графиков */
+    
+    /* Цвета текста */
+    --color-text-primary: #3A4232; /* Темно-зеленый (основной, для заголовков, основного текста) */
+    --color-text-secondary: #6E7766; /* Приглушенный средне-серый (вторичный текст, подписи) */
+    --color-neutral: #FFF5E0; /* Очень светлый бежевый (нейтральный, для светлых границ, акцентов, текста на цветных кнопках) */
+
+    /* Акцентные цвета */
+    --color-accent-primary: #67A1BF; /* Серо-голубой (основной акцент: кнопки, прогресс-бары, правильные ответы) */
+    --color-accent-secondary: #A3C690; /* Оливково-зеленый (вторичный акцент: средний балл, ховер-состояния) */
+    
+    /* Цвета состояний */
+    --color-error: #E07A5F; /* Оранжево-красный (для ошибок, неправильных ответов, кнопки "Очистить") */
+    --color-success: var(--color-accent-secondary); /* Используем вторичный акцент для успеха */
+    --color-warning: #f7b32b; /* Желтый (для предупреждений, если понадобится) */
+
+    /* Цвета для кнопок и элементов, используемые в компонентах */
+    /* Эти переменные привязывают поведение кнопок к основной палитре */
+    --button-primary-bg: var(--color-accent-primary);
+    --button-primary-text: var(--color-neutral);
+    --button-primary-border: var(--color-text-primary); /* Темная граница для акцентных кнопок */
+    
+    --button-secondary-bg: var(--color-neutral); /* Для кнопки "Начать новый тест" */
+    --button-secondary-text: var(--color-text-primary);
+    --button-secondary-border: var(--color-neutral); /* Светлая граница для светлых кнопок */
+
+    /* Текстуры */
+    /* Упрощенная и более производительная зернистая текстура */
+    --texture-grain: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v1H0V0zm2 2h1v1H2V2zm0 0h1v1H2V2zm1 1h1v1H3V3z'/%3E%3C/g%3E%3C/svg%3E");
+    /* Более плотная текстура для фона, если потребуется */
+    --texture-dense-grain: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='0.08' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v1H0V0zm2 2h1v1H2V2zm0 0h1v1H2V2zm1 1h1v1H3V3z'/%3E%3C/g%3E%3C/svg%3E");
+    
+    --texture-grid: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236e7766' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v10H0V0zm9 0h1v10H9V0zM0 9h10v1H0V9z'/%3E%3C/g%3E%3C/svg%3E");
+
+  }
 }
 
 body {
-  background-color: var(--color-background-light-beige);
-  background-image: var(--texture-grain);
+  background-color: var(--color-background); /* Использовать основную переменную фона */
+  background-image: var(--texture-grain); /* Применить зернистость к телу */
   background-size: 4px 4px;
   background-repeat: repeat;
   color: var(--color-text-primary);
