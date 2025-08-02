@@ -1,6 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { TestResult } from '../../types/test.d';
-import { Link } from 'react-router-dom'; // Используем Link для навигации
+import { Link } from 'react-router-dom';
+
+// НОВЫЕ ИМПОРТЫ ДЛЯ ГРАФИКОВ
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+// НОВАЯ РЕГИСТРАЦИЯ КОМПОНЕНТОВ CHART.JS
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults';
 
@@ -8,15 +32,15 @@ const AnalyticsDashboard: React.FC = () => {
   const [allResults, setAllResults] = useState<TestResult[]>([]);
   const [averageScore, setAverageScore] = useState<string>('0.00');
   const [totalTestsCompleted, setTotalTestsCompleted] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(true); // Вернули состояние загрузки
-  const [error, setError] = useState<string | null>(null); // Вернули состояние ошибки
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     try {
       const savedResultsString = localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
       if (savedResultsString) {
         const parsedResults: TestResult[] = JSON.parse(savedResultsString);
-        
+
         // Сортируем результаты по времени, чтобы новые были сверху
         const sortedResults = parsedResults.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         setAllResults(sortedResults);
@@ -43,7 +67,7 @@ const AnalyticsDashboard: React.FC = () => {
       setAverageScore('0.00');
       localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_RESULTS); // Очищаем, если данные повреждены
     } finally {
-      setLoading(false); // Завершили загрузку
+      setLoading(false);
     }
   }, []);
 
@@ -54,8 +78,78 @@ const AnalyticsDashboard: React.FC = () => {
       setAllResults([]);
       setTotalTestsCompleted(0);
       setAverageScore('0.00');
-      setError(null); // Сбрасываем ошибку, если была
+      setError(null);
     }
+  };
+
+  // НОВАЯ ЛОГИКА ДЛЯ ДАННЫХ ГРАФИКА
+  const chartData = {
+    // Labels: номера тестов в порядке возрастания (старые к новым)
+    labels: allResults.map((_, index) => `Тест #${index + 1}`),
+    datasets: [
+      {
+        label: 'Балл теста (%)',
+        data: allResults.map(result => result.scorePercentage),
+        fill: false,
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1,
+        pointBackgroundColor: 'rgb(75, 192, 192)',
+        pointBorderColor: 'rgb(75, 192, 192)',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgb(75, 192, 192)',
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+        labels: {
+          color: 'white',
+        },
+      },
+      title: {
+        display: true,
+        text: 'Прогресс по баллам за тесты',
+        color: 'white',
+        font: {
+          size: 18,
+        },
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            return `Балл: ${context.raw.toFixed(2)}%`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: 'lightgray',
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+      },
+      y: {
+        ticks: {
+          color: 'lightgray',
+          callback: function(value: string | number) {
+            return `${value}%`;
+          }
+        },
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        min: 0,
+        max: 100,
+      },
+    },
   };
 
   if (loading) {
@@ -92,6 +186,15 @@ const AnalyticsDashboard: React.FC = () => {
           <p className="text-lg sm:text-xl text-gray-300">Средний балл</p>
         </div>
       </div>
+
+      {/* НОВОЕ: Блок с графиком */}
+      {allResults.length > 0 && ( // Показываем график только если есть данные
+        <div className="mb-8 p-4 bg-gray-800 rounded-lg border border-gray-700">
+          <div style={{ height: '300px' }}> {/* Задаем фиксированную высоту для графика */}
+            <Line data={chartData} options={chartOptions} />
+          </div>
+        </div>
+      )}
 
       {/* Блок со списком пройденных тестов */}
       <h3 className="text-xl sm:text-2xl font-bold mb-4 text-white text-center">История Пройденных Тестов</h3>
@@ -134,7 +237,7 @@ const AnalyticsDashboard: React.FC = () => {
           Вернуться к началу
         </Link>
       </div>
-    </div> // Возможно, здесь была проблема: этот div должен закрывать корневой div.
+    </div>
   );
 };
 
