@@ -215,7 +215,7 @@ const useTestLogic = (): UseTestLogicReturn => {
   const startNewTest = useCallback(() => {
     clearLocalStorage();
     const newQuestions = generateQuestions(); // Генерируем вопросы только один раз
-    setQuestions(newQuestions);
+    setQuestions(newQuestions); // Устанавливаем вопросы
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTestStarted(true);
@@ -252,7 +252,6 @@ const useTestLogic = (): UseTestLogicReturn => {
       try {
         const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
         const parsedIndex: number = parseInt(savedIndex, 10);
-        const parsedLastQuestionStartTime: number = parseInt(savedLastQuestionStartTime || '0', 10);
 
         if (parsedIndex < loadedQuestions.length) {
           setUserAnswers(parsedAnswers);
@@ -309,35 +308,38 @@ const useTestLogic = (): UseTestLogicReturn => {
   // --- КОНЕЦ: Все функции useCallback определены ---
 
 
-  // Effect для инициализации вопросов при первом рендере и проверки прогресса
+  // Effect для начальной загрузки состояния из localStorage и определения showResumeOption
   useEffect(() => {
-    const initialQuestions = generateQuestions();
-    setQuestions(initialQuestions);
-
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
+    // Только если тест был начат и есть сохраненные данные, показываем опцию "Продолжить"
     if (savedAnswers && savedIndex && savedTestStarted === 'true' && savedOverallTestStartTime) {
       try {
         const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
         const parsedIndex: number = parseInt(savedIndex, 10);
+        
+        // Генерируем вопросы здесь, чтобы проверить их длину для showResumeOption
+        // Но НЕ устанавливаем их в состояние questions, это делает startNewTest/resumeTest
+        const initialQuestionsCheck = generateQuestions(); 
 
-        if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < initialQuestions.length) {
+        if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length) {
           setShowResumeOption(true);
           setOverallTestStartTime(savedOverallTestStartTime);
+          // ВАЖНО: Мы не устанавливаем questions здесь. Они будут установлены startNewTest/resumeTest
         } else {
-          clearLocalStorage();
+          clearLocalStorage(); // Очищаем, если данные некорректны
         }
       } catch (e) {
         console.error('Failed to parse saved test data during initial load:', e);
         clearLocalStorage();
       }
     } else {
-      clearLocalStorage();
+      clearLocalStorage(); // Очищаем, если нет сохраненных данных или они неполные
     }
-  }, [clearLocalStorage]);
+  }, [clearLocalStorage]); // Зависимости
 
   // Effect для обработки таймера
   useEffect(() => {
