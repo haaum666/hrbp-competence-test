@@ -27,6 +27,7 @@ interface UseTestLogicReturn {
   handlePreviousQuestion: () => void;
   startNewTest: () => void;
   resumeTest: () => void;
+  resetTestStateForNavigation: () => void; // <-- ДОБАВЛЕНО: Новая функция
 }
 
 const useTestLogic = (): UseTestLogicReturn => {
@@ -176,10 +177,10 @@ const useTestLogic = (): UseTestLogicReturn => {
     if (currentQuestion.type === 'multiple-choice') {
         isAnswerCorrect = selectedOptionId === currentQuestion.correctAnswer;
     } else {
-        // Для 'case-study' или других типов, где нет однозначного correctAnswer,
-        // считаем ответ "правильным", если он был предоставлен.
-        // Если нужна более сложная логика для case-study, ее нужно будет реализовать здесь.
-        isAnswerCorrect = true;
+      // Для 'case-study' или других типов, где нет однозначного correctAnswer,
+      // считаем ответ "правильным", если он был предоставлен.
+      // Если нужна более сложная логика для case-study, ее нужно будет реализовать здесь.
+      isAnswerCorrect = true;
     }
 
     setUserAnswers((prevAnswers) => {
@@ -293,6 +294,17 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
   }, [startNewTest]);
 
+  // ДОБАВЛЕНО: Новая функция для сброса состояния теста при навигации
+  const resetTestStateForNavigation = useCallback(() => {
+    setTestStarted(false); // Сбрасываем флаг, что тест запущен
+    setCurrentQuestionIndex(0); // Сбрасываем индекс вопроса на 0
+    // userAnswers не сбрасываем, чтобы сохранить showResumeOption
+    setTestFinished(false); // Убеждаемся, что флаг завершения теста сброшен
+    setTestResult(null); // Очищаем результаты, если они были показаны
+    // showResumeOption, overallTestStartTime, remainingTime, questionStartTimeRef не сбрасываем
+    // Это позволит useTestLogic корректно определить showResumeOption на основе localStorage
+  }, []);
+
 
   // --- КОНЕЦ: Все функции useCallback определены ---
 
@@ -389,6 +401,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     handlePreviousQuestion,
     startNewTest,
     resumeTest,
+    resetTestStateForNavigation, // <-- ОБЯЗАТЕЛЬНО ВОЗВРАЩАЕМ
   };
 };
 
