@@ -40,8 +40,9 @@ const TestPage: React.FC = () => {
 
   // Функция для стилизации кнопок с нашей палитрой и текстурой
   const getButtonStyle = (isPrimary: boolean, isHoverable: boolean = true) => ({
-    backgroundColor: isPrimary ? 'var(--color-accent-secondary)' : 'var(--color-neutral)',
-    color: isPrimary ? 'var(--color-button-text)' : 'var(--color-text-primary)',
+    // ИСПРАВЛЕНО: Используем правильные CSS переменные
+    backgroundColor: isPrimary ? 'var(--color-button-start-test-bg)' : 'var(--color-neutral)',
+    color: isPrimary ? 'var(--color-button-start-test-text)' : 'var(--color-text-primary)', // ИСПРАВЛЕНО
     backgroundImage: 'var(--texture-grain)',
     backgroundSize: '4px 4px',
     backgroundRepeat: 'repeat',
@@ -52,9 +53,10 @@ const TestPage: React.FC = () => {
   // Функции для обработки hover-эффектов кнопок
   const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, isPrimary: boolean, isEnter: boolean) => {
     if (isPrimary) {
-      e.currentTarget.style.filter = isEnter ? 'brightness(1.1)' : 'brightness(1.0)'; // Оливковый: слегка ярче при наведении
+      // ИСПРАВЛЕНО: Используем более универсальное затемнение/осветление
+      e.currentTarget.style.filter = isEnter ? 'brightness(0.9)' : 'brightness(1.0)';
     } else {
-      e.currentTarget.style.filter = isEnter ? 'brightness(0.95)' : 'brightness(1.0)'; // Нейтральный: слегка темнее при наведении
+      e.currentTarget.style.filter = isEnter ? 'brightness(0.95)' : 'brightness(1.0)';
     }
   };
 
@@ -178,10 +180,7 @@ const TestPage: React.FC = () => {
         </div>
       )}
 
-      {/* Сообщение, если что-то пошло не так (например, вопросы не загрузились) */}
-      {!testStarted && !testFinished && questions.length === 0 && (
-        <p className="text-xl sm:text-2xl" style={{ color: 'var(--color-text-primary)' }}>Загрузка вопросов или тест еще не начат...</p>
-      )}
+      {/* Удален блок с сообщением "Загрузка вопросов или тест еще не начат..." */}
     </>
   );
 };
