@@ -37,7 +37,6 @@ const AnalyticsDashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // НОВЫЕ СОСТОЯНИЯ ДЛЯ АНАЛИТИКИ ОТВЕТОВ И ВРЕМЕНИ
   const [avgCorrect, setAvgCorrect] = useState<number>(0);
   const [avgIncorrect, setAvgIncorrect] = useState<number>(0);
   const [avgUnanswered, setAvgUnanswered] = useState<number>(0);
@@ -49,7 +48,6 @@ const AnalyticsDashboard: React.FC = () => {
       if (savedResultsString) {
         const parsedResults: TestResult[] = JSON.parse(savedResultsString);
 
-        // Сортируем результаты по времени, чтобы новые были сверху
         const sortedResults = parsedResults.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         setAllResults(sortedResults);
 
@@ -137,7 +135,6 @@ const AnalyticsDashboard: React.FC = () => {
     }
   }, []);
 
-  // Функция для очистки всех результатов
   const handleClearAllResults = () => {
     if (window.confirm('Вы уверены, что хотите удалить все данные о пройденных тестах? Это действие необратимо.')) {
       localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
@@ -154,18 +151,18 @@ const AnalyticsDashboard: React.FC = () => {
 
   // НОВАЯ ЛОГИКА ДЛЯ ДАННЫХ ГРАФИКА
   const chartData = {
-    labels: allResults.map((_, index) => `Тест #${allResults.length - index}`), // Обратный порядок для Labels
+    labels: allResults.map((_, index) => `Тест #${allResults.length - index}`),
     datasets: [
       {
         label: 'Балл теста (%)',
         data: allResults.map(result => result.scorePercentage),
         fill: false,
-        borderColor: 'var(--color-accent-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        borderColor: 'var(--color-accent-primary)',
         tension: 0.2,
-        pointBackgroundColor: 'var(--color-accent-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        pointBorderColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        pointHoverBackgroundColor: 'var(--color-error)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        pointHoverBorderColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        pointBackgroundColor: 'var(--color-accent-primary)',
+        pointBorderColor: 'var(--color-neutral)',
+        pointHoverBackgroundColor: 'var(--color-error)',
+        pointHoverBorderColor: 'var(--color-neutral)',
         borderWidth: 2,
       },
     ],
@@ -178,7 +175,7 @@ const AnalyticsDashboard: React.FC = () => {
       legend: {
         position: 'top' as const,
         labels: {
-          color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (темный текст на светлом фоне графика)
+          color: 'var(--color-text-primary)',
           font: {
             size: 14,
           },
@@ -187,7 +184,7 @@ const AnalyticsDashboard: React.FC = () => {
       title: {
         display: true,
         text: 'Прогресс по баллам за тесты',
-        color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        color: 'var(--color-text-primary)',
         font: {
           family: 'Montserrat',
           size: 20,
@@ -200,28 +197,28 @@ const AnalyticsDashboard: React.FC = () => {
             return `Балл: ${context.raw.toFixed(2)}%`;
           }
         },
-        backgroundColor: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        titleColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        bodyColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        borderColor: 'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        backgroundColor: 'var(--color-text-primary)',
+        titleColor: 'var(--color-neutral)',
+        bodyColor: 'var(--color-neutral)',
+        borderColor: 'var(--color-text-secondary)',
         borderWidth: 1,
       }
     },
     scales: {
       x: {
         ticks: {
-          color: 'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+          color: 'var(--color-text-secondary)',
           font: {
             family: 'Inter',
           }
         },
         grid: {
-          color: 'rgba(58, 66, 50, 0.2)', // bauhaus-dark-gray с прозрачностью (изменен цвет)
+          color: 'rgba(58, 66, 50, 0.2)', // Adjusted to our text-primary with transparency
         },
         title: {
             display: true,
             text: 'Номер теста (по убыванию даты)',
-            color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+            color: 'var(--color-text-primary)',
             font: {
                 family: 'Inter',
                 size: 14,
@@ -230,7 +227,7 @@ const AnalyticsDashboard: React.FC = () => {
       },
       y: {
         ticks: {
-          color: 'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+          color: 'var(--color-text-secondary)',
           callback: function(value: string | number) {
             return `${value}%`;
           },
@@ -239,14 +236,14 @@ const AnalyticsDashboard: React.FC = () => {
           }
         },
         grid: {
-          color: 'rgba(58, 66, 50, 0.2)', // bauhaus-dark-gray с прозрачностью (изменен цвет)
+          color: 'rgba(58, 66, 50, 0.2)', // Adjusted to our text-primary with transparency
         },
         min: 0,
         max: 100,
         title: {
             display: true,
             text: 'Процент правильных ответов',
-            color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+            color: 'var(--color-text-primary)',
             font: {
                 family: 'Inter',
                 size: 14,
@@ -256,7 +253,6 @@ const AnalyticsDashboard: React.FC = () => {
     },
   };
 
-  // НОВЫЕ ДАННЫЕ И ОПЦИИ ДЛЯ КРУГОВОЙ ДИАГРАММЫ
   const pieChartData = {
     labels: ['Правильные', 'Неправильные', 'Без ответа'],
     datasets: [
@@ -264,11 +260,11 @@ const AnalyticsDashboard: React.FC = () => {
         label: 'Среднее соотношение ответов (%)',
         data: [avgCorrect, avgIncorrect, avgUnanswered],
         backgroundColor: [
-          'var(--color-accent-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (серо-голубой для правильных)
-          'var(--color-error)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (оранжево-красный для неправильных)
-          'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (приглушенный средне-серый для без ответа)
+          'var(--color-accent-primary)',
+          'var(--color-error)',
+          'var(--color-text-secondary)',
         ],
-        borderColor: 'var(--color-background-card)', // ИСПОЛЬЗУЕМ ПАЛИТРУ (светлый бежевый для разделения)
+        borderColor: 'var(--color-background-card)',
         borderWidth: 2,
       },
     ],
@@ -281,7 +277,7 @@ const AnalyticsDashboard: React.FC = () => {
       legend: {
         position: 'right' as const,
         labels: {
-          color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+          color: 'var(--color-text-primary)',
           font: {
             size: 14,
           },
@@ -290,7 +286,7 @@ const AnalyticsDashboard: React.FC = () => {
       title: {
         display: true,
         text: 'Среднее соотношение ответов по всем тестам',
-        color: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        color: 'var(--color-text-primary)',
         font: {
           family: 'Montserrat',
           size: 20,
@@ -305,90 +301,26 @@ const AnalyticsDashboard: React.FC = () => {
             return `${label}: ${value.toFixed(2)}%`;
           }
         },
-        backgroundColor: 'var(--color-text-primary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        titleColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        bodyColor: 'var(--color-neutral)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
-        borderColor: 'var(--color-text-secondary)', // ИСПОЛЬЗУЕМ ПАЛИТРУ
+        backgroundColor: 'var(--color-text-primary)',
+        titleColor: 'var(--color-neutral)',
+        bodyColor: 'var(--color-neutral)',
+        borderColor: 'var(--color-text-secondary)',
         borderWidth: 1,
       }
     },
   };
 
-  // Стили кнопок для этой страницы
-  const getButtonStyle = (isPrimary: boolean, isHoverable: boolean = true) => ({
-    backgroundColor: isPrimary ? 'var(--color-accent-primary)' : 'var(--color-error)', // Для кнопок "Вернуться" и "Очистить"
-    color: 'var(--color-neutral)', // Текст всегда светлый на цветной кнопке
-    backgroundImage: 'var(--texture-grain)',
-    backgroundSize: '4px 4px',
-    backgroundRepeat: 'repeat',
-    filter: isHoverable ? 'brightness(1.0)' : 'none',
-    transition: isHoverable ? 'filter 0.3s ease' : 'none',
-    border: '1px solid var(--color-text-primary)', // Тонкая темная граница для кнопок
-  });
-
-  const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, isEnter: boolean) => {
-    e.currentTarget.style.filter = isEnter ? 'brightness(0.9)' : 'brightness(1.0)';
-  };
-
-
-  if (loading) {
-    return (
-      <div
-        className="flex flex-col items-center justify-center text-center p-6 sm:p-8 rounded-xl shadow-xl max-w-2xl w-full mx-auto"
-        style={{
-          backgroundColor: 'var(--color-background-card)', // Новый фон
-          backgroundImage: 'var(--texture-grain)', // Зернистость
-          backgroundSize: '4px 4px',
-          backgroundRepeat: 'repeat',
-          color: 'var(--color-text-primary)', // Темный текст
-          border: '2px solid var(--color-neutral)', // Светлая каёмочка
-          boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки"
-        }}
-      >
-        <p className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--color-text-primary)' }}>Загрузка аналитических данных...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div
-        className="flex flex-col items-center justify-center text-center p-6 sm:p-8 rounded-xl shadow-xl max-w-2xl w-full mx-auto"
-        style={{
-          backgroundColor: 'var(--color-background-card)', // Новый фон
-          backgroundImage: 'var(--texture-grain)', // Зернистость
-          backgroundSize: '4px 4px',
-          backgroundRepeat: 'repeat',
-          color: 'var(--color-error)', // Красный текст для ошибки
-          border: '2px solid var(--color-neutral)', // Светлая каёмочка
-          boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки"
-        }}
-      >
-        <p className="text-xl sm:text-2xl font-bold" style={{ color: 'var(--color-error)' }}>{error}</p>
-        <Link
-          to="/"
-          className="mt-6 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
-          style={getButtonStyle(true)} // Используем акцентный синий
-          onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true)}
-          onMouseLeave={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, false)}
-        >
-          Вернуться на главную
-        </Link>
-      </div>
-    );
-  }
-
   return (
     <div
-      className="rounded-xl shadow-2xl p-6 sm:p-8 max-w-4xl w-full mx-auto" // Удален backdrop-blur-md
+      className="rounded-xl p-6 sm:p-8 max-w-4xl w-full mx-auto" // Удалили shadow-2xl и backdrop-blur-md, добавим свою тень
       style={{
-        backgroundColor: 'var(--color-background-card)', // НОВЫЙ ФОН для всей панели
-        backgroundImage: 'var(--texture-grain)', // Зернистость
+        backgroundColor: 'var(--color-background-card)',
+        backgroundImage: 'var(--texture-grain)',
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
-        color: 'var(--color-text-primary)', // НОВЫЙ ОСНОВНОЙ ЦВЕТ ТЕКСТА
-        border: '2px solid var(--color-neutral)', // НОВАЯ КАЁМОЧКА
-        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // НОВЫЙ ЭФФЕКТ "СТЕНКИ"
+        color: 'var(--color-text-primary)',
+        border: '2px solid var(--color-neutral)',
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки" для всей панели
       }}
     >
       <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: 'var(--color-text-primary)' }}>
@@ -398,21 +330,21 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Блок с общей статистикой */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         <div
-          className="p-5 sm:p-6 rounded-lg border shadow-md flex flex-col items-center justify-center text-center"
+          className="p-5 sm:p-6 rounded-lg border flex flex-col items-center justify-center text-center" // Удален shadow-md
           style={{
-            backgroundColor: 'var(--color-background-card)', // Фон остается светлым
+            backgroundColor: 'var(--color-background-card)',
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            borderColor: 'var(--color-neutral)', // Тонкая светлая граница
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень
+            borderColor: 'var(--color-neutral)',
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень для вложенных карточек
           }}
         >
           <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: 'var(--color-accent-primary)' }}>{totalTestsCompleted}</p>
           <p className="text-lg sm:text-xl" style={{ color: 'var(--color-text-secondary)' }}>Пройдено тестов</p>
         </div>
         <div
-          className="p-5 sm:p-6 rounded-lg border shadow-md flex flex-col items-center justify-center text-center"
+          className="p-5 sm:p-6 rounded-lg border flex flex-col items-center justify-center text-center"
           style={{
             backgroundColor: 'var(--color-background-card)',
             backgroundImage: 'var(--texture-grain)',
@@ -426,7 +358,7 @@ const AnalyticsDashboard: React.FC = () => {
           <p className="text-lg sm:text-xl" style={{ color: 'var(--color-text-secondary)' }}>Средний балл</p>
         </div>
         <div
-          className="p-5 sm:p-6 rounded-lg border shadow-md flex flex-col items-center justify-center text-center"
+          className="p-5 sm:p-6 rounded-lg border flex flex-col items-center justify-center text-center"
           style={{
             backgroundColor: 'var(--color-background-card)',
             backgroundImage: 'var(--texture-grain)',
@@ -444,14 +376,14 @@ const AnalyticsDashboard: React.FC = () => {
       {/* Блок с графиком прогресса по баллам (линейный) */}
       {allResults.length > 0 && (
         <div
-          className="mb-8 p-4 rounded-lg border shadow-md"
+          className="mb-8 p-4 rounded-lg border" // Удален shadow-md
           style={{
-            backgroundColor: 'var(--color-background-card)', // Фон графика
+            backgroundColor: 'var(--color-background-card)',
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            borderColor: 'var(--color-neutral)', // Тонкая светлая граница
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень
+            borderColor: 'var(--color-neutral)',
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
           }}
         >
           <div style={{ height: '350px' }}>
@@ -463,14 +395,14 @@ const AnalyticsDashboard: React.FC = () => {
       {/* НОВОЕ: Блок с круговой диаграммой соотношения ответов */}
       {allResults.length > 0 && (
         <div
-          className="mb-8 p-4 rounded-lg border shadow-md"
+          className="mb-8 p-4 rounded-lg border" // Удален shadow-md
           style={{
-            backgroundColor: 'var(--color-background-card)', // Фон графика
+            backgroundColor: 'var(--color-background-card)',
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            borderColor: 'var(--color-neutral)', // Тонкая светлая граница
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень
+            borderColor: 'var(--color-neutral)',
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
           }}
         >
           <div style={{ height: '350px' }}>
@@ -483,33 +415,33 @@ const AnalyticsDashboard: React.FC = () => {
       <h3 className="text-xl sm:text-2xl font-bold mb-4 text-center" style={{ color: 'var(--color-text-primary)' }}>История Пройденных Тестов</h3>
       {allResults.length === 0 ? (
         <div
-          className="text-center text-base sm:text-lg p-4 rounded-lg border shadow-md"
+          className="text-center text-base sm:text-lg p-4 rounded-lg border" // Удален shadow-md
           style={{
-            backgroundColor: 'var(--color-background-card)', // Фон блока
+            backgroundColor: 'var(--color-background-card)',
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            color: 'var(--color-text-secondary)', // Вторичный текст
-            borderColor: 'var(--color-neutral)', // Тонкая светлая граница
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень
+            color: 'var(--color-text-secondary)',
+            borderColor: 'var(--color-neutral)',
+            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
           }}
         >
           <p className="mb-4">Нет данных о пройденных тестах для отображения истории.</p>
           <p>Пройдите несколько тестов, чтобы увидеть их список.</p>
         </div>
       ) : (
-        <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3 scrollbar-thin scrollbar-thumb-bauhaus-dark-gray scrollbar-track-bauhaus-black">
+        <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3 scrollbar-custom"> {/* Изменен скроллбар на custom-класс */}
           {allResults.map((result, index) => (
             <div
               key={index}
-              className="p-3 sm:p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center shadow-sm"
+              className="p-3 sm:p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center" // Удален shadow-sm
               style={{
-                backgroundColor: 'var(--color-background-card)', // Фон каждого элемента списка
+                backgroundColor: 'var(--color-background-card)',
                 backgroundImage: 'var(--texture-grain)',
                 backgroundSize: '4px 4px',
                 backgroundRepeat: 'repeat',
-                borderColor: 'var(--color-neutral)', // Тонкая светлая граница
-                boxShadow: '1px 1px 0px 0px var(--color-neutral)', // Еще более легкая тень
+                borderColor: 'var(--color-neutral)',
+                boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень для элементов списка
               }}
             >
               <div className="mb-1 sm:mb-0">
@@ -530,23 +462,19 @@ const AnalyticsDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Блок с кнопками, включая "Очистить все результаты" */}
+      {/* Блок с кнопками */}
       <div className="flex flex-col sm:flex-row justify-center items-center mt-8 space-y-4 sm:space-y-0 sm:space-x-4">
         <button
           onClick={handleClearAllResults}
-          className="font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-opacity-50"
-          style={getButtonStyle(false)} // Используем error-цвет
-          onMouseEnter={(e) => handleButtonHover(e, true)}
-          onMouseLeave={(e) => handleButtonHover(e, false)}
+          className="font-bold py-3 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-opacity-50
+          button-error-style" // ИСПОЛЬЗУЕМ НОВЫЕ КЛАССЫ
         >
           Очистить все результаты
         </button>
         <Link
           to="/"
-          className="font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-opacity-50"
-          style={getButtonStyle(true)} // Используем accent-primary
-          onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true)}
-          onMouseLeave={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, false)}
+          className="font-bold py-3 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-opacity-50
+          button-primary-style" // ИСПОЛЬЗУЕМ НОВЫЕ КЛАССЫ
         >
           Вернуться к началу
         </Link>
