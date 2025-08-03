@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react'; // Добавили useRef
 import { Link, useLocation } from 'react-router-dom';
 import QuestionRenderer from '../components/test/QuestionRenderer';
 import ResultDetailView from '../components/test/ResultDetailView'; // Предполагается, что этот компонент используется для детального просмотра
@@ -25,12 +25,27 @@ const TestPage: React.FC = () => {
 
   const location = useLocation();
 
+  // Дополнительный реф для отслеживания предыдущего пути
+  const prevPathnameRef = useRef(location.pathname);
+
   useEffect(() => {
-    // Этот эффект сбрасывает состояние теста при переходе на главную страницу, если тест был начат.
-    // Это важно для корректного отображения начального экрана.
-    if (location.pathname === '/' && testStarted) {
+    // Этот эффект сбрасывает состояние теста ПРИ НАВИГАЦИИ на главную страницу
+    // И только если тест БЫЛ запущен.
+    // Это предотвращает сброс при первом рендере TestPage, когда мы уже на главной.
+    const currentPath = location.pathname;
+    const previousPath = prevPathnameRef.current;
+
+    // Условие:
+    // 1. Тест был запущен (testStarted)
+    // 2. Предыдущий путь НЕ был главной страницей (т.е. мы были на странице теста или другой)
+    // 3. Текущий путь СТАЛ главной страницей ('/')
+    if (testStarted && previousPath !== '/' && currentPath === '/') {
+      console.log('TestPage useEffect: Обнаружен переход с тестовой страницы на главную. Сброс состояния.');
       resetTestStateForNavigation();
     }
+    
+    // Обновляем реф с текущим путем для следующего рендера
+    prevPathnameRef.current = currentPath; 
   }, [location.pathname, testStarted, resetTestStateForNavigation]);
 
   // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК
@@ -166,7 +181,7 @@ const TestPage: React.FC = () => {
             </button>
             <Link
               to="/"
-              onClick={startNewTest}
+              onClick={startNewTest} // Уберите вызов startNewTest здесь, если вы хотите просто вернуться
               className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
               style={getButtonStyle(true)} // Первичный стиль
               onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true, true)}
