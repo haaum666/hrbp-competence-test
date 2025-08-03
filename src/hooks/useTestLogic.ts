@@ -308,49 +308,54 @@ const useTestLogic = (): UseTestLogicReturn => {
   // --- КОНЕЦ: Все функции useCallback определены ---
 
 
- // Effect для начальной загрузки состояния из localStorage и определения showResumeOption
+// src/hooks/useTestLogic.ts
+
+// Effect для начальной загрузки состояния из localStorage и определения showResumeOption
 useEffect(() => {
+  // console.log('useEffect (showResumeOption): Выполняется.'); // Оставьте, если хотите для отладки
   const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
   const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
   const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
   const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
-  // Проверяем, есть ли сохраненный тест, который можно продолжить
-  // Условие: должны присутствовать все ключевые элементы сохраненного состояния
+  // console.log('useEffect (showResumeOption): savedTestStarted из localStorage:', savedTestStarted); // Оставьте, если хотите для отладки
+  // console.log('useEffect (showResumeOption): showResumeOption текущее:', showResumeOption); // Оставьте, если хотите для отладки
+
+  let shouldShowResume = false;
+  let shouldClearStorage = false;
+
   if (savedAnswers && savedIndex && savedTestStarted === 'true' && savedOverallTestStartTime) {
+    // console.log('useEffect (showResumeOption): Найдены потенциальные сохраненные данные.'); // Оставьте, если хотите для отладки
     try {
       const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
       const parsedIndex: number = parseInt(savedIndex, 10);
-
-      // Генерируем вопросы для ПРОВЕРКИ их длины, не для установки в state!
-      // Это нужно, чтобы убедиться, что сохраненный индекс не выходит за пределы существующих вопросов
       const initialQuestionsCheck = generateQuestions();
 
-      // Если есть ответы, индекс корректен, и он не выходит за пределы количества вопросов
       if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length) {
-        setShowResumeOption(true);
+        shouldShowResume = true;
         setOverallTestStartTime(savedOverallTestStartTime);
-        // Важно: вопросы в state (setQuestions) НЕ устанавливаются здесь.
-        // Они будут установлены функцией resumeTest() или startNewTest() позже.
+        // console.log('useEffect (showResumeOption): Данные валидны, устанавливаем shouldShowResume = true.'); // Оставьте, если хотите для отладки
       } else {
-        // Если данные сохраненного теста некорректны (например, индекс вне границ, или нет ответов),
-        // тогда нужно очистить localStorage, чтобы не пытаться возобновить битый тест.
-        console.warn('Saved test data is invalid or incomplete, clearing localStorage.');
-        clearLocalStorage();
-        setShowResumeOption(false); // Убедимся, что опция продолжения не показывается
+        console.warn('useEffect (showResumeOption): Сохраненные данные теста невалидны или неполны. Инициируем очистку.');
+        shouldClearStorage = true;
       }
     } catch (e) {
-      // Если произошла ошибка парсинга JSON (данные повреждены), очищаем localStorage.
-      console.error('Failed to parse saved test data during initial load:', e);
-      clearLocalStorage();
-      setShowResumeOption(false);
+      console.error('useEffect (showResumeOption): Ошибка парсинга сохраненных данных:', e);
+      shouldClearStorage = true;
     }
   } else {
-    // Если никаких данных для возобновления теста нет в localStorage,
-    // нам не нужно ничего чистить. Просто убеждаемся, что опция "Продолжить" не показывается.
-    setShowResumeOption(false);
+    // console.log('useEffect (showResumeOption): Отсутствуют все необходимые данные для возобновления теста.'); // Оставьте, если хотите для отладки
   }
+
+  // Применяем изменения после всех проверок
+  setShowResumeOption(shouldShowResume);
+  if (shouldClearStorage) {
+    clearLocalStorage();
+    // console.log('useEffect (showResumeOption): localStorage очищен из-за некорректных данных.'); // Оставьте, если хотите для отладки
+  }
+
 }, [clearLocalStorage]); // Зависимость от clearLocalStorage, чтобы React правильно кэшировал хук.
+  
   // Effect для обработки таймера
   useEffect(() => {
     let timerId: number | undefined;
