@@ -4,10 +4,10 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // Импортируем наш пользовательский хук для логики теста
-import useTestLogic from './hooks/useTestLogic'; // <-- НОВОЕ: Импорт useTestLogic
+import useTestLogic from './hooks/useTestLogic';
 
 // Импортируем наш провайдер контекста
-import { TestLogicProvider } from './contexts/TestLogicContext'; // <-- НОВОЕ: Импорт TestLogicProvider
+import { TestLogicProvider } from './contexts/TestLogicContext';
 
 // Импортируем новый компонент Header
 import Header from './components/common/Header';
@@ -25,7 +25,10 @@ function App() {
     resetTestStateForNavigation,
     // ... здесь могут быть другие возвращаемые значения из useTestLogic,
     // если они когда-либо понадобятся глобально в App или в других Provider'ах
-  } = useTestLogic(); // <-- НОВОЕ: Использование useTestLogic
+  } = useTestLogic();
+
+  // НОВОЕ: Добавлен лог для отслеживания значения testStarted в App.tsx
+  console.log('App.tsx: testStarted из useTestLogic:', testStarted);
 
   return (
     <Router>
@@ -34,7 +37,7 @@ function App() {
       <TestLogicProvider
         testStarted={testStarted}
         resetTestStateForNavigation={resetTestStateForNavigation}
-      > {/* <-- НОВОЕ: Начало TestLogicProvider */}
+      >
         {/* Главный контейнер приложения:
             - min-h-screen для заполнения всей высоты экрана
             - flex flex-col для вертикального размещения содержимого (Header, main)
@@ -70,7 +73,7 @@ function App() {
 
           {/* Здесь можно добавить Футер или другие глобальные элементы, если они понадобятся */}
         </div>
-      </TestLogicProvider> {/* <-- НОВОЕ: Конец TestLogicProvider */}
+      </TestLogicProvider>
     </Router>
   );
 }
