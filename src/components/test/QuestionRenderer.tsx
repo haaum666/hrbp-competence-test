@@ -1,3 +1,5 @@
+// src/components/test/QuestionRenderer.tsx
+
 import React from 'react';
 import { Question, UserAnswer, QuestionLevel } from '../../types/test.d';
 
@@ -42,7 +44,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   totalQuestions,
   onAnswerSelect,
   currentUserAnswer,
-  onNextQuestion,
+  onNextQuestion, // Эту пропсу мы будем использовать только для "Завершить тест"
   onPreviousQuestion,
   isFirstQuestion,
   isLastQuestion,
@@ -52,9 +54,6 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   const selectedOptionId = currentUserAnswer?.selectedOptionId || '';
 
   // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК
-  // isPrimary: true - для основных кнопок действия (как "Следующий" в активном состоянии)
-  // isDanger: true - для кнопок опасного действия (как "Завершить тест")
-  // isSecondary: true - для второстепенных кнопок (как "Предыдущий", или "Следующий" в неактивном состоянии)
   const getButtonStyle = (type: 'primary' | 'secondary' | 'danger', isDisabled: boolean = false) => {
     let bgColorVar: string;
     let textColorVar: string;
@@ -64,27 +63,27 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     if (isDisabled) {
       bgColorVar = 'var(--color-neutral)';
       textColorVar = 'var(--color-text-secondary)';
-      borderColorVar = 'var(--color-neutral)'; // Или можно var(--color-text-secondary) для более темной рамки
-      hoverFilter = 'brightness(1.0)'; // Нет ховера для disabled
+      borderColorVar = 'var(--color-neutral)';
+      hoverFilter = 'brightness(1.0)';
     } else {
       switch (type) {
         case 'primary':
-          bgColorVar = 'var(--button-primary-bg)'; // Акцентный синий
-          textColorVar = 'var(--button-primary-text)'; // Светлый бежевый
-          borderColorVar = 'var(--button-primary-border)'; // Темная рамка
+          bgColorVar = 'var(--button-primary-bg)';
+          textColorVar = 'var(--button-primary-text)';
+          borderColorVar = 'var(--button-primary-border)';
           hoverFilter = 'brightness(0.9)';
           break;
         case 'danger':
-          bgColorVar = 'var(--color-error)'; // Оранжево-красный
-          textColorVar = 'var(--color-neutral)'; // Светлый бежевый
-          borderColorVar = 'var(--color-error)'; // Рамка в цвет кнопки
-          hoverFilter = 'brightness(1.1)'; // Чуть светлее при ховере
+          bgColorVar = 'var(--color-error)';
+          textColorVar = 'var(--color-neutral)';
+          borderColorVar = 'var(--color-error)';
+          hoverFilter = 'brightness(1.1)';
           break;
         case 'secondary':
         default:
-          bgColorVar = 'var(--button-secondary-bg)'; // Светлый бежевый (нейтральный)
-          textColorVar = 'var(--button-secondary-text)'; // Темный зеленый
-          borderColorVar = 'var(--button-secondary-border)'; // Светлая рамка
+          bgColorVar = 'var(--button-secondary-bg)';
+          textColorVar = 'var(--button-secondary-text)';
+          borderColorVar = 'var(--button-secondary-border)';
           hoverFilter = 'brightness(0.95)';
           break;
       }
@@ -96,13 +95,13 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       backgroundImage: 'var(--texture-grain)',
       backgroundSize: '4px 4px',
       backgroundRepeat: 'repeat',
-      filter: 'brightness(1.0)', // Начальная яркость
+      filter: 'brightness(1.0)',
       transition: 'filter 0.3s ease',
       border: `1px solid ${borderColorVar}`,
-      boxShadow: '2px 2px 0px 0px var(--color-text-primary)', // Эффект "стенки" для кнопок
+      boxShadow: '2px 2px 0px 0px var(--color-text-primary)',
       cursor: isDisabled ? 'not-allowed' : 'pointer',
-      opacity: isDisabled ? 0.7 : 1, // Немного прозрачности для disabled
-      '--hover-filter': hoverFilter, // Используем CSS Custom Property для ховера
+      opacity: isDisabled ? 0.7 : 1,
+      '--hover-filter': hoverFilter,
     };
   };
 
@@ -121,17 +120,17 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
     let hoverFilter: string;
 
     if (isSelected) {
-      bgColorVar = 'var(--color-accent-primary)'; // Синий
-      textColorVar = 'var(--color-neutral)'; // Светлый бежевый
-      borderColorVar = 'var(--color-accent-primary)'; // Синий
-      boxShadowVar = '2px 2px 0px 0px var(--color-text-primary)'; // Эффект "стенки" для выбранной
-      hoverFilter = 'brightness(1.0)'; // Не менять яркость выбранной при ховере
+      bgColorVar = 'var(--color-accent-primary)';
+      textColorVar = 'var(--color-neutral)';
+      borderColorVar = 'var(--color-accent-primary)';
+      boxShadowVar = '2px 2px 0px 0px var(--color-text-primary)';
+      hoverFilter = 'brightness(1.0)';
     } else {
-      bgColorVar = 'var(--color-neutral)'; // Светлый бежевый (нейтральный)
-      textColorVar = 'var(--color-text-primary)'; // Темный зеленый
-      borderColorVar = 'var(--color-text-primary)'; // Темный зеленый (для контраста)
-      boxShadowVar = '2px 2px 0px 0px var(--color-text-secondary)'; // Эффект "стенки" для невыбранной
-      hoverFilter = 'brightness(0.97)'; // Чуть затемнить при ховере
+      bgColorVar = 'var(--color-neutral)';
+      textColorVar = 'var(--color-text-primary)';
+      borderColorVar = 'var(--color-text-primary)';
+      boxShadowVar = '2px 2px 0px 0px var(--color-text-secondary)';
+      hoverFilter = 'brightness(0.97)';
     }
 
     return {
@@ -142,17 +141,17 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       backgroundRepeat: 'repeat',
       border: `1px solid ${borderColorVar}`,
       boxShadow: boxShadowVar,
-      filter: 'brightness(1.0)', // Начальная яркость
+      filter: 'brightness(1.0)',
       transition: 'filter 0.3s ease',
-      cursor: hasAnswered ? 'not-allowed' : 'pointer', // Курсор для disabled
-      opacity: hasAnswered && !isSelected ? 0.8 : 1, // Невыбранные опции становятся немного прозрачными после ответа
-      '--hover-filter-option': hoverFilter, // CSS Custom Property для ховера опций
+      cursor: hasAnswered ? 'not-allowed' : 'pointer',
+      opacity: hasAnswered && !isSelected ? 0.8 : 1,
+      '--hover-filter-option': hoverFilter,
     };
   };
 
   const handleOptionHover = (e: React.MouseEvent<HTMLButtonElement>, isSelected: boolean, hasAnswered: boolean, isEnter: boolean) => {
-    if (hasAnswered && !isSelected) return; // Не применять ховер к невыбранным после ответа
-    if (isSelected && hasAnswered) return; // Не менять яркость выбранной после ответа
+    if (hasAnswered && !isSelected) return;
+    if (isSelected && hasAnswered) return;
 
     const hoverFilter = e.currentTarget.style.getPropertyValue('--hover-filter-option');
     e.currentTarget.style.filter = isEnter ? hoverFilter : 'brightness(1.0)';
@@ -166,8 +165,8 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         backgroundImage: 'var(--texture-grain)',
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
-        border: '2px solid var(--color-neutral)', // Более выраженная рамка
-        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки" для карточки
+        border: '2px solid var(--color-neutral)',
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)',
         color: 'var(--color-text-primary)'
       }}
     >
@@ -202,7 +201,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         <div className="space-y-3 sm:space-y-4">
           {question.options.map((option) => {
             const isSelected = selectedOptionId === option.id;
-            const hasAnswered = currentUserAnswer !== null; // Пользователь уже выбрал ответ на этот вопрос
+            const hasAnswered = currentUserAnswer !== null;
 
             return (
               <button
@@ -227,11 +226,14 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       )}
 
       {/* Кнопки навигации */}
-      <div className="flex flex-col sm:flex-row justify-between items-center mt-6 space-y-4 sm:space-y-0 sm:space-x-4">
+      <div className={`flex flex-col sm:flex-row items-center mt-6 space-y-4 sm:space-y-0 ${isFirstQuestion ? 'justify-center' : 'justify-between sm:space-x-4'}`}>
         {!isFirstQuestion && (
           <button
             onClick={onPreviousQuestion}
-            className="w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50"
+            className={`
+              font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50
+              ${isLastQuestion ? 'w-full sm:w-auto' : 'w-full sm:w-1/2'} {/* Если это последний вопрос, кнопка "Предыдущий" может быть шире */}
+            `}
             style={getButtonStyle('secondary')}
             onMouseEnter={(e) => handleButtonHover(e, 'secondary', true, false)}
             onMouseLeave={(e) => handleButtonHover(e, 'secondary', false, false)}
@@ -240,26 +242,18 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           </button>
         )}
 
-        {isLastQuestion ? (
+        {isLastQuestion && ( // Эта кнопка отображается только если это последний вопрос
           <button
-            onClick={() => onNextQuestion(true)}
-            className="w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50"
+            onClick={() => onNextQuestion(true)} // onNextQuestion(true) для завершения теста
+            className={`
+              font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50
+              ${isFirstQuestion ? 'w-full sm:w-auto' : 'w-full sm:w-1/2'} {/* Если это первый и последний вопрос, она занимает всю ширину */}
+            `}
             style={getButtonStyle('danger')}
             onMouseEnter={(e) => handleButtonHover(e, 'danger', true, false)}
             onMouseLeave={(e) => handleButtonHover(e, 'danger', false, false)}
           >
             Завершить Тест
-          </button>
-        ) : (
-          <button
-            onClick={() => onNextQuestion(false)}
-            disabled={currentUserAnswer === null}
-            className={`w-full sm:w-auto font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50 ${currentUserAnswer === null ? 'cursor-not-allowed' : ''}`}
-            style={getButtonStyle(currentUserAnswer === null ? 'secondary' : 'primary', currentUserAnswer === null)}
-            onMouseEnter={(e) => handleButtonHover(e, currentUserAnswer === null ? 'secondary' : 'primary', true, currentUserAnswer === null)}
-            onMouseLeave={(e) => handleButtonHover(e, currentUserAnswer === null ? 'secondary' : 'primary', false, currentUserAnswer === null)}
-          >
-            Следующий
           </button>
         )}
       </div>
