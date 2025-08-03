@@ -44,7 +44,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   totalQuestions,
   onAnswerSelect,
   currentUserAnswer,
-  onNextQuestion, // Эту пропсу мы будем использовать только для "Завершить тест"
+  onNextQuestion,
   onPreviousQuestion,
   isFirstQuestion,
   isLastQuestion,
@@ -232,7 +232,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
             onClick={onPreviousQuestion}
             className={`
               font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50
-              ${isLastQuestion ? 'w-full sm:w-auto' : 'w-full sm:w-1/2'} {/* Если это последний вопрос, кнопка "Предыдущий" может быть шире */}
+              ${isLastQuestion ? 'w-full sm:w-auto' : 'w-full sm:w-1/2'}
             `}
             style={getButtonStyle('secondary')}
             onMouseEnter={(e) => handleButtonHover(e, 'secondary', true, false)}
@@ -242,12 +242,12 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           </button>
         )}
 
-        {isLastQuestion && ( // Эта кнопка отображается только если это последний вопрос
+        {isLastQuestion && ( // <--- ВАЖНО: здесь '&&', а не '?'
           <button
-            onClick={() => onNextQuestion(true)} // onNextQuestion(true) для завершения теста
+            onClick={() => onNextQuestion(true)}
             className={`
               font-bold py-3 px-6 rounded-full shadow-lg transition-all duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-opacity-50
-              ${isFirstQuestion ? 'w-full sm:w-auto' : 'w-full sm:w-1/2'} {/* Если это первый и последний вопрос, она занимает всю ширину */}
+              ${isFirstQuestion ? 'w-full sm:w-auto' : 'w-full sm:w-1/2'}
             `}
             style={getButtonStyle('danger')}
             onMouseEnter={(e) => handleButtonHover(e, 'danger', true, false)}
