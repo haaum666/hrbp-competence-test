@@ -44,8 +44,9 @@ const Sidebar: React.FC<SidebarProps> = ({
       {/* Он будет плавающим, полупрозрачным, с кнопками навигации */}
       <div
         className="hidden md:flex flex-col items-center p-3 space-y-3
-                   fixed left-4 top-1/2 -translate-y-1/2 z-40  /* ИЗМЕНЕНО: right-4 на left-4 */
-                   rounded-xl shadow-xl transition-opacity duration-300 opacity-50 hover:opacity-100"
+                   fixed left-4 top-1/2 -translate-y-1/2 z-40
+                   rounded-xl shadow-xl transition-opacity duration-300 opacity-50 hover:opacity-100
+                   w-auto max-w-xs" /* ИЗМЕНЕНО: Добавлены w-auto и max-w-xs для контроля ширины */
         style={{
           backgroundColor: 'var(--color-background-card)',
           backgroundImage: 'var(--texture-grain)',
