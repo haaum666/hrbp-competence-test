@@ -54,37 +54,48 @@ const useTestLogic = (): UseTestLogicReturn => {
   }, []);
 
   const calculateTestResult = useCallback(() => {
-    if (questions.length === 0) return;
+    if (questions.length === 0 || !overallTestStartTime) return; // Проверка на overallTestStartTime
 
     // --- Логика calculateTestResult ---
-    const correctAnswersCount = userAnswers.filter(answer => {
+    const correctAnswers = userAnswers.filter(answer => {
       const question = questions.find(q => q.id === answer.questionId);
-      return question && question.correctOptionId === answer.selectedOptionId;
+      // Используем question.correctAnswer вместо question.correctOptionId
+      return question && question.correctAnswer === answer.selectedOptionId;
     }).length;
 
     const totalQuestions = questions.length;
-    const scorePercentage = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
+    const incorrectAnswers = userAnswers.filter(answer => {
+      const question = questions.find(q => q.id === answer.questionId);
+      return question && question.correctAnswer !== answer.selectedOptionId;
+    }).length;
+    const unanswered = totalQuestions - userAnswers.length;
 
-    const testDuration = overallTestStartTime ? Date.now() - new Date(overallTestStartTime).getTime() : 0;
+
+    const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+
+    const testDuration = Date.now() - new Date(overallTestStartTime).getTime();
 
     const answerDetails: AnswerDetail[] = questions.map(question => {
-      const userAnswer = userAnswers.find(ua => ua.questionId === question.id);
+      const userAnswerFound = userAnswers.find(ua => ua.questionId === question.id);
       return {
-        questionId: question.id,
-        questionText: question.question,
-        selectedOptionId: userAnswer ? userAnswer.selectedOptionId : null,
-        correctOptionId: question.correctOptionId,
-        isCorrect: userAnswer ? userAnswer.selectedOptionId === question.correctOptionId : false,
+        question: question, // Передаем полный объект вопроса
+        userAnswer: userAnswerFound || null, // Передаем полный объект ответа или null
+        // isCorrect теперь берем из userAnswerFound, или вычисляем, если userAnswerFound есть
+        isCorrect: userAnswerFound ? (question.correctAnswer === userAnswerFound.selectedOptionId) : false,
       };
     });
 
     const finalResult: TestResult = {
       scorePercentage: parseFloat(scorePercentage.toFixed(2)),
-      correctAnswersCount,
-      totalQuestions,
-      testDate: new Date().toISOString(),
-      testDurationSeconds: Math.floor(testDuration / 1000),
-      answerDetails,
+      correctAnswers: correctAnswers, // ИСПРАВЛЕНО: correctAnswersCount -> correctAnswers
+      incorrectAnswers: incorrectAnswers,
+      unanswered: unanswered,
+      totalQuestions: totalQuestions,
+      answers: answerDetails,
+      timestamp: new Date().toISOString(),
+      completionTime: Math.floor(testDuration / 1000), // Длительность теста в секундах
+      startTime: overallTestStartTime,
+      endTime: new Date().toISOString(),
     };
 
     // Сохранение результатов в localStorage
@@ -130,10 +141,11 @@ const useTestLogic = (): UseTestLogicReturn => {
     const timeSpent = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
 
     const newAnswer: UserAnswer = {
-      questionId,
-      selectedOptionId,
-      timeSpentSeconds: timeSpent,
-      timestamp: new Date().toISOString(),
+      questionId: questionId,
+      selectedOptionId: selectedOptionId,
+      isCorrect: question.correctAnswer === selectedOptionId, // ДОБАВЛЕНО: isCorrect для UserAnswer
+      timeSpent: timeSpent, // ИСПРАВЛЕНО: timeSpentSeconds -> timeSpent
+      // timestamp: new Date().toISOString(), // Убрано, т.к. нет в UserAnswer
     };
 
     setUserAnswers((prevAnswers) => {
@@ -257,7 +269,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     setTestFinished(false);
     setTestResult(null);
     setRemainingTime(INITIAL_TIME_PER_QUESTION);
-    questionStartTimeRef.current = Date.now();
+    questionStartTimeRef.current = Date.now(); // ИСПРАВЛЕНО
     setOverallTestStartTime(null);
     clearLocalStorage();
     setShowResumeOption(false);
@@ -381,6 +393,6 @@ const useTestLogic = (): UseTestLogicReturn => {
     resumeTest,
     resetTestStateForNavigation,
   };
-}; // <--- ВОТ ЭТА СКОБКА БЫЛА ПРОПУЩЕНА!
+};
 
 export default useTestLogic;
