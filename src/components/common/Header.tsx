@@ -62,7 +62,7 @@ const Header: React.FC = () => {
           <span style={{ color: 'var(--color-error)' }}>R</span>
           <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
           <span style={{ color: 'var(--color-text-primary)' }}>P</span>
-          <span style={{ color: 'var(--color-text-primary)' }> -Тест</span>
+          <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span> {/* <-- ИСПРАВЛЕНО ЗДЕСЬ! */}
         </div>
 
         <nav className="space-x-4 sm:space-x-6">
