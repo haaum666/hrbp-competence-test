@@ -1,15 +1,12 @@
 // src/App.tsx
 
-import React from 'react';
+import React from 'react'; // Удаляем useEffect, так как он больше не нужен напрямую здесь
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
-// Импортируем наш пользовательский хук для логики теста
-import useTestLogic from './hooks/useTestLogic';
 
 // Импортируем наш провайдер контекста
 import { TestLogicProvider } from './contexts/TestLogicContext';
 
-// Импортируем новый компонент Header
+// Импортируем компонент Header
 import Header from './components/common/Header';
 
 // Импортируем TestPage, который будет содержать логику старта/продолжения теста
@@ -18,31 +15,27 @@ import TestPage from './pages/TestPage';
 // Импортируем AnalyticsDashboard
 import AnalyticsDashboard from './components/analytics/AnalyticsDashboard';
 
+// УДАЛЯЕМ ИМПОРТ useTestLogic, так как он теперь вызывается внутри TestLogicProvider
+// import useTestLogic from './hooks/useTestLogic'; 
+
 function App() {
-  // НОВОЕ: Добавлен лог для отслеживания рендера компонента App
-  console.log('App.tsx: Рендер компонента App.'); // Этот лог покажет каждый рендер App
+  console.log('App.tsx: Рендер компонента App.'); // Оставляем этот лог для отслеживания рендеров App
 
-  // Инициализируем всю логику теста с помощью нашего хука
-  const {
-    testStarted,
-    resetTestStateForNavigation,
-    // ... здесь могут быть другие возвращаемые значения из useTestLogic,
-    // если они когда-либо понадобятся глобально в App или в других Provider'ах
-  } = useTestLogic();
+  // УДАЛЯЕМ ВЫЗОВ useTestLogic() ЗДЕСЬ, так как он теперь в TestLogicProvider
+  // const {
+  //   testStarted,
+  //   resetTestStateForNavigation,
+  // } = useTestLogic();
 
-  // НОВОЕ: Этот лог теперь находится ПОСЛЕ вызова useTestLogic(),
-  // чтобы получить актуальное значение testStarted
-  console.log('App.tsx: testStarted из useTestLogic (после вызова хука):', testStarted);
+  // УДАЛЯЕМ ЭТОТ ЛОГ, так как testStarted больше не определяется здесь
+  // console.log('App.tsx: testStarted из useTestLogic (после вызова хука):', testStarted);
 
 
   return (
     <Router>
-      {/* Оборачиваем все приложение в TestLogicProvider, передавая ему необходимые значения */}
-      {/* testStarted и resetTestStateForNavigation передаются из useTestLogic */}
-      <TestLogicProvider
-        testStarted={testStarted}
-        resetTestStateForNavigation={resetTestStateForNavigation}
-      >
+      {/* <--- ГЛАВНОЕ ИЗМЕНЕНИЕ: TestLogicProvider теперь не принимает пропсы testStarted и resetTestStateForNavigation,
+                 поскольку он сам вызывает useTestLogic и предоставляет все его значения через контекст. */}
+      <TestLogicProvider> 
         <div className="min-h-screen flex flex-col font-sans" style={{ color: 'var(--color-text-primary)' }}>
           <Header />
           <main className="flex-grow p-4 sm:p-6 flex items-center justify-center">
