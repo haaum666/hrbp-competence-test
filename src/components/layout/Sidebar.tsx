@@ -9,7 +9,6 @@ interface SidebarProps {
   onOpenModal: () => void;
   onCloseModal: () => void;
   onConfirmExit: () => void; // Функция для подтверждения выхода и сброса теста
-  // testStarted: boolean; // УДАЛЕН: Больше не нужен, т.к. кнопка "На главную" всегда видна
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -17,10 +16,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onOpenModal,
   onCloseModal,
   onConfirmExit,
-  // testStarted, // УДАЛЕН: Больше не нужен
 }) => {
   // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК
-  // Используем те же стили, что и для других кнопок в вашем проекте
   const getButtonStyle = (isPrimary: boolean) => ({
     backgroundColor: isPrimary ? 'var(--button-primary-bg)' : 'var(--button-secondary-bg)',
     color: isPrimary ? 'var(--button-primary-text)' : 'var(--button-secondary-text)',
@@ -34,19 +31,18 @@ const Sidebar: React.FC<SidebarProps> = ({
   });
 
   const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>, isPrimaryButton: boolean, isEnter: boolean) => {
-    // Яркость при наведении
     e.currentTarget.style.filter = isEnter ? 'brightness(0.9)' : 'brightness(1.0)';
   };
 
   return (
     <>
       {/* Этот блок будет виден только на больших экранах (md и выше) */}
-      {/* ПОЗИЦИЯ ИЗМЕНЕНА: Теперь в левом нижнем углу */}
+      {/* Он будет плавающим, полупрозрачным, с кнопками навигации */}
       <div
         className="hidden md:flex flex-col items-center p-3 space-y-3
-                   fixed left-4 bottom-4 z-40 /* ИЗМЕНЕНО: top-1/2 -translate-y-1/2 на bottom-4 */
+                   fixed left-4 top-1/2 -translate-y-1/2 z-40 /* ВЕРНУЛИСЬ К ВЕРТИКАЛЬНОМУ ЦЕНТРИРОВАНИЮ */
                    rounded-xl shadow-xl transition-opacity duration-300 opacity-50 hover:opacity-100
-                   w-auto max-w-xs"
+                   w-auto max-w-xs max-h-[400px]" /* УМЕНЬШИЛИ max-w, ДОБАВИЛИ max-h */
         style={{
           backgroundColor: 'var(--color-background-card)',
           backgroundImage: 'var(--texture-grain)',
