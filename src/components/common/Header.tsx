@@ -21,11 +21,18 @@ const Header: React.FC = () => {
   const handleLogoClick = () => {
     if (testStarted) {
       console.log('Header: Тест запущен, сбрасываю состояние теста для навигации.');
-      resetTestStateForNavigation();
+      resetTestStateForNavigation(); // Сбросить состояние теста
     } else {
       console.log('Header: Тест не запущен, просто перехожу на главную.');
     }
-    navigate('/');
+    navigate('/'); // Всегда переходить на главную
+  };
+
+  // НОВАЯ ФУНКЦИЯ: Обработка клика по кнопке "В начало"
+  const handleGoToStartClick = () => {
+    console.log('Header: Нажата кнопка "В начало", сбрасываю состояние теста.');
+    resetTestStateForNavigation(); // Сбросить состояние теста
+    navigate('/'); // Переход на главную страницу
   };
 
   return (
@@ -62,10 +69,26 @@ const Header: React.FC = () => {
           <span style={{ color: 'var(--color-error)' }}>R</span>
           <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
           <span style={{ color: 'var(--color-text-primary)' }}>P</span>
-          <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span> {/* <-- ИСПРАВЛЕНО ЗДЕСЬ! */}
+          <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span>
         </div>
 
-        <nav className="space-x-4 sm:space-x-6">
+        <nav className="space-x-4 sm:space-x-6 flex items-center"> {/* Добавил flex items-center для выравнивания */}
+          {/* НОВАЯ КНОПКА "В НАЧАЛО" */}
+          {testStarted && ( // Показываем кнопку только если тест запущен
+            <button
+              onClick={handleGoToStartClick}
+              className="text-lg font-medium transition-colors duration-300
+                         text-text-secondary hover:text-text-primary
+                         border border-neutral-light px-3 py-1 rounded-md
+                         shadow-sm hover:shadow-md"
+              style={{
+                 backgroundColor: 'var(--color-background-secondary)',
+                 color: 'var(--color-text-primary)'
+              }}
+            >
+              В начало
+            </button>
+          )}
           <Link to="/" className={`text-lg font-medium transition-colors duration-300 ${isActive('/')}`}>
             Тест
           </Link>
