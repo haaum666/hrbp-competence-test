@@ -1,80 +1,70 @@
 // src/components/common/Header.tsx
 
 import React from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // <-- НОВОЕ: Импорт useNavigate
-import { useTestLogicContext } from '../../contexts/TestLogicContext'; // <-- НОВОЕ: Импорт useTestLogicContext
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useTestLogicContext } from '../../contexts/TestLogicContext';
 
 const Header: React.FC = () => {
   const location = useLocation();
-  const navigate = useNavigate(); // <-- НОВОЕ: Инициализация useNavigate
-  const { testStarted, resetTestStateForNavigation } = useTestLogicContext(); // <-- НОВОЕ: Использование контекста
+  const navigate = useNavigate();
+  const { testStarted, resetTestStateForNavigation } = useTestLogicContext();
 
-  // Функция для определения, активна ли ссылка
+  // ДОБАВЛЕНО: Этот лог будет показывать testStarted из контекста при каждом рендере Header.
+  console.log('Header.tsx: testStarted из контекста:', testStarted);
+
   const isActive = (path: string) => {
-    // Активный: Основной цвет текста, 2px граница снизу с цветом текста, эффект тени для границы
-    // Неактивный: Второстепенный цвет текста, при наведении - основной цвет текста
     return location.pathname === path
-      ? 'text-text-primary border-b-2 border-text-primary shadow-sm-bottom' // Использование нового класса для тени границы
+      ? 'text-text-primary border-b-2 border-text-primary shadow-sm-bottom'
       : 'text-text-secondary hover:text-text-primary';
   };
 
-  /**
-   * @function handleLogoClick
-   * @description Обрабатывает клик по логотипу. Если тест запущен, сбрасывает его состояние.
-   * Всегда перенаправляет на домашнюю страницу.
-   */
   const handleLogoClick = () => {
     if (testStarted) {
       console.log('Header: Тест запущен, сбрасываю состояние теста для навигации.');
-      resetTestStateForNavigation(); // Сбрасываем состояние теста
+      resetTestStateForNavigation();
     } else {
       console.log('Header: Тест не запущен, просто перехожу на главную.');
     }
-    navigate('/'); // Переходим на домашнюю страницу
+    navigate('/');
   };
 
   return (
     <header
       className="py-4 px-6 sm:px-8 sticky top-0 z-50"
       style={{
-        backgroundColor: 'var(--color-background-card)', // Фон хедера (кремовый)
-        backgroundImage: 'var(--texture-grain)', // Зернистость
+        backgroundColor: 'var(--color-background-card)',
+        backgroundImage: 'var(--texture-grain)',
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
-        borderBottom: '2px solid var(--color-text-primary)', // Более выраженная темная граница снизу
-        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки" для всего хедера
+        borderBottom: '2px solid var(--color-text-primary)',
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)',
       }}
     >
       <div className="max-w-4xl mx-auto flex justify-between items-center">
-        {/* Логотип / Название проекта */}
-        {/* Используем div и onClick вместо Link, чтобы управлять навигацией и сбросом состояния */}
         <div
-          onClick={handleLogoClick} // <-- НОВОЕ: Обработчик клика
-          className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center cursor-pointer" // <-- НОВОЕ: Добавлен cursor-pointer
+          onClick={handleLogoClick}
+          className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center cursor-pointer"
         >
-          {/* Замена иконки мозга на SVG-иконку "структурный ромб" */}
           <svg
-            width="32" // Увеличил размер для лучшей видимости, можете настроить
-            height="32" // Увеличил размер для лучшей видимости, можете настроить
+            width="32"
+            height="32"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="mr-2" // Добавил отступ справа
-            style={{ color: 'var(--color-error)' }} // Цвет иконки (приглушенный оранжево-красный)
+            className="mr-2"
+            style={{ color: 'var(--color-error)' }}
           >
             <path d="M12 1L22 7L12 23L2 7L12 1Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
             <path d="M2 7L12 1L22 7L12 13L2 7Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
             <path d="M12 13L2 7M12 13L22 7M12 13L12 23" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
           </svg>
-          {/* ИСПРАВЛЕНО: Буквы HRBP с разными цветами */}
           <span style={{ color: 'var(--color-accent-primary)' }}>H</span>
           <span style={{ color: 'var(--color-error)' }}>R</span>
           <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
           <span style={{ color: 'var(--color-text-primary)' }}>P</span>
-          <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span>
+          <span style={{ color: 'var(--color-text-primary)' }> -Тест</span>
         </div>
 
-        {/* Навигационные ссылки */}
         <nav className="space-x-4 sm:space-x-6">
           <Link to="/" className={`text-lg font-medium transition-colors duration-300 ${isActive('/')}`}>
             Тест
