@@ -19,9 +19,9 @@ const Sidebar: React.FC<SidebarProps> = ({
   onConfirmExit,
   testStarted,
 }) => {
-  // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК САЙДБАРА
-  // Полностью соответствуют стилю кнопок теста, используя переменные CSS
-  const getSidebarButtonStyle = (isPrimary: boolean) => ({
+  // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК
+  // Используем те же стили, что и для других кнопок в вашем проекте
+  const getButtonStyle = (isPrimary: boolean) => ({
     backgroundColor: isPrimary ? 'var(--button-primary-bg)' : 'var(--button-secondary-bg)',
     color: isPrimary ? 'var(--button-primary-text)' : 'var(--button-secondary-text)',
     backgroundImage: 'var(--texture-grain)',
@@ -34,68 +34,57 @@ const Sidebar: React.FC<SidebarProps> = ({
   });
 
   const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>, isPrimaryButton: boolean, isEnter: boolean) => {
-    // Яркость при наведении, как в других кнопках
+    // Яркость при наведении
     e.currentTarget.style.filter = isEnter ? 'brightness(0.9)' : 'brightness(1.0)';
   };
 
   return (
     <>
+      {/* Этот блок будет виден только на больших экранах (md и выше) */}
+      {/* Он будет плавающим, полупрозрачным, с кнопками навигации */}
       <div
-        className="hidden md:flex flex-col items-start p-4 rounded-xl shadow-xl flex-shrink-0"
+        className="hidden md:flex flex-col items-center p-3 space-y-3
+                   fixed left-4 top-1/2 -translate-y-1/2 z-40  /* ИЗМЕНЕНО: right-4 на left-4 */
+                   rounded-xl shadow-xl transition-opacity duration-300 opacity-50 hover:opacity-100"
         style={{
-          width: '200px', // Фиксированная ширина сайдбара
           backgroundColor: 'var(--color-background-card)',
           backgroundImage: 'var(--texture-grain)',
           backgroundSize: '4px 4px',
           backgroundRepeat: 'repeat',
-          color: 'var(--color-text-primary)',
           border: '2px solid var(--color-neutral)',
-          boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Тень для самой панели
+          boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Тень для самого блока
         }}
       >
-        <h3 className="text-xl font-bold mb-6 w-full text-center font-heading" style={{color: 'var(--color-text-primary)'}}>
-          Навигация
-        </h3>
-        <div className="flex flex-col space-y-4 w-full">
-          <Link
-            to="/"
+        {/* Кнопки навигации */}
+        <Link
+          to="/contacts"
+          className="w-full font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center font-sans"
+          style={getButtonStyle(false)}
+          onMouseEnter={(e) => handleButtonHover(e, false, true)}
+          onMouseLeave={(e) => handleButtonHover(e, false, false)}
+        >
+          Контакты
+        </Link>
+        <Link
+          to="/about"
+          className="w-full font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center font-sans"
+          style={getButtonStyle(false)}
+          onMouseEnter={(e) => handleButtonHover(e, false, true)}
+          onMouseLeave={(e) => handleButtonHover(e, false, false)}
+        >
+          О проекте
+        </Link>
+        {testStarted && ( // Кнопка "На главную" только если тест запущен
+          <button
+            onClick={onOpenModal}
             className="w-full font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center font-sans"
-            style={getSidebarButtonStyle(false)}
-            onMouseEnter={(e) => handleButtonHover(e, false, true)}
-            onMouseLeave={(e) => handleButtonHover(e, false, false)}
+            style={getButtonStyle(true)} // Используем Primary стиль для этой важной кнопки
+            onMouseEnter={(e) => handleButtonHover(e, true, true)}
+            onMouseLeave={(e) => handleButtonHover(e, true, false)}
           >
-            Главная
-          </Link>
-          <Link
-            to="/contacts" // Предполагаемый путь, если у вас есть страница контактов
-            className="w-full font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center font-sans"
-            style={getSidebarButtonStyle(false)}
-            onMouseEnter={(e) => handleButtonHover(e, false, true)}
-            onMouseLeave={(e) => handleButtonHover(e, false, false)}
-          >
-            Контакты
-          </Link>
-          <Link
-            to="/about" // Предполагаемый путь, если у вас есть страница "О проекте"
-            className="w-full font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center font-sans"
-            style={getSidebarButtonStyle(false)}
-            onMouseEnter={(e) => handleButtonHover(e, false, true)}
-            onMouseLeave={(e) => handleButtonHover(e, false, false)}
-          >
-            О проекте
-          </Link>
-          {testStarted && ( // Кнопка "Вернуться на главную" появляется только если тест запущен
-            <button
-              onClick={onOpenModal}
-              className="w-full font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center font-sans"
-              style={getSidebarButtonStyle(true)} // Используем Primary стиль для этой важной кнопки
-              onMouseEnter={(e) => handleButtonHover(e, true, true)}
-              onMouseLeave={(e) => handleButtonHover(e, true, false)}
-            >
-              Вернуться на главную
-            </button>
-          )}
-        </div>
+            На главную
+          </button>
+        )}
       </div>
 
       {/* Модальное окно подтверждения, управляемое из TestPage через пропсы */}
