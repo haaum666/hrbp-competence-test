@@ -18,7 +18,7 @@ interface UseTestLogicReturn {
   userAnswers: UserAnswer[];
   testFinished: boolean;
   questions: Question[];
-  testStarted: boolean; // <--- Это состояние
+  testStarted: boolean;
   testResult: TestResult | null;
   showResumeOption: boolean;
   remainingTime: number;
@@ -35,7 +35,7 @@ const useTestLogic = (): UseTestLogicReturn => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [userAnswers, setUserAnswers] = useState<UserAnswer[]>([]);
-  const [testStarted, setTestStarted] = useState<boolean>(false); // <--- Это состояние
+  const [testStarted, setTestStarted] = useState<boolean>(false);
   const [testFinished, setTestFinished] = useState<boolean>(false);
   const [testResult, setTestResult] = useState<TestResult | null>(null);
   const [overallTestStartTime, setOverallTestStartTime] = useState<string | null>(null);
@@ -56,12 +56,44 @@ const useTestLogic = (): UseTestLogicReturn => {
   const calculateTestResult = useCallback(() => {
     if (questions.length === 0) return;
 
-    // ... (остальной код calculateTestResult)
+    // --- Логика calculateTestResult ---
+    const correctAnswersCount = userAnswers.filter(answer => {
+      const question = questions.find(q => q.id === answer.questionId);
+      return question && question.correctOptionId === answer.selectedOptionId;
+    }).length;
+
+    const totalQuestions = questions.length;
+    const scorePercentage = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
+
+    const testDuration = overallTestStartTime ? Date.now() - new Date(overallTestStartTime).getTime() : 0;
+
+    const answerDetails: AnswerDetail[] = questions.map(question => {
+      const userAnswer = userAnswers.find(ua => ua.questionId === question.id);
+      return {
+        questionId: question.id,
+        questionText: question.question,
+        selectedOptionId: userAnswer ? userAnswer.selectedOptionId : null,
+        correctOptionId: question.correctOptionId,
+        isCorrect: userAnswer ? userAnswer.selectedOptionId === question.correctOptionId : false,
+      };
+    });
+
+    const finalResult: TestResult = {
+      scorePercentage: parseFloat(scorePercentage.toFixed(2)),
+      correctAnswersCount,
+      totalQuestions,
+      testDate: new Date().toISOString(),
+      testDurationSeconds: Math.floor(testDuration / 1000),
+      answerDetails,
+    };
+
+    // Сохранение результатов в localStorage
+    const allResults = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS) || '[]') as TestResult[];
+    allResults.push(finalResult);
+    localStorage.setItem(LOCAL_STORAGE_KEY_ALL_RESULTS, JSON.stringify(allResults));
+    // --- Конец логики calculateTestResult ---
 
     setTestResult(finalResult);
-
-    // ... (сохранение в localStorage)
-
     setTestFinished(true);
     setTestStarted(false); // <--- Здесь testStarted устанавливается в false
     console.log('useTestLogic: testStarted установлен в FALSE (из calculateTestResult)'); // НОВЫЙ ЛОГ
@@ -88,12 +120,36 @@ const useTestLogic = (): UseTestLogicReturn => {
   }, [currentQuestionIndex, questions]);
 
   const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
-    // ... (остальной код handleAnswerSelect)
+    // --- Логика handleAnswerSelect ---
+    const question = questions.find(q => q.id === questionId);
+    if (!question) {
+      console.error(`Question with ID ${questionId} not found.`);
+      return;
+    }
+
+    const timeSpent = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
+
+    const newAnswer: UserAnswer = {
+      questionId,
+      selectedOptionId,
+      timeSpentSeconds: timeSpent,
+      timestamp: new Date().toISOString(),
+    };
 
     setUserAnswers((prevAnswers) => {
-      // ... (логика обновления/добавления ответа)
-    });
+      const existingAnswerIndex = prevAnswers.findIndex(
+        (answer) => answer.questionId === questionId
+      );
 
+      if (existingAnswerIndex > -1) {
+        const updatedAnswers = [...prevAnswers];
+        updatedAnswers[existingAnswerIndex] = newAnswer;
+        return updatedAnswers;
+      } else {
+        return [...prevAnswers, newAnswer];
+      }
+    });
+    // --- Конец логики handleAnswerSelect ---
     handleNextQuestion();
   }, [questions, currentQuestionIndex, remainingTime, handleNextQuestion]);
 
@@ -133,20 +189,55 @@ const useTestLogic = (): UseTestLogicReturn => {
 
     if (savedAnswers && savedIndex && savedTestStarted === 'true' && savedOverallTestStartTime) {
       try {
-        // ... (логика парсинга и установки состояний)
+        const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
+        const parsedIndex: number = parseInt(savedIndex, 10);
+        const savedLastQuestionStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
 
-        setTestStarted(true); // <--- Здесь testStarted устанавливается в true
-        console.log('useTestLogic: testStarted установлен в TRUE (из resumeTest)'); // НОВЫЙ ЛОГ
-        setTestFinished(false);
-        setTestResult(null);
-        setShowResumeOption(false);
+        const initialQuestionsCheck = generateQuestions(); // Для проверки валидности индекса
 
-        setOverallTestStartTime(savedOverallTestStartTime);
+        console.log('useEffect (showResumeOption): savedAnswers:', savedAnswers ? 'есть' : 'нет', '(Значение:', savedAnswers, ')');
+        console.log('useEffect (showResumeOption): savedIndex:', savedIndex ? 'есть' : 'нет', '(Значение:', savedIndex, ')');
+        console.log('useEffect (showResumeOption): savedTestStarted:', savedTestStarted);
+        console.log('useEffect (showResumeOption): savedOverallTestStartTime:', savedOverallTestStartTime ? 'есть' : 'нет', '(Значение:', savedOverallTestStartTime, ')');
 
-        // ... (расчет времени и установка рефа)
+        const hasAllKeys = savedAnswers && savedIndex && savedTestStarted && savedOverallTestStartTime;
+        if (!hasAllKeys) {
+          console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) НЕ ВЫПОЛНЕНО.** Отсутствуют необходимые данные для возобновления теста (один или более ключей отсутствуют/null).');
+        } else {
+          console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) ВЫПОЛНЕНО.**');
+        }
 
-        localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
-        console.log('resumeTest: Тест успешно возобновлен.');
+        const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length && parsedIndex >= 0;
+        console.log('useEffect (showResumeOption): parsedAnswers.length:', parsedAnswers.length);
+        console.log('useEffect (showResumeOption): parsedIndex (parseInt):', parsedIndex);
+        console.log('useEffect (showResumeOption): initialQuestionsCheck.length (from generateQuestions):', initialQuestionsCheck.length);
+        console.log('useEffect (showResumeOption): isIndexValid (!isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length):', isIndexValid);
+
+        if (hasAllKeys && isIndexValid) {
+          setUserAnswers(parsedAnswers);
+          setCurrentQuestionIndex(parsedIndex);
+          setTestStarted(true); // <--- Здесь testStarted устанавливается в true
+          console.log('useTestLogic: testStarted установлен в TRUE (из resumeTest)'); // НОВЫЙ ЛОГ
+          setTestFinished(false);
+          setTestResult(null);
+          setShowResumeOption(false);
+          setOverallTestStartTime(savedOverallTestStartTime);
+
+          if (savedLastQuestionStartTime) {
+            const timeElapsedSinceLastQuestion = Math.floor((Date.now() - parseInt(savedLastQuestionStartTime, 10)) / 1000);
+            const questionTimeEstimate = loadedQuestions[parsedIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION;
+            setRemainingTime(Math.max(0, questionTimeEstimate - timeElapsedSinceLastQuestion));
+            questionStartTimeRef.current = parseInt(savedLastQuestionStartTime, 10); // Восстанавливаем время начала вопроса
+          } else {
+            questionStartTimeRef.current = Date.now();
+            setRemainingTime(loadedQuestions[parsedIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
+          }
+          localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true'); // Убедиться, что в localStorage тоже true
+          console.log('resumeTest: Тест успешно возобновлен.');
+        } else {
+          console.log('useEffect (showResumeOption): **Условие 2 (валидность индекса) НЕ ВЫПОЛНЕНО.** Начинаем новый тест.');
+          startNewTest();
+        }
       } catch (e) {
         console.error('resumeTest: Ошибка парсинга сохраненных данных, начинаем новый тест:', e);
         startNewTest();
@@ -166,10 +257,130 @@ const useTestLogic = (): UseTestLogicReturn => {
     setTestFinished(false);
     setTestResult(null);
     setRemainingTime(INITIAL_TIME_PER_QUESTION);
-    questionStartTimeRef.current = Date.now();
+    questionStartTimeRef.current = Date.24 * 60 * 60 * 1000;
     setOverallTestStartTime(null);
     clearLocalStorage();
     setShowResumeOption(false);
   }, [clearLocalStorage]);
 
-  // ... (остальные useEffects и return)
+  // Эффект для инициализации или возобновления теста при загрузке компонента
+  useEffect(() => {
+    console.log('useEffect (инициализация/возобновление): -- Начало выполнения эффекта --');
+
+    // Проверяем, есть ли сохраненные ответы и индекс
+    const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
+    const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+    const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
+    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+
+    const initialQuestionsCheck = generateQuestions(); // Для проверки валидности индекса
+
+    console.log('useEffect (showResumeOption): savedAnswers:', savedAnswers ? 'есть' : 'нет', '(Значение:', savedAnswers, ')');
+    console.log('useEffect (showResumeOption): savedIndex:', savedIndex ? 'есть' : 'нет', '(Значение:', savedIndex, ')');
+    console.log('useEffect (showResumeOption): savedTestStarted:', savedTestStarted);
+    console.log('useEffect (showResumeOption): savedOverallTestStartTime:', savedOverallTestStartTime ? 'есть' : 'нет', '(Значение:', savedOverallTestStartTime, ')');
+
+    const hasAllKeys = savedAnswers && savedIndex && savedTestStarted && savedOverallTestStartTime;
+    if (!hasAllKeys) {
+      console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) НЕ ВЫПОЛНЕНО.** Отсутствуют необходимые данные для возобновления теста (один или более ключей отсутствуют/null).');
+    } else {
+      console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) ВЫПОЛНЕНО.**');
+    }
+
+    let parsedIndex = -1;
+    try {
+      if (savedIndex) {
+        parsedIndex = parseInt(savedIndex, 10);
+      }
+    } catch (e) {
+      console.error('Ошибка при парсинге savedIndex:', e);
+    }
+
+    const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length && parsedIndex >= 0;
+    console.log('useEffect (showResumeOption): parsedAnswers.length:', (savedAnswers ? JSON.parse(savedAnswers).length : 'N/A'));
+    console.log('useEffect (showResumeOption): parsedIndex (parseInt):', parsedIndex);
+    console.log('useEffect (showResumeOption): initialQuestionsCheck.length (from generateQuestions):', initialQuestionsCheck.length);
+    console.log('useEffect (showResumeOption): isIndexValid (!isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length):', isIndexValid);
+
+
+    if (hasAllKeys && isIndexValid) {
+      console.log('useEffect (showResumeOption): **Условие 2 (валидность индекса) ВЫПОЛНЕНО.** shouldShowResume = true.');
+      setShowResumeOption(true);
+    } else {
+      console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) НЕ ВЫПОЛНЕНО или данные неполные.** shouldShowResume = false.');
+      setShowResumeOption(false);
+      // Если тест начался (т.е. testStarted === 'true' в localStorage), но данные невалидны,
+      // то сбросим состояние, чтобы избежать зацикливания или некорректного поведения.
+      if (savedTestStarted === 'true') {
+        clearLocalStorage();
+        setTestStarted(false); // Убедиться, что состояние хука тоже false
+        setQuestions(generateQuestions()); // Перегенерировать вопросы для нового теста
+      }
+    }
+    console.log('useEffect (showResumeOption): -- Завершение выполнения эффекта. Итоговое showResumeOption:', hasAllKeys && isIndexValid, '--');
+
+  }, [clearLocalStorage]); // Добавили clearLocalStorage в зависимости
+
+  // Эффект для таймера обратного отсчета
+  useEffect(() => {
+    if (!testStarted || testFinished) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setRemainingTime((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(timer);
+          // Автоматический переход к следующему вопросу или завершение теста
+          if (currentQuestionIndex < questions.length - 1) {
+            handleNextQuestion();
+          } else {
+            calculateTestResult();
+          }
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [testStarted, testFinished, remainingTime, currentQuestionIndex, questions, handleNextQuestion, calculateTestResult]);
+
+  // Эффект для сохранения прогресса в localStorage
+  useEffect(() => {
+    console.log('useEffect (сохранение прогресса): testStarted:', testStarted, ', testFinished:', testFinished);
+    if (testStarted && !testFinished) {
+      console.log('useEffect (сохранение прогресса): Сохраняем данные в localStorage...');
+      localStorage.setItem(LOCAL_STORAGE_KEY_ANSWERS, JSON.stringify(userAnswers));
+      localStorage.setItem(LOCAL_STORAGE_KEY_CURRENT_INDEX, currentQuestionIndex.toString());
+      localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
+      localStorage.setItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME, questionStartTimeRef.current.toString());
+      // overallTestStartTime сохраняется при старте/возобновлении
+    } else {
+      console.log('useEffect (сохранение прогресса): Условия для сохранения не выполнены.');
+    }
+  }, [userAnswers, currentQuestionIndex, testStarted, testFinished]);
+
+  // Расчет процента выполнения теста
+  const progressPercentage = questions.length > 0 ? (currentQuestionIndex / questions.length) * 100 : 0;
+
+  return {
+    currentQuestionIndex,
+    userAnswers,
+    testFinished,
+    questions,
+    testStarted,
+    testResult,
+    showResumeOption,
+    remainingTime,
+    progressPercentage,
+    handleAnswerSelect,
+    handleNextQuestion,
+    handlePreviousQuestion,
+    startNewTest,
+    resumeTest,
+    resetTestStateForNavigation,
+  };
+}; // <--- ВОТ ЭТА СКОБКА БЫЛА ПРОПУЩЕНА!
+
+export default useTestLogic;
