@@ -257,7 +257,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     setTestFinished(false);
     setTestResult(null);
     setRemainingTime(INITIAL_TIME_PER_QUESTION);
-    questionStartTimeRef.current = Date.24 * 60 * 60 * 1000;
+    questionStartTimeRef.current = Date.now();
     setOverallTestStartTime(null);
     clearLocalStorage();
     setShowResumeOption(false);
