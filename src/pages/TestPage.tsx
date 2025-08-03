@@ -13,7 +13,7 @@ const TestPage: React.FC = () => {
     userAnswers,
     testFinished,
     questions,
-    testStarted,
+    testStarted, // testStarted остается здесь, так как он используется для основного контента и футера
     testResult,
     showResumeOption,
     remainingTime,
@@ -78,6 +78,16 @@ const TestPage: React.FC = () => {
 
   return (
     <>
+      {/* Sidebar (плавающий блок) для десктопа - теперь рендерится ПОСТОЯННО */}
+      <Sidebar
+        isModalOpen={isModalOpen}
+        onOpenModal={handleOpenModal}
+        onCloseModal={handleCloseModal}
+        onConfirmExit={handleConfirmExit}
+        // testStarted={testStarted} // УДАЛЕН: Больше не передаем этот пропс в Sidebar
+      />
+
+      {/* Основной контент страницы, зависит от состояния теста */}
       {/* Стартовый экран теста */}
       {!testStarted && !testFinished && (
         <div
@@ -134,32 +144,21 @@ const TestPage: React.FC = () => {
 
       {/* Отображение самого теста */}
       {testStarted && questions.length > 0 && !testFinished && (
-        // Общий контейнер для QuestionRenderer и Sidebar, теперь Sidebar вынесен из flex-потока
-        <> 
-          <div className="flex justify-center w-full items-start p-4"> {/* Убрал md:space-x-4, так как Sidebar теперь фиксированный */}
-            <QuestionRenderer
-              question={questions[currentQuestionIndex]}
-              currentQuestionIndex={currentQuestionIndex}
-              totalQuestions={questions.length}
-              onAnswerSelect={handleAnswerSelect}
-              currentUserAnswer={userAnswers.find(ua => ua.questionId === questions[currentQuestionIndex].id) || null}
-              onNextQuestion={handleNextQuestion}
-              onPreviousQuestion={handlePreviousQuestion}
-              isFirstQuestion={currentQuestionIndex === 0}
-              isLastQuestion={currentQuestionIndex === questions.length - 1}
-              remainingTime={remainingTime}
-              progressPercentage={progressPercentage}
-            />
-          </div>
-          {/* Sidebar (плавающий блок) для десктопа - теперь он находится вне контейнера QuestionRenderer */}
-          <Sidebar
-            isModalOpen={isModalOpen}
-            onOpenModal={handleOpenModal}
-            onCloseModal={handleCloseModal}
-            onConfirmExit={handleConfirmExit}
-            testStarted={testStarted}
+        <div className="flex justify-center w-full items-start p-4">
+          <QuestionRenderer
+            question={questions[currentQuestionIndex]}
+            currentQuestionIndex={currentQuestionIndex}
+            totalQuestions={questions.length}
+            onAnswerSelect={handleAnswerSelect}
+            currentUserAnswer={userAnswers.find(ua => ua.questionId === questions[currentQuestionIndex].id) || null}
+            onNextQuestion={handleNextQuestion}
+            onPreviousQuestion={handlePreviousQuestion}
+            isFirstQuestion={currentQuestionIndex === 0}
+            isLastQuestion={currentQuestionIndex === questions.length - 1}
+            remainingTime={remainingTime}
+            progressPercentage={progressPercentage}
           />
-        </>
+        </div>
       )}
 
       {/* Отображение общих результатов после завершения теста */}
