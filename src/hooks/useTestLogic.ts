@@ -1,3 +1,4 @@
+// src/hooks/useTestLogic.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Question, UserAnswer, TestResult, AnswerDetail } from '../types/test.d';
 import { generateQuestions } from '../data/questions';
@@ -129,7 +130,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     setTestFinished(true);
     setTestStarted(false);
     setOverallTestStartTime(null);
-    clearLocalStorage();
+    clearLocalStorage(); // <-- Очищаем localStorage при завершении теста
   }, [questions, userAnswers, clearLocalStorage, overallTestStartTime]);
 
   /**
@@ -210,7 +211,7 @@ const useTestLogic = (): UseTestLogicReturn => {
    */
   const startNewTest = useCallback(() => {
     console.log('startNewTest: Запуск нового теста.');
-    clearLocalStorage();
+    clearLocalStorage(); // <-- Очищаем localStorage при старте нового теста
     const newQuestions = generateQuestions(); // Генерируем вопросы только один раз
     setQuestions(newQuestions); // Устанавливаем вопросы
     setCurrentQuestionIndex(0);
@@ -285,16 +286,20 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
   }, [startNewTest]);
 
-  // ДОБАВЛЕНО: Новая функция для сброса состояния теста при навигации
+  // ИЗМЕНЕНО: Новая функция для сброса состояния теста при навигации
   const resetTestStateForNavigation = useCallback(() => {
     console.log('resetTestStateForNavigation: Сброс состояния для навигации.');
     setTestStarted(false);
     setCurrentQuestionIndex(0);
+    setUserAnswers([]); // Добавлено: сброс ответов пользователя
     setTestFinished(false);
     setTestResult(null);
-    // showResumeOption, overallTestStartTime, remainingTime, questionStartTimeRef не сбрасываем,
-    // чтобы useTestLogic мог корректно определить showResumeOption при следующем рендере
-  }, []);
+    setRemainingTime(INITIAL_TIME_PER_QUESTION); // Добавлено: сброс времени
+    questionStartTimeRef.current = Date.now(); // Добавлено: сброс рефа времени
+    setOverallTestStartTime(null); // Добавлено: сброс общего времени начала теста
+    clearLocalStorage(); // <-- ВАЖНО: Очищаем localStorage полностью
+    setShowResumeOption(false); // Добавлено: Сбрасываем опцию возобновления
+  }, [clearLocalStorage]); // Зависимость от clearLocalStorage
 
 
   // --- КОНЕЦ: Все функции useCallback определены ---
@@ -331,11 +336,7 @@ const useTestLogic = (): UseTestLogicReturn => {
 
         const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length;
         console.log(`useEffect (showResumeOption): isIndexValid (!isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length): ${isIndexValid}`);
-        // Убрали isAnswersNotEmpty, так как даже 0 ответов при старте теста - это валидное состояние
-        // const isAnswersNotEmpty = parsedAnswers.length > 0;
-        // console.log(`useEffect (showResumeOption): isAnswersNotEmpty (parsedAnswers.length > 0): ${isAnswersNotEmpty}`);
-
-        // Теперь для showResumeOption достаточно, чтобы индекс был валиден
+        
         if (isIndexValid) {
           shouldShowResume = true;
           setOverallTestStartTime(savedOverallTestStartTime);
@@ -396,7 +397,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         window.clearInterval(timerId);
       }
     };
-  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]);
+  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion, remainingTime]); // Добавил remainingTime в зависимости
 
   // Effect для сохранения прогресса при смене вопроса или при выборе ответа
   useEffect(() => {
