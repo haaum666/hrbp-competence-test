@@ -1,8 +1,13 @@
+// src/components/common/Header.tsx
+
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom'; // <-- НОВОЕ: Импорт useNavigate
+import { useTestLogicContext } from '../../contexts/TestLogicContext'; // <-- НОВОЕ: Импорт useTestLogicContext
 
 const Header: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate(); // <-- НОВОЕ: Инициализация useNavigate
+  const { testStarted, resetTestStateForNavigation } = useTestLogicContext(); // <-- НОВОЕ: Использование контекста
 
   // Функция для определения, активна ли ссылка
   const isActive = (path: string) => {
@@ -11,6 +16,21 @@ const Header: React.FC = () => {
     return location.pathname === path
       ? 'text-text-primary border-b-2 border-text-primary shadow-sm-bottom' // Использование нового класса для тени границы
       : 'text-text-secondary hover:text-text-primary';
+  };
+
+  /**
+   * @function handleLogoClick
+   * @description Обрабатывает клик по логотипу. Если тест запущен, сбрасывает его состояние.
+   * Всегда перенаправляет на домашнюю страницу.
+   */
+  const handleLogoClick = () => {
+    if (testStarted) {
+      console.log('Header: Тест запущен, сбрасываю состояние теста для навигации.');
+      resetTestStateForNavigation(); // Сбрасываем состояние теста
+    } else {
+      console.log('Header: Тест не запущен, просто перехожу на главную.');
+    }
+    navigate('/'); // Переходим на домашнюю страницу
   };
 
   return (
@@ -27,7 +47,11 @@ const Header: React.FC = () => {
     >
       <div className="max-w-4xl mx-auto flex justify-between items-center">
         {/* Логотип / Название проекта */}
-        <Link to="/" className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center">
+        {/* Используем div и onClick вместо Link, чтобы управлять навигацией и сбросом состояния */}
+        <div
+          onClick={handleLogoClick} // <-- НОВОЕ: Обработчик клика
+          className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center cursor-pointer" // <-- НОВОЕ: Добавлен cursor-pointer
+        >
           {/* Замена иконки мозга на SVG-иконку "структурный ромб" */}
           <svg
             width="32" // Увеличил размер для лучшей видимости, можете настроить
@@ -48,7 +72,7 @@ const Header: React.FC = () => {
           <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
           <span style={{ color: 'var(--color-text-primary)' }}>P</span>
           <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span>
-        </Link>
+        </div>
 
         {/* Навигационные ссылки */}
         <nav className="space-x-4 sm:space-x-6">
