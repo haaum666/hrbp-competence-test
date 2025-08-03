@@ -307,36 +307,47 @@ const useTestLogic = (): UseTestLogicReturn => {
 
   // --- КОНЕЦ: Все функции useCallback определены ---
 
-
 // src/hooks/useTestLogic.ts
-
 // Effect для начальной загрузки состояния из localStorage и определения showResumeOption
 useEffect(() => {
-  // console.log('useEffect (showResumeOption): Выполняется.'); // Оставьте, если хотите для отладки
+  console.log('useEffect (showResumeOption): -- Начало выполнения эффекта --');
+
   const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
   const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
   const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
   const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
-  // console.log('useEffect (showResumeOption): savedTestStarted из localStorage:', savedTestStarted); // Оставьте, если хотите для отладки
-  // console.log('useEffect (showResumeOption): showResumeOption текущее:', showResumeOption); // Оставьте, если хотите для отладки
+  console.log(`useEffect (showResumeOption): savedAnswers: ${savedAnswers ? 'есть' : 'нет'}`);
+  console.log(`useEffect (showResumeOption): savedIndex: ${savedIndex ? 'есть' : 'нет'}`);
+  console.log(`useEffect (showResumeOption): savedTestStarted: '${savedTestStarted}'`); // Внимание на кавычки, чтобы видеть 'null' или 'undefined'
+  console.log(`useEffect (showResumeOption): savedOverallTestStartTime: ${savedOverallTestStartTime ? 'есть' : 'нет'}`);
 
   let shouldShowResume = false;
   let shouldClearStorage = false;
 
-  if (savedAnswers && savedIndex && savedTestStarted === 'true' && savedOverallTestStartTime) {
-    // console.log('useEffect (showResumeOption): Найдены потенциальные сохраненные данные.'); // Оставьте, если хотите для отладки
+  // Проверяем, что ВСЕ ключевые данные для возобновления теста существуют в localStorage
+  if (savedAnswers !== null && savedIndex !== null && savedTestStarted === 'true' && savedOverallTestStartTime !== null) {
+    console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) ВЫПОЛНЕНО.**');
     try {
       const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
       const parsedIndex: number = parseInt(savedIndex, 10);
-      const initialQuestionsCheck = generateQuestions();
+      const initialQuestionsCheck = generateQuestions(); // Генерируем вопросы для проверки длины
 
-      if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length) {
+      console.log(`useEffect (showResumeOption): parsedAnswers.length: ${parsedAnswers.length}`);
+      console.log(`useEffect (showResumeOption): parsedIndex (parseInt): ${parsedIndex}`);
+      console.log(`useEffect (showResumeOption): initialQuestionsCheck.length (from generateQuestions): ${initialQuestionsCheck.length}`);
+
+      const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length;
+      console.log(`useEffect (showResumeOption): isIndexValid (!isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length): ${isIndexValid}`);
+      const isAnswersNotEmpty = parsedAnswers.length > 0;
+      console.log(`useEffect (showResumeOption): isAnswersNotEmpty (parsedAnswers.length > 0): ${isAnswersNotEmpty}`);
+
+      if (isAnswersNotEmpty && isIndexValid) { // Объединяем условия для ясности
         shouldShowResume = true;
         setOverallTestStartTime(savedOverallTestStartTime);
-        // console.log('useEffect (showResumeOption): Данные валидны, устанавливаем shouldShowResume = true.'); // Оставьте, если хотите для отладки
+        console.log('useEffect (showResumeOption): **Условие 2 (валидность данных) ВЫПОЛНЕНО.** shouldShowResume = true.');
       } else {
-        console.warn('useEffect (showResumeOption): Сохраненные данные теста невалидны или неполны. Инициируем очистку.');
+        console.warn('useEffect (showResumeOption): Сохраненные данные теста невалидны или неполны (одно из внутренних условий не выполнено). Инициируем очистку.');
         shouldClearStorage = true;
       }
     } catch (e) {
@@ -344,17 +355,18 @@ useEffect(() => {
       shouldClearStorage = true;
     }
   } else {
-    // console.log('useEffect (showResumeOption): Отсутствуют все необходимые данные для возобновления теста.'); // Оставьте, если хотите для отладки
+    console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) НЕ ВЫПОЛНЕНО.** Отсутствуют необходимые данные для возобновления теста (один или более ключей отсутствуют/null).');
   }
 
   // Применяем изменения после всех проверок
   setShowResumeOption(shouldShowResume);
   if (shouldClearStorage) {
     clearLocalStorage();
-    // console.log('useEffect (showResumeOption): localStorage очищен из-за некорректных данных.'); // Оставьте, если хотите для отладки
+    console.log('useEffect (showResumeOption): localStorage очищен из-за некорректных данных.');
   }
+  console.log(`useEffect (showResumeOption): -- Завершение выполнения эффекта. Итоговое showResumeOption: ${shouldShowResume} --`);
 
-}, [clearLocalStorage]); // Зависимость от clearLocalStorage, чтобы React правильно кэшировал хук.
+}, [clearLocalStorage]);
   
   // Effect для обработки таймера
   useEffect(() => {
