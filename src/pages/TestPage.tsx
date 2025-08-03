@@ -1,10 +1,10 @@
 // src/pages/TestPage.tsx
-import React, { useEffect, useRef, useState } from 'react'; // Добавили useState
-import { Link, useLocation, useNavigate } from 'react-router-dom'; // Добавили useNavigate
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import QuestionRenderer from '../components/test/QuestionRenderer';
 import ResultDetailView from '../components/test/ResultDetailView'; // Предполагается, что этот компонент используется для детального просмотра
-import Sidebar from '../components/layout/Sidebar'; // Импортируем новый Sidebar
-import Footer from '../components/layout/Footer';   // Импортируем новый Footer
+import Sidebar from '../components/layout/Sidebar'; // Импортируем обновленный Sidebar
+import Footer from '../components/layout/Footer';   // Импортируем Footer
 import useTestLogic from '../hooks/useTestLogic';
 
 const TestPage: React.FC = () => {
@@ -27,7 +27,7 @@ const TestPage: React.FC = () => {
   } = useTestLogic();
 
   const location = useLocation();
-  const navigate = useNavigate(); // Инициализируем useNavigate
+  const navigate = useNavigate();
 
   // Состояние для управления видимостью модального окна
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -51,9 +51,9 @@ const TestPage: React.FC = () => {
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const handleConfirmExit = () => {
-    resetTestStateForNavigation(); // Сброс состояния теста
-    setIsModalOpen(false);        // Закрываем модальное окно
-    navigate('/');                // Переходим на главную страницу
+    resetTestStateForNavigation();
+    setIsModalOpen(false);
+    navigate('/');
   };
 
   // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК
@@ -78,7 +78,7 @@ const TestPage: React.FC = () => {
 
   return (
     <>
-      {/* Стартовый экран теста - остается без изменений в логике отображения */}
+      {/* Стартовый экран теста */}
       {!testStarted && !testFinished && (
         <div
           className="flex flex-col items-center justify-center text-center p-4 rounded-lg shadow-xl max-w-2xl w-full"
@@ -132,9 +132,26 @@ const TestPage: React.FC = () => {
         </div>
       )}
 
-      {/* Отображение самого теста и боковой панели */}
+      {/* Отображение самого теста */}
       {testStarted && questions.length > 0 && !testFinished && (
-        <div className="flex w-full items-start justify-center p-4 md:space-x-4"> {/* Контейнер для сайдбара и рендерера */}
+        // Общий контейнер для QuestionRenderer и Sidebar, теперь Sidebar вынесен из flex-потока
+        <> 
+          <div className="flex justify-center w-full items-start p-4"> {/* Убрал md:space-x-4, так как Sidebar теперь фиксированный */}
+            <QuestionRenderer
+              question={questions[currentQuestionIndex]}
+              currentQuestionIndex={currentQuestionIndex}
+              totalQuestions={questions.length}
+              onAnswerSelect={handleAnswerSelect}
+              currentUserAnswer={userAnswers.find(ua => ua.questionId === questions[currentQuestionIndex].id) || null}
+              onNextQuestion={handleNextQuestion}
+              onPreviousQuestion={handlePreviousQuestion}
+              isFirstQuestion={currentQuestionIndex === 0}
+              isLastQuestion={currentQuestionIndex === questions.length - 1}
+              remainingTime={remainingTime}
+              progressPercentage={progressPercentage}
+            />
+          </div>
+          {/* Sidebar (плавающий блок) для десктопа - теперь он находится вне контейнера QuestionRenderer */}
           <Sidebar
             isModalOpen={isModalOpen}
             onOpenModal={handleOpenModal}
@@ -142,20 +159,7 @@ const TestPage: React.FC = () => {
             onConfirmExit={handleConfirmExit}
             testStarted={testStarted}
           />
-          <QuestionRenderer
-            question={questions[currentQuestionIndex]}
-            currentQuestionIndex={currentQuestionIndex}
-            totalQuestions={questions.length}
-            onAnswerSelect={handleAnswerSelect}
-            currentUserAnswer={userAnswers.find(ua => ua.questionId === questions[currentQuestionIndex].id) || null}
-            onNextQuestion={handleNextQuestion}
-            onPreviousQuestion={handlePreviousQuestion}
-            isFirstQuestion={currentQuestionIndex === 0}
-            isLastQuestion={currentQuestionIndex === questions.length - 1}
-            remainingTime={remainingTime}
-            progressPercentage={progressPercentage}
-          />
-        </div>
+        </>
       )}
 
       {/* Отображение общих результатов после завершения теста */}
@@ -208,8 +212,8 @@ const TestPage: React.FC = () => {
         </div>
       )}
 
-      {/* Футер для мобильных - отображается только когда тест запущен */}
-      {testStarted && !testFinished && ( // Показываем футер только когда тест активен
+      {/* Футер для мобильных - отображается только когда тест запущен и не завершен */}
+      {testStarted && !testFinished && (
         <Footer
           isModalOpen={isModalOpen}
           onOpenModal={handleOpenModal}
