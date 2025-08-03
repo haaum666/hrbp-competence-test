@@ -308,39 +308,49 @@ const useTestLogic = (): UseTestLogicReturn => {
   // --- КОНЕЦ: Все функции useCallback определены ---
 
 
-  // Effect для начальной загрузки состояния из localStorage и определения showResumeOption
-  useEffect(() => {
-    const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
-    const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
-    const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
-    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+ // Effect для начальной загрузки состояния из localStorage и определения showResumeOption
+useEffect(() => {
+  const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
+  const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+  const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
+  const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
-    // Только если тест был начат и есть сохраненные данные, показываем опцию "Продолжить"
-    if (savedAnswers && savedIndex && savedTestStarted === 'true' && savedOverallTestStartTime) {
-      try {
-        const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
-        const parsedIndex: number = parseInt(savedIndex, 10);
+  // Проверяем, есть ли сохраненный тест, который можно продолжить
+  // Условие: должны присутствовать все ключевые элементы сохраненного состояния
+  if (savedAnswers && savedIndex && savedTestStarted === 'true' && savedOverallTestStartTime) {
+    try {
+      const parsedAnswers: UserAnswer[] = JSON.parse(savedAnswers);
+      const parsedIndex: number = parseInt(savedIndex, 10);
 
-        // Генерируем вопросы здесь, чтобы проверить их длину для showResumeOption
-        // Но НЕ устанавливаем их в состояние questions, это делает startNewTest/resumeTest
-        const initialQuestionsCheck = generateQuestions(); 
+      // Генерируем вопросы для ПРОВЕРКИ их длины, не для установки в state!
+      // Это нужно, чтобы убедиться, что сохраненный индекс не выходит за пределы существующих вопросов
+      const initialQuestionsCheck = generateQuestions();
 
-        if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length) {
-          setShowResumeOption(true);
-          setOverallTestStartTime(savedOverallTestStartTime);
-          // ВАЖНО: Мы не устанавливаем questions здесь. Они будут установлены startNewTest/resumeTest
-        } else {
-          clearLocalStorage(); // Очищаем, если данные некорректны
-        }
-      } catch (e) {
-        console.error('Failed to parse saved test data during initial load:', e);
+      // Если есть ответы, индекс корректен, и он не выходит за пределы количества вопросов
+      if (parsedAnswers.length > 0 && !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length) {
+        setShowResumeOption(true);
+        setOverallTestStartTime(savedOverallTestStartTime);
+        // Важно: вопросы в state (setQuestions) НЕ устанавливаются здесь.
+        // Они будут установлены функцией resumeTest() или startNewTest() позже.
+      } else {
+        // Если данные сохраненного теста некорректны (например, индекс вне границ, или нет ответов),
+        // тогда нужно очистить localStorage, чтобы не пытаться возобновить битый тест.
+        console.warn('Saved test data is invalid or incomplete, clearing localStorage.');
         clearLocalStorage();
+        setShowResumeOption(false); // Убедимся, что опция продолжения не показывается
       }
-    } else {
-      clearLocalStorage(); // Очищаем, если нет сохраненных данных или они неполные
+    } catch (e) {
+      // Если произошла ошибка парсинга JSON (данные повреждены), очищаем localStorage.
+      console.error('Failed to parse saved test data during initial load:', e);
+      clearLocalStorage();
+      setShowResumeOption(false);
     }
-  }, [clearLocalStorage]); // Зависимости
-
+  } else {
+    // Если никаких данных для возобновления теста нет в localStorage,
+    // нам не нужно ничего чистить. Просто убеждаемся, что опция "Продолжить" не показывается.
+    setShowResumeOption(false);
+  }
+}, [clearLocalStorage]); // Зависимость от clearLocalStorage, чтобы React правильно кэшировал хук.
   // Effect для обработки таймера
   useEffect(() => {
     let timerId: number | undefined;
