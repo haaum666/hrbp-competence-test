@@ -112,7 +112,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
   };
 
   // Стилизация опций вопросов
-  const getOptionStyle = (optionId: string, isSelected: boolean, hasAnswered: boolean) => {
+  const getOptionStyle = (optionId: string, isSelected: boolean) => { // Убрали hasAnswered из параметров
     let bgColorVar: string;
     let textColorVar: string;
     let borderColorVar: string;
@@ -124,7 +124,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       textColorVar = 'var(--color-neutral)';
       borderColorVar = 'var(--color-accent-primary)';
       boxShadowVar = '2px 2px 0px 0px var(--color-text-primary)';
-      hoverFilter = 'brightness(1.0)';
+      hoverFilter = 'brightness(1.0)'; // Выбранный вариант не должен менять яркость при наведении
     } else {
       bgColorVar = 'var(--color-neutral)';
       textColorVar = 'var(--color-text-primary)';
@@ -143,16 +143,16 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       boxShadow: boxShadowVar,
       filter: 'brightness(1.0)',
       transition: 'filter 0.3s ease',
-      cursor: hasAnswered ? 'not-allowed' : 'pointer',
-      opacity: hasAnswered && !isSelected ? 0.8 : 1,
+      cursor: 'pointer', // ИЗМЕНЕНИЕ: Всегда 'pointer' для возможности выбора
+      opacity: 1, // ИЗМЕНЕНИЕ: Опции всегда полная непрозрачность
       '--hover-filter-option': hoverFilter,
     };
   };
 
-  const handleOptionHover = (e: React.MouseEvent<HTMLButtonElement>, isSelected: boolean, hasAnswered: boolean, isEnter: boolean) => {
-    if (hasAnswered && !isSelected) return;
-    if (isSelected && hasAnswered) return;
-
+  // Убрали hasAnswered из параметров, так как оно больше не используется для логики блокировки.
+  // Теперь проверяем только isSelected, чтобы не менять яркость у выбранной опции.
+  const handleOptionHover = (e: React.MouseEvent<HTMLButtonElement>, isSelected: boolean, isEnter: boolean) => {
+    if (isSelected) return; // Если опция выбрана, она не должна менять яркость при наведении
     const hoverFilter = e.currentTarget.style.getPropertyValue('--hover-filter-option');
     e.currentTarget.style.filter = isEnter ? hoverFilter : 'brightness(1.0)';
   };
@@ -201,7 +201,9 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
         <div className="space-y-3 sm:space-y-4">
           {question.options.map((option) => {
             const isSelected = selectedOptionId === option.id;
-            const hasAnswered = currentUserAnswer !== null;
+            // hasAnswered больше не используется для логики disable/opacity,
+            // но может быть полезно для других визуальных индикаторов, если потребуется.
+            // const hasAnswered = currentUserAnswer !== null;
 
             return (
               <button
@@ -213,10 +215,10 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
                   focus:outline-none focus:ring-2 focus:ring-offset-2
                   text-base sm:text-lg font-sans
                 `}
-                style={getOptionStyle(option.id, isSelected, hasAnswered)}
-                onMouseEnter={(e) => handleOptionHover(e, isSelected, hasAnswered, true)}
-                onMouseLeave={(e) => handleOptionHover(e, isSelected, hasAnswered, false)}
-                disabled={hasAnswered}
+                style={getOptionStyle(option.id, isSelected)} // Убрали hasAnswered из вызова
+                onMouseEnter={(e) => handleOptionHover(e, isSelected, true)} // Убрали hasAnswered из вызова
+                onMouseLeave={(e) => handleOptionHover(e, isSelected, false)} // Убрали hasAnswered из вызова
+                // УДАЛЕНО: disabled={hasAnswered}
               >
                 {option.text}
               </button>
@@ -242,7 +244,7 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
           </button>
         )}
 
-        {isLastQuestion && ( // <--- ВАЖНО: здесь '&&', а не '?'
+        {isLastQuestion && (
           <button
             onClick={() => onNextQuestion(true)}
             className={`
