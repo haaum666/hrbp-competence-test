@@ -9,7 +9,7 @@ interface SidebarProps {
   onOpenModal: () => void;
   onCloseModal: () => void;
   onConfirmExit: () => void; // Функция для подтверждения выхода и сброса теста
-  testStarted: boolean; // Нужно, чтобы знать, активен ли тест
+  // testStarted: boolean; // УДАЛЕН: Больше не нужен, т.к. кнопка "На главную" всегда видна
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -17,7 +17,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   onOpenModal,
   onCloseModal,
   onConfirmExit,
-  testStarted,
+  // testStarted, // УДАЛЕН: Больше не нужен
 }) => {
   // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК
   // Используем те же стили, что и для других кнопок в вашем проекте
@@ -41,12 +41,12 @@ const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Этот блок будет виден только на больших экранах (md и выше) */}
-      {/* Он будет плавающим, полупрозрачным, с кнопками навигации */}
+      {/* ПОЗИЦИЯ ИЗМЕНЕНА: Теперь в левом нижнем углу */}
       <div
         className="hidden md:flex flex-col items-center p-3 space-y-3
-                   fixed left-4 top-1/2 -translate-y-1/2 z-40
+                   fixed left-4 bottom-4 z-40 /* ИЗМЕНЕНО: top-1/2 -translate-y-1/2 на bottom-4 */
                    rounded-xl shadow-xl transition-opacity duration-300 opacity-50 hover:opacity-100
-                   w-auto max-w-xs" /* ИЗМЕНЕНО: Добавлены w-auto и max-w-xs для контроля ширины */
+                   w-auto max-w-xs"
         style={{
           backgroundColor: 'var(--color-background-card)',
           backgroundImage: 'var(--texture-grain)',
@@ -75,17 +75,16 @@ const Sidebar: React.FC<SidebarProps> = ({
         >
           О проекте
         </Link>
-        {testStarted && ( // Кнопка "На главную" только если тест запущен
-          <button
-            onClick={onOpenModal}
-            className="w-full font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center font-sans"
-            style={getButtonStyle(true)} // Используем Primary стиль для этой важной кнопки
-            onMouseEnter={(e) => handleButtonHover(e, true, true)}
-            onMouseLeave={(e) => handleButtonHover(e, true, false)}
-          >
-            На главную
-          </button>
-        )}
+        {/* Кнопка "На главную" теперь всегда видна на десктопе */}
+        <button
+          onClick={onOpenModal}
+          className="w-full font-bold py-2 px-4 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 text-center font-sans"
+          style={getButtonStyle(true)}
+          onMouseEnter={(e) => handleButtonHover(e, true, true)}
+          onMouseLeave={(e) => handleButtonHover(e, true, false)}
+        >
+          На главную
+        </button>
       </div>
 
       {/* Модальное окно подтверждения, управляемое из TestPage через пропсы */}
