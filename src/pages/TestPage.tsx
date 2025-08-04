@@ -3,8 +3,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import QuestionRenderer from '../components/test/QuestionRenderer';
 import ResultDetailView from '../components/test/ResultDetailView'; // Предполагается, что этот компонент используется для детального просмотра
-import Sidebar from '../components/layout/Sidebar'; // Импортируем обновленный Sidebar
-import Footer from '../components/layout/Footer';   // Импортируем Footer
+// import Sidebar from '../components/layout/Sidebar'; // ЭТА СТРОКА УДАЛЕНА
+import Footer from '../components/layout/Footer';    // Импортируем Footer
 import useTestLogic from '../hooks/useTestLogic';
 
 const TestPage: React.FC = () => {
@@ -44,7 +44,7 @@ const TestPage: React.FC = () => {
       resetTestStateForNavigation();
     }
       
-    prevPathnameRef.current = currentPath; 
+    prevPathnameRef.current = currentPath;  
   }, [location.pathname, testStarted, resetTestStateForNavigation]);
 
   // Функции для управления модальным окном
@@ -78,14 +78,7 @@ const TestPage: React.FC = () => {
 
   return (
     <>
-      {/* Sidebar (плавающий блок) для десктопа - теперь рендерится ПОСТОЯННО */}
-      <Sidebar
-        isModalOpen={isModalOpen}
-        onOpenModal={handleOpenModal}
-        onCloseModal={handleCloseModal}
-        onConfirmExit={handleConfirmExit}
-        // testStarted={testStarted} // УДАЛЕН: Больше не передаем этот пропс в Sidebar
-      />
+      {/* ЭТОТ БЛОК ТЕПЕРЬ УДАЛЕН - Sidebar больше не рендерится здесь */}
 
       {/* Основной контент страницы, зависит от состояния теста */}
       {/* Стартовый экран теста */}
@@ -180,9 +173,9 @@ const TestPage: React.FC = () => {
             Ваши результаты:
           </p>
           <div className="text-left mx-auto max-w-sm space-y-2 mb-8 text-base sm:text-lg">
-            <p>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{testResult.totalQuestions}</span></p>
-            <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.correctAnswers}</span></p>
-            <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.incorrectAnswers}</span></p>
+            <p>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.totalQuestions}</span></p>
+            <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.correctAnswers}</span></p>
+            <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.incorrectAnswers}</span></p>
             <p>Пропущено вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.unanswered}</span></p>
             <p className="text-xl sm:text-2xl pt-4">Итоговый балл: <span className="font-extrabold" style={{ color: 'var(--color-text-primary)' }}>{testResult.scorePercentage.toFixed(2)}%</span></p>
           </div>
@@ -191,8 +184,8 @@ const TestPage: React.FC = () => {
               onClick={() => { /* Логика для детальных результатов */ }}
               className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center cursor-not-allowed opacity-50"
               style={getButtonStyle(false, false)}
-              onMouseEnter={(e) => handleButtonHover(e, false, true)}
-              onMouseLeave={(e) => handleButtonHover(e, false, false)}
+              onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, false, true)}
+              onMouseLeave={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, false, false)}
               disabled
             >
               Посмотреть детальные результаты (скоро)
