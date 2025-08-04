@@ -1,49 +1,40 @@
 // src/App.tsx
 
-import React from 'react'; // Удаляем useEffect, так как он больше не нужен напрямую здесь
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Импортируем наш провайдер контекста
 import { TestLogicProvider } from './contexts/TestLogicContext';
-
-// Импортируем компонент Header
 import Header from './components/common/Header';
-
-// Импортируем TestPage, который будет содержать логику старта/продолжения теста
 import TestPage from './pages/TestPage';
-
-// Импортируем AnalyticsDashboard
 import AnalyticsDashboard from './components/analytics/AnalyticsDashboard';
 
-// УДАЛЯЕМ ИМПОРТ useTestLogic, так как он теперь вызывается внутри TestLogicProvider
-// import useTestLogic from './hooks/useTestLogic'; 
-
 function App() {
-  console.log('App.tsx: Рендер компонента App.'); // Оставляем этот лог для отслеживания рендеров App
-
-  // УДАЛЯЕМ ВЫЗОВ useTestLogic() ЗДЕСЬ, так как он теперь в TestLogicProvider
-  // const {
-  //   testStarted,
-  //   resetTestStateForNavigation,
-  // } = useTestLogic();
-
-  // УДАЛЯЕМ ЭТОТ ЛОГ, так как testStarted больше не определяется здесь
-  // console.log('App.tsx: testStarted из useTestLogic (после вызова хука):', testStarted);
-
+  console.log('App.tsx: Рендер компонента App.');
 
   return (
     <Router>
-      {/* <--- ГЛАВНОЕ ИЗМЕНЕНИЕ: TestLogicProvider теперь не принимает пропсы testStarted и resetTestStateForNavigation,
-                 поскольку он сам вызывает useTestLogic и предоставляет все его значения через контекст. */}
-      <TestLogicProvider> 
+      <TestLogicProvider>
+        {/* Главный контейнер приложения. min-h-screen обеспечит, что он всегда занимает всю высоту */}
+        {/* flex flex-col позволит содержимому (Header, main, MobileFooter) располагаться вертикально */}
         <div className="min-h-screen flex flex-col font-sans" style={{ color: 'var(--color-text-primary)' }}>
           <Header />
-          <main className="flex-grow p-4 sm:p-6 flex items-center justify-center">
+          
+          {/* Основное содержимое, которое будет занимать все доступное вертикальное пространство */}
+          {/* pt-28 sm:pt-6: Добавим верхний отступ здесь для всего контента страницы.
+              pt-28 (112px) для мобильных, чтобы избежать перекрытия хедером.
+              sm:pt-6 (24px) для десктопа, чтобы контент не был слишком прижат к хедеру.
+              pb-20 sm:pb-0: Нижний отступ для футера на мобильных. */}
+          <main className="flex-grow flex flex-col items-center justify-start pt-28 sm:pt-6 pb-20 sm:pb-0"> {/* <-- ИЗМЕНЕНИЯ ЗДЕСЬ */}
             <Routes>
               <Route path="/" element={<TestPage />} />
               <Route path="/analytics" element={<AnalyticsDashboard />} />
             </Routes>
           </main>
+          
+          {/* MobileFooter будет рендериться здесь, но его позиционирование `fixed`
+              внутри самого MobileFooter.tsx вынесет его из обычного потока,
+              поэтому он не будет влиять на main. Однако, App.tsx должен знать о его высоте
+              через padding-bottom на main. */}
         </div>
       </TestLogicProvider>
     </Router>
