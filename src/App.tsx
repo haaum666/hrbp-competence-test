@@ -20,10 +20,10 @@ function App() {
           <Header />
           
           {/* Основное содержимое, которое будет занимать все доступное вертикальное пространство */}
-          {/* pt-28: для мобильных (112px)
-              sm:pt-20: для десктопа (80px) - изменено для опускания карточки
+          {/* pt-28: для мобильных (112px) - остается без изменений
+              sm:pt-32: для десктопа (128px) - увеличено с sm:pt-20
               pb-20 sm:pb-0: Нижний отступ для футера на мобильных. */}
-          <main className="flex-grow flex flex-col items-center justify-start pt-28 sm:pt-20 pb-20 sm:pb-0">
+          <main className="flex-grow flex flex-col items-center justify-start pt-28 sm:pt-32 pb-20 sm:pb-0"> {/* <-- ИЗМЕНЕНИЯ ЗДЕСЬ */}
             <Routes>
               <Route path="/" element={<TestPage />} />
               <Route path="/analytics" element={<AnalyticsDashboard />} />
