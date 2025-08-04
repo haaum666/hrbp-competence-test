@@ -81,16 +81,16 @@ const Header: React.FC = () => {
         </div>
 
         <nav className="space-x-4 sm:space-x-6 flex items-center">
-          {/* Ссылка "Тест" */}
+          {/* Ссылка "Тест" - СКРЫТА НА МОБИЛЬНЫХ */}
           <Link
             to="/"
             onClick={(e) => handleNavLinkClick(e, '/')}
-            className={`text-lg font-medium transition-colors duration-300 ${isActive('/')}`}
+            className={`hidden sm:block text-lg font-medium transition-colors duration-300 ${isActive('/')}`}
           >
             Тест
           </Link>
 
-          {/* Ссылка "Аналитика" */}
+          {/* Ссылка "Аналитика" - ВИДИМА ВЕЗДЕ */}
           <Link
             to="/analytics"
             onClick={(e) => handleNavLinkClick(e, '/analytics')}
@@ -99,21 +99,21 @@ const Header: React.FC = () => {
             Аналитика
           </Link>
 
-          {/* Ссылка "О проекте" - НОВЫЙ ЦВЕТ */}
+          {/* Ссылка "О проекте" - СКРЫТА НА МОБИЛЬНЫХ, НОВЫЙ ЦВЕТ */}
           <Link
             to="/about"
             onClick={(e) => handleNavLinkClick(e, '/about')}
-            className={`text-lg font-medium transition-colors duration-300 ${isActive('/about')}`}
+            className={`hidden sm:block text-lg font-medium transition-colors duration-300 ${isActive('/about')}`}
             style={{ color: 'var(--color-accent-secondary)' }}
           >
             О проекте
           </Link>
 
-          {/* Ссылка "Контакты" - НОВЫЙ ЦВЕТ */}
+          {/* Ссылка "Контакты" - СКРЫТА НА МОБИЛЬНЫХ, НОВЫЙ ЦВЕТ */}
           <Link
             to="/contacts"
             onClick={(e) => handleNavLinkClick(e, '/contacts')}
-            className={`text-lg font-medium transition-colors duration-300 ${isActive('/contacts')}`}
+            className={`hidden sm:block text-lg font-medium transition-colors duration-300 ${isActive('/contacts')}`}
             style={{ color: 'var(--color-accent-secondary)' }}
           >
             Контакты
