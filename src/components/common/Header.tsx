@@ -9,9 +9,10 @@ const Header: React.FC = () => {
   const navigate = useNavigate();
   const { testStarted, resetTestStateForNavigation } = useTestLogicContext();
 
-  // ДОБАВЛЕНО: Этот лог будет показывать testStarted из контекста при каждом рендере Header.
+  // Этот лог будет показывать testStarted из контекста при каждом рендере Header.
   console.log('Header.tsx: testStarted из контекста:', testStarted);
 
+  // Helper function to determine active link styles
   const isActive = (path: string) => {
     return location.pathname === path
       ? 'text-text-primary border-b-2 border-text-primary shadow-sm-bottom'
@@ -20,19 +21,23 @@ const Header: React.FC = () => {
 
   const handleLogoClick = () => {
     if (testStarted) {
-      console.log('Header: Тест запущен, сбрасываю состояние теста для навигации.');
+      console.log('Header: Тест запущен, сбрасываю состояние теста для навигации по лого.');
       resetTestStateForNavigation(); // Сбросить состояние теста
     } else {
-      console.log('Header: Тест не запущен, просто перехожу на главную.');
+      console.log('Header: Тест не запущен, просто перехожу на главную по лого.');
     }
     navigate('/'); // Всегда переходить на главную
   };
 
-  // НОВАЯ ФУНКЦИЯ: Обработка клика по кнопке "В начало"
-  const handleGoToStartClick = () => {
-    console.log('Header: Нажата кнопка "В начало", сбрасываю состояние теста.');
-    resetTestStateForNavigation(); // Сбросить состояние теста
-    navigate('/'); // Переход на главную страницу
+  // НОВАЯ УНИФИЦИРОВАННАЯ ФУНКЦИЯ: Обработка клика по навигационным ссылкам
+  const handleNavLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
+    if (testStarted) { // Если тест запущен
+      e.preventDefault(); // Предотвращаем стандартное поведение Link
+      console.log(`Header: Навигационная ссылка "${path}" нажата во время теста, сбрасываю состояние теста.`);
+      resetTestStateForNavigation(); // Сбросить состояние теста
+      navigate(path); // Перейти на страницу
+    }
+    // Если тест не запущен, Link работает как обычно (без e.preventDefault())
   };
 
   return (
@@ -72,27 +77,38 @@ const Header: React.FC = () => {
           <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span>
         </div>
 
-        <nav className="space-x-4 sm:space-x-6 flex items-center"> {/* Добавил flex items-center для выравнивания */}
-          {/* НОВАЯ КНОПКА "В НАЧАЛО" */}
-          {testStarted && ( // Показываем кнопку только если тест запущен
-            <button
-              onClick={handleGoToStartClick}
-              className="text-lg font-medium transition-colors duration-300
-                         text-text-secondary hover:text-text-primary
-                         border border-neutral-light px-3 py-1 rounded-md
-                         shadow-sm hover:shadow-md"
-              style={{
-                 backgroundColor: 'var(--color-background-secondary)',
-                 color: 'var(--color-text-primary)'
-              }}
-            >
-              В начало
-            </button>
-          )}
-          <Link to="/" className={`text-lg font-medium transition-colors duration-300 ${isActive('/')}`}>
+        <nav className="space-x-4 sm:space-x-6 flex items-center">
+          {/* Ссылка "Тест" (бывшая "В начало" / "На главную") */}
+          <Link
+            to="/"
+            onClick={(e) => handleNavLinkClick(e, '/')} // Унифицированная обработка клика
+            className={`text-lg font-medium transition-colors duration-300 ${isActive('/')}`}
+          >
             Тест
           </Link>
-          <Link to="/analytics" className={`text-lg font-medium transition-colors duration-300 ${isActive('/analytics')}`}>
+
+          {/* НОВЫЕ ССЫЛКИ: Контакты и О проекте */}
+          <Link
+            to="/contacts"
+            onClick={(e) => handleNavLinkClick(e, '/contacts')} // Унифицированная обработка клика
+            className={`text-lg font-medium transition-colors duration-300 ${isActive('/contacts')}`}
+          >
+            Контакты
+          </Link>
+          <Link
+            to="/about"
+            onClick={(e) => handleNavLinkClick(e, '/about')} // Унифицированная обработка клика
+            className={`text-lg font-medium transition-colors duration-300 ${isActive('/about')}`}
+          >
+            О проекте
+          </Link>
+          
+          {/* Существующая ссылка "Аналитика" */}
+          <Link
+            to="/analytics"
+            onClick={(e) => handleNavLinkClick(e, '/analytics')} // Унифицированная обработка клика
+            className={`text-lg font-medium transition-colors duration-300 ${isActive('/analytics')}`}
+          >
             Аналитика
           </Link>
         </nav>
