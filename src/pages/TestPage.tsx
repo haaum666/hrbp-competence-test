@@ -1,10 +1,13 @@
 // src/pages/TestPage.tsx
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import QuestionRenderer from '../components/test/QuestionRenderer';
 import ResultDetailView from '../components/test/ResultDetailView'; // Предполагается, что этот компонент используется для детального просмотра
-// import Sidebar from '../components/layout/Sidebar'; // ЭТА СТРОКА УДАЛЕНА
-import Footer from '../components/layout/Footer';    // Импортируем Footer
+// import Sidebar from '../components/layout/Sidebar'; // ЭТА СТРОКА ОСТАЕТСЯ УДАЛЕННОЙ
+// import Footer from '../components/layout/Footer';    // <-- ЭТУ СТРОКУ НУЖНО УДАЛИТЬ ИЗ ВАШЕГО КОДА
+import MobileFooter from '../components/layout/MobileFooter'; // <-- НОВЫЙ ИМПОРТ
+
 import useTestLogic from '../hooks/useTestLogic';
 
 const TestPage: React.FC = () => {
@@ -13,7 +16,7 @@ const TestPage: React.FC = () => {
     userAnswers,
     testFinished,
     questions,
-    testStarted, // testStarted остается здесь, так как он используется для основного контента и футера
+    testStarted,
     testResult,
     showResumeOption,
     remainingTime,
@@ -29,10 +32,7 @@ const TestPage: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Состояние для управления видимостью модального окна
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Дополнительный реф для отслеживания предыдущего пути
   const prevPathnameRef = useRef(location.pathname);
 
   useEffect(() => {
@@ -47,7 +47,6 @@ const TestPage: React.FC = () => {
     prevPathnameRef.current = currentPath;  
   }, [location.pathname, testStarted, resetTestStateForNavigation]);
 
-  // Функции для управления модальным окном
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const handleConfirmExit = () => {
@@ -56,7 +55,6 @@ const TestPage: React.FC = () => {
     navigate('/');
   };
 
-  // УНИФИЦИРОВАННЫЕ СТИЛИ ДЛЯ КНОПОК
   const getButtonStyle = (isPrimary: boolean, isHoverable: boolean = true) => ({
     backgroundColor: isPrimary ? 'var(--button-primary-bg)' : 'var(--button-secondary-bg)',
     color: isPrimary ? 'var(--button-primary-text)' : 'var(--button-secondary-text)',
@@ -77,11 +75,11 @@ const TestPage: React.FC = () => {
   };
 
   return (
-    <>
-      {/* ЭТОТ БЛОК ТЕПЕРЬ УДАЛЕН - Sidebar больше не рендерится здесь */}
-
+    // Корневой элемент div с классами padding для учета футера на мобильных
+    // pb-20 - это padding-bottom, чтобы контент не перекрывался футером (80px)
+    // sm:pb-0 - отменяет этот padding на экранах >= sm, где футер скрыт
+    <div className="flex flex-col min-h-screen items-center justify-between pt-8 pb-20 sm:pb-0"> 
       {/* Основной контент страницы, зависит от состояния теста */}
-      {/* Стартовый экран теста */}
       {!testStarted && !testFinished && (
         <div
           className="flex flex-col items-center justify-center text-center p-4 rounded-lg shadow-xl max-w-2xl w-full"
@@ -175,8 +173,7 @@ const TestPage: React.FC = () => {
           <div className="text-left mx-auto max-w-sm space-y-2 mb-8 text-base sm:text-lg">
             <p>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.totalQuestions}</span></p>
             <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.correctAnswers}</span></p>
-            <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.incorrectAnswers}</span></p>
-            <p>Пропущено вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.unanswered}</span></p>
+            <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.unanswered}</span></p>
             <p className="text-xl sm:text-2xl pt-4">Итоговый балл: <span className="font-extrabold" style={{ color: 'var(--color-text-primary)' }}>{testResult.scorePercentage.toFixed(2)}%</span></p>
           </div>
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
@@ -204,17 +201,9 @@ const TestPage: React.FC = () => {
         </div>
       )}
 
-      {/* Футер для мобильных - отображается только когда тест запущен и не завершен */}
-      {testStarted && !testFinished && (
-        <Footer
-          isModalOpen={isModalOpen}
-          onOpenModal={handleOpenModal}
-          onCloseModal={handleCloseModal}
-          onConfirmExit={handleConfirmExit}
-          testStarted={testStarted}
-        />
-      )}
-    </>
+      {/* НОВЫЙ МОБИЛЬНЫЙ ФУТЕР - теперь рендерится всегда на мобильных */}
+      <MobileFooter />
+    </div> // <-- ЗАКРЫВАЮЩИЙ DIV
   );
 };
 
