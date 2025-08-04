@@ -60,6 +60,7 @@ const AnalyticsDashboard: React.FC = () => {
         return window.getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
       }
       return '';
+      }
     };
 
     const accentPrimary = getCssVariable('--color-accent-primary');
@@ -211,29 +212,21 @@ const AnalyticsDashboard: React.FC = () => {
       legend: {
         position: 'top' as const,
         labels: {
-          // *** ИЗМЕНЕНИЕ ЗДЕСЬ: Устанавливаем display в false для скрытия иконки легенды ***
-          display: false, // Отключает отображение цветового квадрата/иконки в легенде
+          // НОВОЕ: Устанавливаем размеры иконки в 0 для полного скрытия
+          boxWidth: 0,
+          boxHeight: 0,
+          padding: 0, // Убираем отступ, чтобы не было пустого пространства
 
-          color: chartColors.textPrimary, // Эти стили все еще будут применяться к тексту легенды
+          color: chartColors.textPrimary,
           font: {
             size: 14,
           },
-          // Все остальные опции, связанные с формой иконки (boxWidth, usePointStyle, pointStyle, borderRadius, onHover, onLeave, onClick),
-          // становятся неактуальными, так как иконка не будет отображаться.
+          // Убедимся, что наведения нет
+          onHover: null,
+          onLeave: null,
         },
         onClick: (e: any, legendItem: any, legend: any) => {
-            // Если вы хотите, чтобы клик по легенде все равно переключал видимость линии,
-            // то вам нужно реализовать свою логику здесь, так как дефолтный клик не будет работать
-            // если иконка скрыта. Если не нужна интерактивность, то этот onClick можно удалить.
-            // Например, для переключения видимости (если нужно):
-            // const index = legendItem.datasetIndex;
-            // const ci = legend.chart;
-            // if (ci.isDatasetVisible(index)) {
-            //   ci.hide(index);
-            // } else {
-            //   ci.show(index);
-            // }
-            e.stopPropagation(); // Остановить дальнейшее распространение события, если интерактивность не нужна.
+            e.stopPropagation(); // Остановить дальнейшее распространение события
         },
       },
       title: {
