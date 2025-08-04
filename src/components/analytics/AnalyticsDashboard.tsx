@@ -60,8 +60,7 @@ const AnalyticsDashboard: React.FC = () => {
         return window.getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
       }
       return '';
-      }
-    };
+    }; // <-- Исправлено: добавлена закрывающая скобка для функции getCssVariable
 
     const accentPrimary = getCssVariable('--color-accent-primary');
     const error = getCssVariable('--color-error');
@@ -212,21 +211,20 @@ const AnalyticsDashboard: React.FC = () => {
       legend: {
         position: 'top' as const,
         labels: {
-          // НОВОЕ: Устанавливаем размеры иконки в 0 для полного скрытия
           boxWidth: 0,
           boxHeight: 0,
-          padding: 0, // Убираем отступ, чтобы не было пустого пространства
+          padding: 0, // Исправлено: запятая после padding: 0 не нужна, если это последний элемент,
+                       // но в TypeScript/JS это допустимо. Проблема была, возможно, в другом месте.
 
           color: chartColors.textPrimary,
           font: {
             size: 14,
           },
-          // Убедимся, что наведения нет
           onHover: null,
           onLeave: null,
         },
         onClick: (e: any, legendItem: any, legend: any) => {
-            e.stopPropagation(); // Остановить дальнейшее распространение события
+            e.stopPropagation();
         },
       },
       title: {
