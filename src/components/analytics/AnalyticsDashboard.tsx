@@ -1,3 +1,5 @@
+// src/components/analytics/AnalyticsDashboard.tsx
+
 import React, { useState, useEffect } from 'react';
 import { TestResult } from '../../types/test.d';
 import { Link } from 'react-router-dom';
@@ -42,7 +44,45 @@ const AnalyticsDashboard: React.FC = () => {
   const [avgUnanswered, setAvgUnanswered] = useState<number>(0);
   const [averageTestDuration, setAverageTestDuration] = useState<string>('00:00');
 
+  // НОВЫЕ СОСТОЯНИЯ ДЛЯ ХРАНЕНИЯ ЦВЕТОВ
+  const [chartColors, setChartColors] = useState({
+    accentPrimary: '#739072', // Дефолтные значения, если CSS-переменные не загрузятся
+    error: '#B31312',
+    textSecondary: '#6F6F6F',
+    backgroundCard: '#EADBC8',
+    textPrimary: '#3A4232',
+    neutral: '#A79277',
+    accentSecondary: '#F0B86E',
+  });
+
   useEffect(() => {
+    // Функция для получения значения CSS-переменной
+    const getCssVariable = (variable: string) => {
+      if (typeof window !== 'undefined') {
+        return window.getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+      }
+      return '';
+    };
+
+    // Получаем цвета из CSS-переменных при монтировании компонента
+    const accentPrimary = getCssVariable('--color-accent-primary');
+    const error = getCssVariable('--color-error');
+    const textSecondary = getCssVariable('--color-text-secondary');
+    const backgroundCard = getCssVariable('--color-background-card');
+    const textPrimary = getCssVariable('--color-text-primary');
+    const neutral = getCssVariable('--color-neutral');
+    const accentSecondary = getCssVariable('--color-accent-secondary');
+
+    setChartColors({
+      accentPrimary: accentPrimary || '#739072',
+      error: error || '#B31312',
+      textSecondary: textSecondary || '#6F6F6F',
+      backgroundCard: backgroundCard || '#EADBC8',
+      textPrimary: textPrimary || '#3A4232',
+      neutral: neutral || '#A79277',
+      accentSecondary: accentSecondary || '#F0B86E',
+    });
+
     try {
       const savedResultsString = localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
       if (savedResultsString) {
@@ -133,7 +173,7 @@ const AnalyticsDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); // Пустой массив зависимостей означает, что useEffect запускается один раз при монтировании
 
   const handleClearAllResults = () => {
     if (window.confirm('Вы уверены, что хотите удалить все данные о пройденных тестах? Это действие необратимо.')) {
@@ -150,6 +190,7 @@ const AnalyticsDashboard: React.FC = () => {
   };
 
   // НОВАЯ ЛОГИКА ДЛЯ ДАННЫХ ГРАФИКА
+  // Теперь используем chartColors для определения цветов
   const chartData = {
     labels: allResults.map((_, index) => `Тест #${allResults.length - index}`),
     datasets: [
@@ -157,12 +198,12 @@ const AnalyticsDashboard: React.FC = () => {
         label: 'Балл теста (%)',
         data: allResults.map(result => result.scorePercentage),
         fill: false,
-        borderColor: 'var(--color-accent-primary)',
+        borderColor: chartColors.accentPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         tension: 0.2,
-        pointBackgroundColor: 'var(--color-accent-primary)',
-        pointBorderColor: 'var(--color-neutral)',
-        pointHoverBackgroundColor: 'var(--color-error)',
-        pointHoverBorderColor: 'var(--color-neutral)',
+        pointBackgroundColor: chartColors.accentPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        pointBorderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        pointHoverBackgroundColor: chartColors.error, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        pointHoverBorderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         borderWidth: 2,
       },
     ],
@@ -175,7 +216,7 @@ const AnalyticsDashboard: React.FC = () => {
       legend: {
         position: 'top' as const,
         labels: {
-          color: 'var(--color-text-primary)',
+          color: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           font: {
             size: 14,
           },
@@ -184,7 +225,7 @@ const AnalyticsDashboard: React.FC = () => {
       title: {
         display: true,
         text: 'Прогресс по баллам за тесты',
-        color: 'var(--color-text-primary)',
+        color: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         font: {
           family: 'Montserrat',
           size: 20,
@@ -197,17 +238,17 @@ const AnalyticsDashboard: React.FC = () => {
             return `Балл: ${context.raw.toFixed(2)}%`;
           }
         },
-        backgroundColor: 'var(--color-text-primary)',
-        titleColor: 'var(--color-neutral)',
-        bodyColor: 'var(--color-neutral)',
-        borderColor: 'var(--color-text-secondary)',
+        backgroundColor: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        titleColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        bodyColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        borderColor: chartColors.textSecondary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         borderWidth: 1,
       }
     },
     scales: {
       x: {
         ticks: {
-          color: 'var(--color-text-secondary)',
+          color: chartColors.textSecondary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           font: {
             family: 'Inter',
           }
@@ -218,7 +259,7 @@ const AnalyticsDashboard: React.FC = () => {
         title: {
             display: true,
             text: 'Номер теста (по убыванию даты)',
-            color: 'var(--color-text-primary)',
+            color: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
             font: {
                 family: 'Inter',
                 size: 14,
@@ -227,7 +268,7 @@ const AnalyticsDashboard: React.FC = () => {
       },
       y: {
         ticks: {
-          color: 'var(--color-text-secondary)',
+          color: chartColors.textSecondary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           callback: function(value: string | number) {
             return `${value}%`;
           },
@@ -243,7 +284,7 @@ const AnalyticsDashboard: React.FC = () => {
         title: {
             display: true,
             text: 'Процент правильных ответов',
-            color: 'var(--color-text-primary)',
+            color: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
             font: {
                 family: 'Inter',
                 size: 14,
@@ -253,6 +294,7 @@ const AnalyticsDashboard: React.FC = () => {
     },
   };
 
+  // ИСПРАВЛЕННЫЕ ЦВЕТА ДЛЯ КРУГОВОЙ ДИАГРАММЫ
   const pieChartData = {
     labels: ['Правильные', 'Неправильные', 'Без ответа'],
     datasets: [
@@ -260,11 +302,11 @@ const AnalyticsDashboard: React.FC = () => {
         label: 'Среднее соотношение ответов (%)',
         data: [avgCorrect, avgIncorrect, avgUnanswered],
         backgroundColor: [
-          'var(--color-accent-primary)',
-          'var(--color-error)',
-          'var(--color-text-secondary)',
+          chartColors.accentPrimary,    // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+          chartColors.error,            // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+          chartColors.textSecondary,    // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         ],
-        borderColor: 'var(--color-background-card)',
+        borderColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         borderWidth: 2,
       },
     ],
@@ -277,7 +319,7 @@ const AnalyticsDashboard: React.FC = () => {
       legend: {
         position: 'right' as const,
         labels: {
-          color: 'var(--color-text-primary)',
+          color: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           font: {
             size: 14,
           },
@@ -286,7 +328,7 @@ const AnalyticsDashboard: React.FC = () => {
       title: {
         display: true,
         text: 'Среднее соотношение ответов по всем тестам',
-        color: 'var(--color-text-primary)',
+        color: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         font: {
           family: 'Montserrat',
           size: 20,
@@ -301,10 +343,10 @@ const AnalyticsDashboard: React.FC = () => {
             return `${label}: ${value.toFixed(2)}%`;
           }
         },
-        backgroundColor: 'var(--color-text-primary)',
-        titleColor: 'var(--color-neutral)',
-        bodyColor: 'var(--color-neutral)',
-        borderColor: 'var(--color-text-secondary)',
+        backgroundColor: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        titleColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        bodyColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        borderColor: chartColors.textSecondary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         borderWidth: 1,
       }
     },
@@ -312,78 +354,78 @@ const AnalyticsDashboard: React.FC = () => {
 
   return (
     <div
-      className="rounded-xl p-6 sm:p-8 max-w-4xl w-full mx-auto" // Удалили shadow-2xl и backdrop-blur-md, добавим свою тень
+      className="rounded-xl p-6 sm:p-8 max-w-4xl w-full mx-auto"
       style={{
-        backgroundColor: 'var(--color-background-card)',
+        backgroundColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
         backgroundImage: 'var(--texture-grain)',
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
-        color: 'var(--color-text-primary)',
-        border: '2px solid var(--color-neutral)',
-        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Эффект "стенки" для всей панели
+        color: chartColors.textPrimary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        border: `2px solid ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+        boxShadow: `4px 4px 0px 0px ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
       }}
     >
-      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: 'var(--color-text-primary)' }}>
+      <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: chartColors.textPrimary }}> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
         Панель Аналитики Тестов
       </h2>
 
       {/* Блок с общей статистикой */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         <div
-          className="p-5 sm:p-6 rounded-lg border flex flex-col items-center justify-center text-center" // Удален shadow-md
+          className="p-5 sm:p-6 rounded-lg border flex flex-col items-center justify-center text-center"
           style={{
-            backgroundColor: 'var(--color-background-card)',
+            backgroundColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            borderColor: 'var(--color-neutral)',
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень для вложенных карточек
+            borderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+            boxShadow: `2px 2px 0px 0px ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           }}
         >
-          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: 'var(--color-accent-primary)' }}>{totalTestsCompleted}</p>
-          <p className="text-lg sm:text-xl" style={{ color: 'var(--color-text-secondary)' }}>Пройдено тестов</p>
+          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: chartColors.accentPrimary }}>{totalTestsCompleted}</p> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
+          <p className="text-lg sm:text-xl" style={{ color: chartColors.textSecondary }}>Пройдено тестов</p> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
         </div>
         <div
           className="p-5 sm:p-6 rounded-lg border flex flex-col items-center justify-center text-center"
           style={{
-            backgroundColor: 'var(--color-background-card)',
+            backgroundColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            borderColor: 'var(--color-neutral)',
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
+            borderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+            boxShadow: `2px 2px 0px 0px ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           }}
         >
-          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: 'var(--color-accent-secondary)' }}>{averageScore}%</p>
-          <p className="text-lg sm:text-xl" style={{ color: 'var(--color-text-secondary)' }}>Средний балл</p>
+          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: chartColors.accentSecondary }}>{averageScore}%</p> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
+          <p className="text-lg sm:text-xl" style={{ color: chartColors.textSecondary }}>Средний балл</p> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
         </div>
         <div
           className="p-5 sm:p-6 rounded-lg border flex flex-col items-center justify-center text-center"
           style={{
-            backgroundColor: 'var(--color-background-card)',
+            backgroundColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            borderColor: 'var(--color-neutral)',
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
+            borderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+            boxShadow: `2px 2px 0px 0px ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           }}
         >
-          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: 'var(--color-error)' }}>{averageTestDuration}</p>
-          <p className="text-lg sm:text-xl" style={{ color: 'var(--color-text-secondary)' }}>Среднее время теста</p>
+          <p className="text-4xl sm:text-5xl font-extrabold mb-2" style={{ color: chartColors.error }}>{averageTestDuration}</p> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
+          <p className="text-lg sm:text-xl" style={{ color: chartColors.textSecondary }}>Среднее время теста</p> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
         </div>
       </div>
 
       {/* Блок с графиком прогресса по баллам (линейный) */}
       {allResults.length > 0 && (
         <div
-          className="mb-8 p-4 rounded-lg border" // Удален shadow-md
+          className="mb-8 p-4 rounded-lg border"
           style={{
-            backgroundColor: 'var(--color-background-card)',
+            backgroundColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            borderColor: 'var(--color-neutral)',
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
+            borderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+            boxShadow: `2px 2px 0px 0px ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           }}
         >
           <div style={{ height: '350px' }}>
@@ -395,14 +437,14 @@ const AnalyticsDashboard: React.FC = () => {
       {/* НОВОЕ: Блок с круговой диаграммой соотношения ответов */}
       {allResults.length > 0 && (
         <div
-          className="mb-8 p-4 rounded-lg border" // Удален shadow-md
+          className="mb-8 p-4 rounded-lg border"
           style={{
-            backgroundColor: 'var(--color-background-card)',
+            backgroundColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            borderColor: 'var(--color-neutral)',
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
+            borderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+            boxShadow: `2px 2px 0px 0px ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           }}
         >
           <div style={{ height: '350px' }}>
@@ -412,49 +454,49 @@ const AnalyticsDashboard: React.FC = () => {
       )}
 
       {/* Блок со списком пройденных тестов */}
-      <h3 className="text-xl sm:text-2xl font-bold mb-4 text-center" style={{ color: 'var(--color-text-primary)' }}>История Пройденных Тестов</h3>
+      <h3 className="text-xl sm:text-2xl font-bold mb-4 text-center" style={{ color: chartColors.textPrimary }}>История Пройденных Тестов</h3> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
       {allResults.length === 0 ? (
         <div
-          className="text-center text-base sm:text-lg p-4 rounded-lg border" // Удален shadow-md
+          className="text-center text-base sm:text-lg p-4 rounded-lg border"
           style={{
-            backgroundColor: 'var(--color-background-card)',
+            backgroundColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
             backgroundImage: 'var(--texture-grain)',
             backgroundSize: '4px 4px',
             backgroundRepeat: 'repeat',
-            color: 'var(--color-text-secondary)',
-            borderColor: 'var(--color-neutral)',
-            boxShadow: '2px 2px 0px 0px var(--color-neutral)',
+            color: chartColors.textSecondary, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+            borderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+            boxShadow: `2px 2px 0px 0px ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
           }}
         >
           <p className="mb-4">Нет данных о пройденных тестах для отображения истории.</p>
           <p>Пройдите несколько тестов, чтобы увидеть их список.</p>
         </div>
       ) : (
-        <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3 scrollbar-custom"> {/* Изменен скроллбар на custom-класс */}
+        <div className="space-y-3 sm:space-y-4 max-h-[50vh] overflow-y-auto pr-2 sm:pr-3 scrollbar-custom">
           {allResults.map((result, index) => (
             <div
               key={index}
-              className="p-3 sm:p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center" // Удален shadow-sm
+              className="p-3 sm:p-4 rounded-lg border flex flex-col sm:flex-row justify-between items-start sm:items-center"
               style={{
-                backgroundColor: 'var(--color-background-card)',
+                backgroundColor: chartColors.backgroundCard, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
                 backgroundImage: 'var(--texture-grain)',
                 backgroundSize: '4px 4px',
                 backgroundRepeat: 'repeat',
-                borderColor: 'var(--color-neutral)',
-                boxShadow: '2px 2px 0px 0px var(--color-neutral)', // Более легкая тень для элементов списка
+                borderColor: chartColors.neutral, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
+                boxShadow: `2px 2px 0px 0px ${chartColors.neutral}`, // ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА
               }}
             >
               <div className="mb-1 sm:mb-0">
-                <p className="text-sm sm:text-base font-semibold" style={{ color: 'var(--color-text-primary)' }}>
+                <p className="text-sm sm:text-base font-semibold" style={{ color: chartColors.textPrimary }}> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
                   Тест #{allResults.length - index} (
                   {new Date(result.timestamp).toLocaleDateString()} {new Date(result.timestamp).toLocaleTimeString()}
                   )
                 </p>
-                <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  Балл: <span className="font-bold" style={{ color: 'var(--color-text-primary)' }}>{result.scorePercentage.toFixed(2)}%</span>
+                <p className="text-xs sm:text-sm" style={{ color: chartColors.textSecondary }}> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
+                  Балл: <span className="font-bold" style={{ color: chartColors.textPrimary }}>{result.scorePercentage.toFixed(2)}%</span> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
                 </p>
-                <p className="text-xs sm:text-sm" style={{ color: 'var(--color-text-secondary)' }}>
-                  Правильных: <span style={{ color: 'var(--color-accent-primary)' }}>{result.correctAnswers}</span> / Всего: <span style={{ color: 'var(--color-text-primary)' }}>{result.totalQuestions}</span>
+                <p className="text-xs sm:text-sm" style={{ color: chartColors.textSecondary }}> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
+                  Правильных: <span style={{ color: chartColors.accentPrimary }}>{result.correctAnswers}</span> / Всего: <span style={{ color: chartColors.textPrimary }}>{result.totalQuestions}</span> {/* ИСПОЛЬЗУЕМ СОСТОЯНИЕ ЦВЕТА */}
                 </p>
               </div>
             </div>
@@ -467,14 +509,14 @@ const AnalyticsDashboard: React.FC = () => {
         <button
           onClick={handleClearAllResults}
           className="font-bold py-3 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105 inline-block text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-opacity-50
-          button-error-style" // ИСПОЛЬЗУЕМ НОВЫЕ КЛАССЫ
+          button-error-style"
         >
           Очистить все результаты
         </button>
         <Link
           to="/"
           className="font-bold py-3 px-8 rounded-full transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center text-base sm:text-lg w-full sm:w-auto focus:outline-none focus:ring-4 focus:ring-opacity-50
-          button-primary-style" // ИСПОЛЬЗУЕМ НОВЫЕ КЛАССЫ
+          button-primary-style"
         >
           Вернуться к началу
         </Link>
