@@ -60,7 +60,7 @@ const Header: React.FC = () => {
         <Link
           to="/"
           onClick={handleLogoClick}
-          className="flex items-center space-x-2 no-underline tracking-normal" // ДОБАВЛЕН tracking-normal
+          className="flex items-center space-x-2 no-underline"
         >
           <svg
             width="32"
@@ -75,11 +75,14 @@ const Header: React.FC = () => {
             <path d="M2 7L12 1L22 7L12 13L2 7Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
             <path d="M12 13L2 7M12 13L22 7M12 13L12 23" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
           </svg>
-          <span style={{ color: 'var(--color-accent-primary)' }}>H</span>
-          <span style={{ color: 'var(--color-error)' }}>R</span>
-          <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
-          <span style={{ color: 'var(--color-text-primary)' }}>P</span>
-          <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span>
+          {/* Добавляем letterSpacing к h1 */}
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center" style={{ letterSpacing: '0em' }}> {/* ДОБАВЛЕН style={{ letterSpacing: '0em' }} И ВОЗВРАЩЕН tracking-wide */}
+            <span style={{ color: 'var(--color-accent-primary)' }}>H</span>
+            <span style={{ color: 'var(--color-error)' }}>R</span>
+            <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
+            <span style={{ color: 'var(--color-text-primary)' }}>P</span>
+            <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span>
+          </h1>
         </Link>
 
         <nav className="space-x-4 sm:space-x-6 flex items-center">
