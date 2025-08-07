@@ -18,7 +18,7 @@ const Header: React.FC = () => {
       : 'text-text-secondary hover:text-text-primary';
   };
 
-  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => { // Изменен тип события на HTMLAnchorElement
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     console.log('handleLogoClick: Клик по лого. testStarted:', testStarted);
     if (testStarted) {
       e.preventDefault(); // Предотвращаем стандартное поведение Link, чтобы сначала сбросить состояние
@@ -28,21 +28,19 @@ const Header: React.FC = () => {
       console.log('handleLogoClick: Вызовы resetTestStateForNavigation и navigate завершены.');
     } else {
       console.log('handleLogoClick: Тест не запущен. Link работает как обычно.');
-      // Нет необходимости в navigate здесь, Link по умолчанию сделает навигацию.
     }
   };
 
   // Унифицированная функция: Обработка клика по навигационным ссылкам
   const handleNavLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, path: string) => {
     console.log(`handleNavLinkClick: Клик по ссылке "${path}". testStarted:`, testStarted);
-    if (testStarted) { // Если тест запущен
-      e.preventDefault(); // Предотвращаем стандартное поведение Link
+    if (testStarted) {
+      e.preventDefault();
       console.log(`handleNavLinkClick: Тест запущен. Предотвращаю дефолт. Вызываю resetTestStateForNavigation() и navigate(${path})`);
-      resetTestStateForNavigation(); // Сбросить состояние теста
-      navigate(path); // Перейти на страницу
+      resetTestStateForNavigation();
+      navigate(path);
       console.log(`handleNavLinkClick: Вызовы resetTestStateForNavigation и navigate завершены.`);
     }
-    // Если тест не запущен, Link работает как обычно (без e.preventDefault())
   };
 
   return (
@@ -61,8 +59,8 @@ const Header: React.FC = () => {
         {/* Logo/Title - теперь является полноценной ссылкой */}
         <Link
           to="/"
-          onClick={handleLogoClick} // Клик обрабатывается здесь
-          className="flex items-center space-x-2 no-underline" // Убрал cursor-pointer, Link добавляет его сам
+          onClick={handleLogoClick}
+          className="flex items-center space-x-2 no-underline tracking-normal" // ДОБАВЛЕН tracking-normal
         >
           <svg
             width="32"
