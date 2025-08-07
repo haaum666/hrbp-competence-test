@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import QuestionRenderer from '../components/test/QuestionRenderer';
-import ResultDetailView from '../components/test/ResultDetailView'; // Этот компонент теперь будет использоваться
+import ResultDetailView from '../components/test/ResultDetailView';
 import MobileFooter from '../components/layout/MobileFooter';
 
 import useTestLogic from '../hooks/useTestLogic';
@@ -31,24 +31,23 @@ const TestPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [showDetailedResults, setShowDetailedResults] = useState(false); // НОВОЕ СОСТОЯНИЕ ДЛЯ ОТОБРАЖЕНИЯ ДЕТАЛЕЙ
-  const prevPathnameRef = useRef(location.pathname);
+  const [showDetailedResults, setShowDetailedResults] = useState(false);
+  const prevPathnameRef = useRef(location.pathname); // ИСПОЛЬЗУЕМ ПРАВИЛЬНОЕ ИМЯ ПЕРЕМЕННОЙ
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const previousPath = prevPathRef.current; // Используем prevPathRef, а не prevPathnameRef
-    // Reset test state if navigating away from test or results back to root, and test was started
+    const previousPath = prevPathnameRef.current; // ИСПРАВЛЕНО
+
     if (testStarted && previousPath !== '/' && currentPath === '/') {
       console.log('TestPage useEffect: Обнаружен переход с тестовой страницы на главную. Сброс состояния.');
       resetTestStateForNavigation();
     }
-    prevPathRef.current = currentPath;
+    prevPathnameRef.current = currentPath;
   }, [location.pathname, testStarted, resetTestStateForNavigation]);
 
-  // Дополнительный useEffect для сброса showDetailedResults при старте нового теста
   useEffect(() => {
     if (!testStarted && !testFinished) {
-      setShowDetailedResults(false); // Сбросить состояние детальных результатов при начале нового теста
+      setShowDetailedResults(false);
     }
   }, [testStarted, testFinished]);
 
@@ -155,7 +154,7 @@ const TestPage: React.FC = () => {
         )}
 
         {/* Отображение общих результатов после завершения теста */}
-        {testFinished && testResult && !showDetailedResults && ( // ДОБАВЛЕНО !showDetailedResults
+        {testFinished && testResult && !showDetailedResults && (
           <div
             className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center"
             style={{
@@ -174,15 +173,14 @@ const TestPage: React.FC = () => {
             </p>
             <div className="text-left mx-auto max-w-sm space-y-2 mb-8 text-base sm:text-lg">
               <p>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.totalQuestions}</span></p>
-              <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.correctAnswers}</span></p>
-              <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.incorrectAnswers}</span></p>
+              <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.correctAnswers}</span></p> {/* Исправлен цвет на success */}
+              <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.incorrectAnswers}</span></p> {/* Исправлен цвет на error */}
               <p>Пропущено вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.unanswered}</span></p>
               <p className="text-xl sm:text-2xl pt-4">Итоговый балл: <span className="font-extrabold" style={{ color: 'var(--color-text-primary)' }}>{testResult.scorePercentage.toFixed(2)}%</span></p>
             </div>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
-              {/* Кнопка "Посмотреть детальные результаты" теперь активна */}
               <button
-                onClick={() => setShowDetailedResults(true)} // Активирует отображение ResultDetailView
+                onClick={() => setShowDetailedResults(true)}
                 className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
                 style={getButtonStyle(false)}
                 onMouseEnter={(e) => handleButtonHover(e, false, true)}
@@ -195,8 +193,7 @@ const TestPage: React.FC = () => {
                 onClick={startNewTest}
                 className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
                 style={getButtonStyle(true)}
-                onMouseEnter={(e) => handleButtonHover(e, true, true)}
-                onMouseLeave={(e) => handleButtonHover(e, true, false)}
+                // УДАЛЕНЫ onMouseEnter И onMouseLeave, так как это Link, а не Button
               >
                 Пройти тест снова
               </Link>
@@ -205,7 +202,7 @@ const TestPage: React.FC = () => {
         )}
 
         {/* Отображение детальных результатов */}
-        {testFinished && testResult && showDetailedResults && ( // НОВЫЙ БЛОК ДЛЯ ДЕТАЛЕЙ
+        {testFinished && testResult && showDetailedResults && (
           <>
             <ResultDetailView
               testResult={testResult}
@@ -214,7 +211,7 @@ const TestPage: React.FC = () => {
             />
             <div className="flex justify-center mt-8">
               <button
-                onClick={() => setShowDetailedResults(false)} // Кнопка для возврата к общим результатам
+                onClick={() => setShowDetailedResults(false)}
                 className="bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
               >
                 К общим результатам
@@ -224,10 +221,8 @@ const TestPage: React.FC = () => {
         )}
       </>
 
-      {/* Мобильный футер - рендерится всегда на мобильных. Его fixed-позиция делает его независимым от потока */}
       <MobileFooter />
 
-      {/* Модальное окно подтверждения выхода (остается без изменений) */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg p-6 max-w-sm w-full text-center">
