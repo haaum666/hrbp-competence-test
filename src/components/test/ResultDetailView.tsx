@@ -4,9 +4,9 @@ import DataExporter from './DataExporter';
 import { Link } from 'react-router-dom';
 
 interface ResultDetailViewProps {
-  testResult: TestResult | null; 
-  questions: Question[]; 
-  userAnswers: UserAnswer[]; 
+  testResult: TestResult | null;
+  questions: Question[];
+  userAnswers: UserAnswer[];
 }
 
 const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questions, userAnswers }) => {
@@ -49,23 +49,28 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
       {/* Детали по каждому вопросу */}
       <h3 className="text-xl sm:text-2xl font-semibold mb-4 text-bauhaus-white font-heading">Разбор вопросов:</h3>
-      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-thin scrollbar-thumb-bauhaus-dark-gray scrollbar-track-bauhaus-black"> {/* Добавлены стили для скроллбара */}
+      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-thin scrollbar-thumb-bauhaus-dark-gray scrollbar-track-bauhaus-black">
         {answers.map((detail: AnswerDetail, index: number) => {
-          const questionData = questions.find(q => q.id === detail.question.id) || detail.question; // Используем questions из пропсов для полной информации
-          const userAnswerData = userAnswers.find(ua => ua.questionId === questionData.id);
+          // Ищем полную информацию о вопросе из пропсов 'questions'
+          const questionData = questions.find(q => q.id === detail.question.id);
+          // Если вопрос не найден в 'questions' (что маловероятно при корректной работе), используем данные из 'detail.question'
+          const finalQuestionData: Question = questionData || detail.question;
+
+          const userAnswerData = userAnswers.find(ua => ua.questionId === finalQuestionData.id);
 
           const isCorrect = userAnswerData ? userAnswerData.isCorrect : false; // Корректность берем из userAnswerData
           const selectedOptionText = userAnswerData && userAnswerData.selectedOptionId
-            ? questionData.options.find(opt => opt.id === userAnswerData.selectedOptionId)?.text || 'Не выбран'
+            ? finalQuestionData.options.find(opt => opt.id === userAnswerData.selectedOptionId)?.text || 'Не выбран'
             : 'Не отвечено';
-          const correctOptionText = questionData.options.find(opt => opt.isCorrect)?.text || 'N/A';
+          // ИСПОЛЬЗУЕМ questionData.correctAnswer ВМЕСТО option.isCorrect
+          const correctOptionText = finalQuestionData.options.find(opt => opt.id === finalQuestionData.correctAnswer)?.text || 'N/A';
 
           const borderColor = isCorrect ? 'border-bauhaus-blue' : (userAnswerData ? 'border-bauhaus-red' : 'border-bauhaus-gray');
 
           return (
-            <div key={questionData.id} className={`bg-bauhaus-black bg-opacity-50 p-5 rounded-lg border-l-4 ${borderColor} shadow-md`}>
+            <div key={finalQuestionData.id} className={`bg-bauhaus-black bg-opacity-50 p-5 rounded-lg border-l-4 ${borderColor} shadow-md`}>
               <p className="font-medium text-bauhaus-white mb-3 text-lg sm:text-xl font-heading">
-                Вопрос {index + 1}: {questionData.text}
+                Вопрос {index + 1}: {finalQuestionData.text}
                 <span className={`ml-3 text-sm sm:text-base font-semibold ${
                   isCorrect ? 'text-bauhaus-blue' : (userAnswerData ? 'text-bauhaus-red' : 'text-bauhaus-yellow')
                 }`}>
@@ -73,24 +78,80 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 </span>
               </p>
 
-              {selectedOptionText !== 'Не отвечено' && ( // Показываем "Ваш ответ" только если ответ был
+              {selectedOptionText !== 'Не отвечено' && (
                 <p className="text-sm sm:text-base text-bauhaus-light-gray mb-2">
                   Ваш ответ: <span className={`font-normal ${isCorrect ? 'text-bauhaus-blue' : 'text-bauhaus-red'}`}>{selectedOptionText}</span>
                 </p>
               )}
 
               {/* Правильный ответ показываем всегда, если он есть */}
-              {correctOptionText !== 'N/A' && (
+              {finalQuestionData.type === 'multiple-choice' && correctOptionText !== 'N/A' && (
                 <p className="text-sm sm:text-base text-bauhaus-light-gray">
                   Правильный ответ: <span className="font-normal text-bauhaus-yellow">{correctOptionText}</span>
                 </p>
               )}
+              {/* Если это case-study, указываем, что правильного ответа для выбора нет */}
+              {finalQuestionData.type === 'case-study' && (
+                <p className="text-sm sm:text-base text-bauhaus-light-gray">
+                  Этот вопрос не предполагает выбора из вариантов.
+                </p>
+              )}
 
-              {questionData.explanation && (
+
+              {finalQuestionData.explanation && (
                 <div className="mt-3 p-3 bg-bauhaus-dark-gray bg-opacity-70 rounded-md text-sm sm:text-base text-bauhaus-light-gray italic">
-                  <strong className="text-bauhaus-white">Объяснение:</strong> {questionData.explanation}
+                  <strong className="text-bauhaus-white">Объяснение:</strong> {finalQuestionData.explanation}
                 </div>
               )}
+
+              {/* Добавленные блоки для отображения новой информации */}
+              {finalQuestionData.explanationDetails && finalQuestionData.explanationDetails.length > 0 && (
+                <div className="mt-3 p-3 bg-bauhaus-dark-gray bg-opacity-70 rounded-md text-sm sm:text-base text-bauhaus-light-gray italic">
+                  <strong className="text-bauhaus-white block mb-2">Детали неверных/менее подходящих вариантов:</strong>
+                  <ul className="list-disc list-inside space-y-1">
+                    {finalQuestionData.explanationDetails.map((detail, idx) => (
+                      <li key={idx}>
+                        <span className="font-semibold text-bauhaus-white">{finalQuestionData.options.find(opt => opt.id === detail.optionId)?.text || `Вариант ${detail.optionId}`}:</span> {detail.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {finalQuestionData.sources && finalQuestionData.sources.length > 0 && (
+                <div className="mt-3 p-3 bg-bauhaus-dark-gray bg-opacity-70 rounded-md text-sm sm:text-base text-bauhaus-light-gray">
+                  <strong className="text-bauhaus-white block mb-2">Источники:</strong>
+                  <ul className="list-disc list-inside space-y-1">
+                    {finalQuestionData.sources.map((source, idx) => (
+                      <li key={idx}>
+                        {source.startsWith('http') ? <a href={source} target="_blank" rel="noopener noreferrer" className="text-bauhaus-blue hover:underline">{source}</a> : source}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {finalQuestionData.developmentRecommendation && (
+                <div className="mt-3 p-3 bg-bauhaus-dark-gray bg-opacity-70 rounded-md text-sm sm:text-base text-bauhaus-light-gray italic">
+                  <strong className="text-bauhaus-white">Рекомендации по развитию компетенции:</strong> {finalQuestionData.developmentRecommendation}
+                </div>
+              )}
+
+              {finalQuestionData.additionalResources && finalQuestionData.additionalResources.length > 0 && (
+                <div className="mt-3 p-3 bg-bauhaus-dark-gray bg-opacity-70 rounded-md text-sm sm:text-base text-bauhaus-light-gray">
+                  <strong className="text-bauhaus-white block mb-2">Дополнительные ресурсы для изучения:</strong>
+                  <ul className="list-disc list-inside space-y-1">
+                    {finalQuestionData.additionalResources.map((resource, idx) => (
+                      <li key={idx}>
+                        {resource.type && <span className="font-semibold text-bauhaus-white">[{resource.type}] </span>}
+                        {resource.url ? <a href={resource.url} target="_blank" rel="noopener noreferrer" className="text-bauhaus-blue hover:underline">{resource.title}</a> : resource.title}
+                        {resource.description && `: ${resource.description}`}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
             </div>
           );
         })}
