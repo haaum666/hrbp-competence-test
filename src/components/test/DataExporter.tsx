@@ -8,7 +8,6 @@ interface DataExporterProps {
   testResult: TestResult | null; // Может быть null
   questions: Question[];
   userAnswers: UserAnswer[];
-  // Добавлены новые пропсы для стилизации кнопок
   csvButtonClassName?: string;
   csvButtonStyles?: React.CSSProperties; // Тип для inline стилей
   xlsxButtonClassName?: string;
@@ -17,8 +16,8 @@ interface DataExporterProps {
 
 const DataExporter: React.FC<DataExporterProps> = ({
   testResult,
-  questions,
-  userAnswers,
+  questions, // Эти пропсы остаются, так как они часть DataExporterProps, но не используются напрямую в exportToCsv/Xlsx
+  userAnswers, // Эти пропсы остаются, так как они часть DataExporterProps, но не используются напрямую в exportToCsv/Xlsx
   csvButtonClassName,
   csvButtonStyles,
   xlsxButtonClassName,
@@ -31,14 +30,13 @@ const DataExporter: React.FC<DataExporterProps> = ({
       <button
         onClick={() => {
           if (testResult) {
-            // Передаем questions и userAnswers, если exportUtils их требует
-            exportToCsv(testResult, fileName, questions, userAnswers);
+            // ИСПРАВЛЕНО: Убраны лишние аргументы questions и userAnswers
+            exportToCsv(testResult, fileName);
           } else {
             alert('Нет данных для экспорта. Пожалуйста, сначала пройдите тест.');
           }
         }}
         disabled={!testResult}
-        // Применяем переданные className и style
         className={csvButtonClassName}
         style={csvButtonStyles}
       >
@@ -48,14 +46,13 @@ const DataExporter: React.FC<DataExporterProps> = ({
       <button
         onClick={() => {
           if (testResult) {
-            // Передаем questions и userAnswers, если exportUtils их требует
-            exportToXlsx(testResult, fileName, questions, userAnswers);
+            // ИСПРАВЛЕНО: Убраны лишние аргументы questions и userAnswers
+            exportToXlsx(testResult, fileName);
           } else {
             alert('Нет данных для экспорта. Пожалуйста, сначала пройдите тест.');
           }
         }}
         disabled={!testResult}
-        // Применяем переданные className и style
         className={xlsxButtonClassName}
         style={xlsxButtonStyles}
       >
