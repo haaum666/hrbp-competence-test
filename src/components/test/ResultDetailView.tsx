@@ -1,3 +1,5 @@
+// src/components/test/ResultDetailView.tsx
+
 import React from 'react';
 import { TestResult, AnswerDetail, Question, UserAnswer } from '../../types/test.d';
 import DataExporter from './DataExporter';
@@ -12,7 +14,16 @@ interface ResultDetailViewProps {
 const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questions, userAnswers }) => {
   if (!testResult) {
     return (
-      <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center border border-gray-700/50 text-bauhaus-white font-sans">
+      <div className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center"
+           style={{
+             backgroundColor: 'var(--color-background-card)', // Фон как у блоков аналитики
+             backgroundImage: 'var(--texture-grain)', // Текстура
+             backgroundSize: '4px 4px',
+             backgroundRepeat: 'repeat',
+             border: '2px solid var(--color-neutral)', // Рамка
+             boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Тень
+             color: 'var(--color-text-primary)', // Цвет текста по умолчанию
+           }}>
         <p className="text-2xl font-heading">Результаты теста не найдены.</p>
         <Link to="/" className="mt-6 inline-block bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-bauhaus-blue focus:ring-opacity-50">
           Начать новый тест
@@ -24,7 +35,17 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
   const { totalQuestions, correctAnswers, incorrectAnswers, unanswered, scorePercentage, answers } = testResult;
 
   return (
-    <div className="bg-white bg-opacity-5 rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto border border-bauhaus-dark-gray text-bauhaus-white font-sans">
+    <div
+      className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-bauhaus-white font-sans" // text-bauhaus-white font-sans сюда
+      style={{
+        backgroundColor: 'var(--color-background-card)', // Фон как у блоков аналитики
+        backgroundImage: 'var(--texture-grain)', // Текстура
+        backgroundSize: '4px 4px',
+        backgroundRepeat: 'repeat',
+        border: '2px solid var(--color-neutral)', // Рамка
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Тень
+      }}
+    >
       <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-bauhaus-white text-center font-heading">
         Детальный Отчет по Тесту
       </h2>
@@ -65,7 +86,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
           // ИСПОЛЬЗУЕМ questionData.correctAnswer ВМЕСТО option.isCorrect
           const correctOptionText = finalQuestionData.options.find(opt => opt.id === finalQuestionData.correctAnswer)?.text || 'N/A';
 
-          const borderColor = isCorrect ? 'border-bauhaus-blue' : (userAnswerData ? 'border-bauhaus-red' : 'border-bauhaus-gray');
+          const borderColor = isCorrect ? 'border-bauhaus-blue' : (userAnswerData ? 'border-bauhaus-red' : 'border-bauhaus-yellow'); // Изменил border-bauhaus-gray на border-bauhaus-yellow для без ответа
 
           return (
             <div key={finalQuestionData.id} className={`bg-bauhaus-black bg-opacity-50 p-5 rounded-lg border-l-4 ${borderColor} shadow-md`}>
@@ -96,7 +117,6 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                   Этот вопрос не предполагает выбора из вариантов.
                 </p>
               )}
-
 
               {finalQuestionData.explanation && (
                 <div className="mt-3 p-3 bg-bauhaus-dark-gray bg-opacity-70 rounded-md text-sm sm:text-base text-bauhaus-light-gray italic">
