@@ -5,7 +5,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import QuestionRenderer from '../components/test/QuestionRenderer';
 import ResultDetailView from '../components/test/ResultDetailView';
 import MobileFooter from '../components/layout/MobileFooter';
-
 import useTestLogic from '../hooks/useTestLogic';
 
 const TestPage: React.FC = () => {
@@ -32,11 +31,11 @@ const TestPage: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDetailedResults, setShowDetailedResults] = useState(false);
-  const prevPathnameRef = useRef(location.pathname); // ИСПОЛЬЗУЕМ ПРАВИЛЬНОЕ ИМЯ ПЕРЕМЕННОЙ
+  const prevPathnameRef = useRef(location.pathname);
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const previousPath = prevPathnameRef.current; // ИСПРАВЛЕНО
+    const previousPath = prevPathnameRef.current;
 
     if (testStarted && previousPath !== '/' && currentPath === '/') {
       console.log('TestPage useEffect: Обнаружен переход с тестовой страницы на главную. Сброс состояния.');
@@ -51,7 +50,6 @@ const TestPage: React.FC = () => {
     }
   }, [testStarted, testFinished]);
 
-
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
   const handleConfirmExit = () => {
@@ -60,24 +58,9 @@ const TestPage: React.FC = () => {
     navigate('/');
   };
 
-  const getButtonStyle = (isPrimary: boolean, isHoverable: boolean = true) => ({
-    backgroundColor: isPrimary ? 'var(--button-primary-bg)' : 'var(--button-secondary-bg)',
-    color: isPrimary ? 'var(--button-primary-text)' : 'var(--button-secondary-text)',
-    backgroundImage: 'var(--texture-grain)',
-    backgroundSize: '4px 4px',
-    backgroundRepeat: 'repeat',
-    filter: isHoverable ? 'brightness(1.0)' : 'none',
-    transition: isHoverable ? 'filter 0.3s ease' : 'none',
-    border: isPrimary ? `1px solid var(--button-primary-border)` : `1px solid var(--button-secondary-border)`,
-  });
-
-  const handleButtonHover = (e: React.MouseEvent<HTMLButtonElement>, isPrimaryButton: boolean, isEnter: boolean) => {
-    if (isPrimaryButton) {
-      e.currentTarget.style.filter = isEnter ? 'brightness(0.9)' : 'brightness(1.0)';
-    } else {
-      e.currentTarget.style.filter = isEnter ? 'brightness(0.95)' : 'brightness(1.0)';
-    }
-  };
+  // Удаляем getButtonStyle и handleButtonHover, так как теперь используем CSS классы
+  // const getButtonStyle = ...
+  // const handleButtonHover = ...
 
   return (
     <div className="w-full flex flex-col items-center justify-start px-4 sm:px-0">
@@ -105,19 +88,15 @@ const TestPage: React.FC = () => {
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full max-w-md">
                 <button
                   onClick={resumeTest}
-                  className="w-full font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
-                  style={getButtonStyle(true)}
-                  onMouseEnter={(e) => handleButtonHover(e, true, true)}
-                  onMouseLeave={(e) => handleButtonHover(e, true, false)}
+                  className="w-full font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50
+                  button-primary-style" // ИСПОЛЬЗУЕМ КЛАСС
                 >
                   Продолжить Тест
                 </button>
                 <button
                   onClick={startNewTest}
-                  className="w-full font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
-                  style={getButtonStyle(false)}
-                  onMouseEnter={(e) => handleButtonHover(e, false, true)}
-                  onMouseLeave={(e) => handleButtonHover(e, false, false)}
+                  className="w-full font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity50
+                  button-secondary-style" // ИСПОЛЬЗУЕМ КЛАСС (будет добавлен)
                 >
                   Начать Новый Тест
                 </button>
@@ -125,10 +104,8 @@ const TestPage: React.FC = () => {
             ) : (
               <button
                 onClick={startNewTest}
-                className="font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 inline-block"
-                style={getButtonStyle(true)}
-                onMouseEnter={(e) => handleButtonHover(e, true, true)}
-                onMouseLeave={(e) => handleButtonHover(e, true, false)}
+                className="font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 inline-block
+                button-primary-style" // ИСПОЛЬЗУЕМ КЛАСС
               >
                 Начать Тест
               </button>
@@ -173,27 +150,24 @@ const TestPage: React.FC = () => {
             </p>
             <div className="text-left mx-auto max-w-sm space-y-2 mb-8 text-base sm:text-lg">
               <p>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.totalQuestions}</span></p>
-              <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.correctAnswers}</span></p> {/* Исправлен цвет на success */}
-              <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.incorrectAnswers}</span></p> {/* Исправлен цвет на error */}
+              <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.correctAnswers}</span></p>
+              <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.incorrectAnswers}</span></p>
               <p>Пропущено вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.unanswered}</span></p>
               <p className="text-xl sm:text-2xl pt-4">Итоговый балл: <span className="font-extrabold" style={{ color: 'var(--color-text-primary)' }}>{testResult.scorePercentage.toFixed(2)}%</span></p>
             </div>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
               <button
                 onClick={() => setShowDetailedResults(true)}
-                className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
-                style={getButtonStyle(false)}
-                onMouseEnter={(e) => handleButtonHover(e, false, true)}
-                onMouseLeave={(e) => handleButtonHover(e, false, false)}
+                className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50
+                button-secondary-style" // ИСПОЛЬЗУЕМ КЛАСС (будет добавлен)
               >
                 Посмотреть детальные результаты
               </button>
               <Link
                 to="/"
                 onClick={startNewTest}
-                className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
-                style={getButtonStyle(true)}
-                // УДАЛЕНЫ onMouseEnter И onMouseLeave, так как это Link, а не Button
+                className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 inline-block text-center
+                button-primary-style" // ИСПОЛЬЗУЕМ КЛАСС
               >
                 Пройти тест снова
               </Link>
@@ -204,19 +178,21 @@ const TestPage: React.FC = () => {
         {/* Отображение детальных результатов */}
         {testFinished && testResult && showDetailedResults && (
           <>
+            {/* Кнопка "К общим результатам" - ИСПРАВЛЕНЫ СТИЛИ И ПОЗИЦИОНИРОВАНИЕ */}
+            <div className="flex justify-center mt-6 w-full max-w-4xl px-4 sm:px-0">
+              <button
+                onClick={() => setShowDetailedResults(false)}
+                className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50
+                button-secondary-style" // ИСПОЛЬЗУЕМ КЛАСС (будет добавлен)
+              >
+                К общим результатам
+              </button>
+            </div>
             <ResultDetailView
               testResult={testResult}
               questions={questions}
               userAnswers={userAnswers}
             />
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={() => setShowDetailedResults(false)}
-                className="bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
-              >
-                К общим результатам
-              </button>
-            </div>
           </>
         )}
       </>
