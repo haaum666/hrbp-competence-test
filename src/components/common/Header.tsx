@@ -18,15 +18,17 @@ const Header: React.FC = () => {
       : 'text-text-secondary hover:text-text-primary';
   };
 
-  const handleLogoClick = () => {
+  const handleLogoClick = (e: React.MouseEvent<HTMLAnchorElement>) => { // Изменен тип события на HTMLAnchorElement
     console.log('handleLogoClick: Клик по лого. testStarted:', testStarted);
     if (testStarted) {
+      e.preventDefault(); // Предотвращаем стандартное поведение Link, чтобы сначала сбросить состояние
       console.log('handleLogoClick: Тест запущен. Вызываю resetTestStateForNavigation() и navigate(/)');
       resetTestStateForNavigation(); // Сбросить состояние теста
       navigate('/'); // Всегда переходить на главную
       console.log('handleLogoClick: Вызовы resetTestStateForNavigation и navigate завершены.');
     } else {
-      console.log('handleLogoClick: Тест не запущен. Просто перехожу на главную.');
+      console.log('handleLogoClick: Тест не запущен. Link работает как обычно.');
+      // Нет необходимости в navigate здесь, Link по умолчанию сделает навигацию.
     }
   };
 
@@ -56,9 +58,11 @@ const Header: React.FC = () => {
       }}
     >
       <div className="max-w-4xl mx-auto flex justify-between items-center">
-        <div
-          onClick={handleLogoClick}
-          className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center cursor-pointer"
+        {/* Logo/Title - теперь является полноценной ссылкой */}
+        <Link
+          to="/"
+          onClick={handleLogoClick} // Клик обрабатывается здесь
+          className="flex items-center space-x-2 no-underline" // Убрал cursor-pointer, Link добавляет его сам
         >
           <svg
             width="32"
@@ -78,7 +82,7 @@ const Header: React.FC = () => {
           <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
           <span style={{ color: 'var(--color-text-primary)' }}>P</span>
           <span style={{ color: 'var(--color-text-primary)' }}>-Тест</span>
-        </div>
+        </Link>
 
         <nav className="space-x-4 sm:space-x-6 flex items-center">
           {/* Ссылка "Тест" - СКРЫТА НА МОБИЛЬНЫХ */}
