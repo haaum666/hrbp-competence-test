@@ -5,7 +5,20 @@ export type QuestionLevel = 'junior' | 'middle' | 'senior';
 export interface Option {
   id: string;
   text: string;
-  // isCorrect?: boolean; // УДАЛИТЬ ЭТУ СТРОКУ
+}
+
+// Новый интерфейс для источников, которые могут быть объектами
+export interface SourceResource {
+  title: string;
+  url?: string;
+}
+
+// Новый интерфейс для дополнительных ресурсов
+export interface AdditionalResource {
+  type: 'Course' | 'Book' | 'Article' | 'Other';
+  title: string;
+  url?: string;
+  description?: string;
 }
 
 export interface Question {
@@ -19,20 +32,14 @@ export interface Question {
   timeLimitSeconds?: number;
   timeEstimate?: number;
   categoryid?: string;
-  sources?: string[];
+  sources?: (string | SourceResource)[]; // ИЗМЕНЕНО: теперь может быть строкой или объектом SourceResource
   relatedCompetencies?: string[]; // Компетенция вопроса
-  // Добавим поля для дополнительной информации, которая у вас есть, но их пока нет в типе
   explanationDetails?: { // Для объяснения неверных/менее подходящих вариантов
     optionId: string;
     reason: string;
   }[];
   developmentRecommendation?: string; // Рекомендации по развитию компетенции
-  additionalResources?: { // Дополнительные ресурсы для изучения
-    type: 'Course' | 'Book' | 'Article' | 'Other';
-    title: string;
-    url?: string;
-    description?: string;
-  }[];
+  additionalResources?: AdditionalResource[]; // ИЗМЕНЕНО: теперь ссылается на отдельный интерфейс AdditionalResource
 }
 
 export interface UserAnswer {
