@@ -1,5 +1,5 @@
 import React from 'react';
-import { TestResult, AnswerDetail, Question, UserAnswer } from '../../types/test.d';
+import { TestResult, AnswerDetail, Question, UserAnswer, SourceResource } from '../../types/test.d'; // Добавлен SourceResource для явного импорта
 import DataExporter from './DataExporter';
 import { Link } from 'react-router-dom';
 
@@ -124,7 +124,24 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                   <ul className="list-disc list-inside space-y-1">
                     {finalQuestionData.sources.map((source, idx) => (
                       <li key={idx}>
-                        {source.startsWith('http') ? <a href={source} target="_blank" rel="noopener noreferrer" className="text-bauhaus-blue hover:underline">{source}</a> : source}
+                        {typeof source === 'string' ? ( // Проверяем, является ли source строкой
+                            source.startsWith('http') ? (
+                                <a href={source} target="_blank" rel="noopener noreferrer" className="text-bauhaus-blue hover:underline">
+                                    {source}
+                                </a>
+                            ) : (
+                                source
+                            )
+                        ) : ( // Если source - объект SourceResource
+                            <>
+                                {source.title}
+                                {source.url && (
+                                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline ml-1">
+                                        (ссылка)
+                                    </a>
+                                )}
+                            </>
+                        )}
                       </li>
                     ))}
                   </ul>
