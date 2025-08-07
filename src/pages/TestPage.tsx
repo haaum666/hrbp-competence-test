@@ -3,8 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import QuestionRenderer from '../components/test/QuestionRenderer';
-import ResultDetailView from '../components/test/ResultDetailView'; // Убедитесь, что этот компонент используется или удалите, если нет
-import MobileFooter from '../components/layout/MobileFooter'; // Импорт MobileFooter
+import ResultDetailView from '../components/test/ResultDetailView'; // Этот компонент теперь будет использоваться
+import MobileFooter from '../components/layout/MobileFooter';
 
 import useTestLogic from '../hooks/useTestLogic';
 
@@ -31,19 +31,27 @@ const TestPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDetailedResults, setShowDetailedResults] = useState(false); // НОВОЕ СОСТОЯНИЕ ДЛЯ ОТОБРАЖЕНИЯ ДЕТАЛЕЙ
   const prevPathnameRef = useRef(location.pathname);
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const previousPath = prevPathnameRef.current;
-
+    const previousPath = prevPathRef.current; // Используем prevPathRef, а не prevPathnameRef
+    // Reset test state if navigating away from test or results back to root, and test was started
     if (testStarted && previousPath !== '/' && currentPath === '/') {
       console.log('TestPage useEffect: Обнаружен переход с тестовой страницы на главную. Сброс состояния.');
       resetTestStateForNavigation();
     }
-      
-    prevPathnameRef.current = currentPath;  
+    prevPathRef.current = currentPath;
   }, [location.pathname, testStarted, resetTestStateForNavigation]);
+
+  // Дополнительный useEffect для сброса showDetailedResults при старте нового теста
+  useEffect(() => {
+    if (!testStarted && !testFinished) {
+      setShowDetailedResults(false); // Сбросить состояние детальных результатов при начале нового теста
+    }
+  }, [testStarted, testFinished]);
+
 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
@@ -73,13 +81,9 @@ const TestPage: React.FC = () => {
   };
 
   return (
-    // Корневой div TestPage. Теперь он является просто flex-контейнером для своего содержимого
-    // и центрирует его. Отступы и общая высота страницы контролируются в App.tsx
-    <div className="w-full flex flex-col items-center justify-start px-4 sm:px-0"> {/* <-- ИЗМЕНЕНЫ КЛАССЫ, без h-full */}
-      {/* Содержимое стартового экрана, теста или результатов */}
-      {/* Оборачиваем все условные рендеринги в один общий фрагмент или div, 
-          чтобы TestPage возвращал один корневой элемент для своего основного контента. */}
-      <> {/* <-- ВОЗВРАЩАЕМ ОБЩИЙ ФРАГМЕНТ ДЛЯ ОСНОВНОГО КОНТЕНТА */}
+    <div className="w-full flex flex-col items-center justify-start px-4 sm:px-0">
+      <>
+        {/* Экран начала теста */}
         {!testStarted && !testFinished && (
           <div
             className="flex flex-col items-center justify-center text-center p-4 rounded-lg shadow-xl max-w-2xl w-full"
@@ -151,7 +155,7 @@ const TestPage: React.FC = () => {
         )}
 
         {/* Отображение общих результатов после завершения теста */}
-        {testFinished && testResult && (
+        {testFinished && testResult && !showDetailedResults && ( // ДОБАВЛЕНО !showDetailedResults
           <div
             className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center"
             style={{
@@ -170,40 +174,82 @@ const TestPage: React.FC = () => {
             </p>
             <div className="text-left mx-auto max-w-sm space-y-2 mb-8 text-base sm:text-lg">
               <p>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.totalQuestions}</span></p>
-              {/* ИСПРАВЛЕНИЕ ОШИБКИ ЗДЕСЬ: добавлен { } вокруг testResult.correctAnswers */}
-              <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.correctAnswers}</span></p> {/* <-- ИСПРАВЛЕНО */}
+              <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.correctAnswers}</span></p>
               <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.incorrectAnswers}</span></p>
               <p>Пропущено вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.unanswered}</span></p>
               <p className="text-xl sm:text-2xl pt-4">Итоговый балл: <span className="font-extrabold" style={{ color: 'var(--color-text-primary)' }}>{testResult.scorePercentage.toFixed(2)}%</span></p>
             </div>
             <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
+              {/* Кнопка "Посмотреть детальные результаты" теперь активна */}
               <button
-                onClick={() => { /* Логика для детальных результатов */ }}
-                className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center cursor-not-allowed opacity-50"
-                style={getButtonStyle(false, false)}
-                onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, false, true)}
-                onMouseLeave={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, false, false)}
-                disabled
+                onClick={() => setShowDetailedResults(true)} // Активирует отображение ResultDetailView
+                className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
+                style={getButtonStyle(false)}
+                onMouseEnter={(e) => handleButtonHover(e, false, true)}
+                onMouseLeave={(e) => handleButtonHover(e, false, false)}
               >
-                Посмотреть детальные результаты (скоро)
+                Посмотреть детальные результаты
               </button>
               <Link
                 to="/"
                 onClick={startNewTest}
                 className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
                 style={getButtonStyle(true)}
-                onMouseEnter={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true, true)}
-                onMouseLeave={(e) => handleButtonHover(e as unknown as React.MouseEvent<HTMLButtonElement>, true, false)}
+                onMouseEnter={(e) => handleButtonHover(e, true, true)}
+                onMouseLeave={(e) => handleButtonHover(e, true, false)}
               >
                 Пройти тест снова
               </Link>
             </div>
           </div>
         )}
-      </> {/* <-- ЗАКРЫВАЮЩИЙ ФРАГМЕНТ ДЛЯ ОСНОВНОГО КОНТЕНТА */}
+
+        {/* Отображение детальных результатов */}
+        {testFinished && testResult && showDetailedResults && ( // НОВЫЙ БЛОК ДЛЯ ДЕТАЛЕЙ
+          <>
+            <ResultDetailView
+              testResult={testResult}
+              questions={questions}
+              userAnswers={userAnswers}
+            />
+            <div className="flex justify-center mt-8">
+              <button
+                onClick={() => setShowDetailedResults(false)} // Кнопка для возврата к общим результатам
+                className="bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
+              >
+                К общим результатам
+              </button>
+            </div>
+          </>
+        )}
+      </>
 
       {/* Мобильный футер - рендерится всегда на мобильных. Его fixed-позиция делает его независимым от потока */}
       <MobileFooter />
+
+      {/* Модальное окно подтверждения выхода (остается без изменений) */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-sm w-full text-center">
+            <h3 className="text-xl font-semibold mb-4 text-gray-800">Подтверждение выхода</h3>
+            <p className="mb-6 text-gray-700">Вы уверены, что хотите завершить текущий тест? Все несохраненные ответы будут потеряны.</p>
+            <div className="flex justify-around">
+              <button
+                onClick={handleConfirmExit}
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full transition duration-300"
+              >
+                Да, завершить
+              </button>
+              <button
+                onClick={handleCloseModal}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-full transition duration-300"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
