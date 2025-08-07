@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TestResult, AnswerDetail, Question, UserAnswer } from '../../types/test.d';
-// import DataExporter from './DataExporter'; // Временно закомментируем или удалим, чтобы стилизовать кнопки напрямую
+import DataExporter from './DataExporter'; // Возвращаем импорт DataExporter
 import { Link } from 'react-router-dom';
 
 interface ResultDetailViewProps {
@@ -34,6 +34,28 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
   const { totalQuestions, correctAnswers, incorrectAnswers, unanswered, scorePercentage, answers } = testResult;
 
+  // Определяем общие стили для кнопок экспорта
+  const buttonStyles = {
+    base: "w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center hover:bg-opacity-80",
+    csv: {
+      backgroundColor: 'var(--color-accent-secondary)', // Цвет для CSV
+      color: 'var(--color-text-primary)',
+      backgroundImage: 'var(--texture-grain)',
+      backgroundSize: '4px 4px',
+      backgroundRepeat: 'repeat',
+      border: `1px solid var(--color-neutral)`,
+    },
+    xlsx: {
+      backgroundColor: 'var(--color-error)', // Цвет для XLSX
+      color: 'var(--color-text-primary)',
+      backgroundImage: 'var(--texture-grain)',
+      backgroundSize: '4px 4px',
+      backgroundRepeat: 'repeat',
+      border: `1px solid var(--color-neutral)`,
+    }
+  };
+
+
   return (
     <div
       className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-bauhaus-white font-sans"
@@ -53,9 +75,9 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       {/* Сводка результатов - УЛУЧШЕННАЯ РАМКА */}
       <div className="text-lg space-y-2 mb-8 p-4 rounded-lg shadow-inner"
            style={{
-             backgroundColor: 'var(--color-background-accent)', // Использовал акцентный фон для лучшей видимости
-             border: '2px solid var(--color-text-primary)', // Усиленная рамка
-             boxShadow: '2px 2px 0px 0px var(--color-neutral-dark)', // Тень для контраста
+             backgroundColor: 'var(--color-background-accent)',
+             border: '2px solid var(--color-text-primary)',
+             boxShadow: '2px 2px 0px 0px var(--color-neutral-dark)',
              backgroundImage: 'var(--texture-grain)',
              backgroundSize: '4px 4px',
              backgroundRepeat: 'repeat',
@@ -67,34 +89,17 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
         <p className="text-2xl sm:text-3xl pt-4 border-t border-bauhaus-dark-gray mt-4">Итоговый балл: <span className="font-extrabold text-bauhaus-white">{scorePercentage.toFixed(2)}%</span></p>
       </div>
 
-      {/* Кнопки экспорта данных - НОВЫЕ СТИЛИ */}
-      <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
-        <button
-          className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center hover:bg-opacity-80"
-          style={{
-            backgroundColor: 'var(--color-accent-secondary)', // Цвет для CSV
-            color: 'var(--color-text-primary)',
-            backgroundImage: 'var(--texture-grain)',
-            backgroundSize: '4px 4px',
-            backgroundRepeat: 'repeat',
-            border: `1px solid var(--color-neutral)`,
-          }}
-        >
-          Экспорт в CSV
-        </button>
-        <button
-          className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center hover:bg-opacity-80"
-          style={{
-            backgroundColor: 'var(--color-error)', // Цвет для XLSX
-            color: 'var(--color-text-primary)',
-            backgroundImage: 'var(--texture-grain)',
-            backgroundSize: '4px 4px',
-            backgroundRepeat: 'repeat',
-            border: `1px solid var(--color-neutral)`,
-          }}
-        >
-          Экспорт в XLSX
-        </button>
+      {/* Кнопка экспорта данных - ВОЗВРАЩАЕМ DATAEXPORTER И ПЕРЕДАЕМ СТИЛИ */}
+      <div className="flex justify-center mb-8">
+        <DataExporter
+          testResult={testResult}
+          questions={questions}
+          userAnswers={userAnswers}
+          csvButtonClassName={buttonStyles.base}
+          csvButtonStyles={buttonStyles.csv}
+          xlsxButtonClassName={buttonStyles.base}
+          xlsxButtonStyles={buttonStyles.xlsx}
+        />
       </div>
 
       {/* Детали по каждому вопросу */}
@@ -114,7 +119,10 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
           const borderColor = isCorrect ? 'border-bauhaus-blue' : (userAnswerData ? 'border-bauhaus-red' : 'border-bauhaus-yellow');
 
           return (
-            <div key={finalQuestionData.id} className={`bg-bauhaus-black bg-opacity-50 p-5 rounded-lg border-l-4 ${borderColor} shadow-md`}>
+            <div
+              key={finalQuestionData.id}
+              className={`bg-bauhaus-black bg-opacity-50 p-5 rounded-lg border-l-4 ${borderColor} shadow-md mt-6`} // ДОБАВЛЕН mt-6 для разделения блоков
+            >
               <p className="font-medium text-bauhaus-white mb-3 text-lg sm:text-xl font-heading">
                 Вопрос {index + 1}: {finalQuestionData.text}
                 <span className={`ml-3 text-sm sm:text-base font-semibold ${
@@ -193,6 +201,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                   </ul>
                 </div>
               )}
+
             </div>
           );
         })}
