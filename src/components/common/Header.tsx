@@ -75,8 +75,11 @@ const Header: React.FC = () => {
             <path d="M2 7L12 1L22 7L12 13L2 7Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
             <path d="M12 13L2 7M12 13L22 7M12 13L12 23" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
           </svg>
-          {/* Добавляем letterSpacing к h1 */}
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-wide flex items-center" style={{ letterSpacing: '0em' }}> {/* ДОБАВЛЕН style={{ letterSpacing: '0em' }} И ВОЗВРАЩЕН tracking-wide */}
+          {/* Применяем letterSpacing к h1 */}
+          <h1
+            className="text-2xl sm:text-3xl font-extrabold tracking-normal flex items-center" // ДОБАВЛЕН tracking-normal
+            style={{ letterSpacing: '-0.025em' }} // ДОБАВЛЕН ИЗМЕНЕННЫЙ style
+          >
             <span style={{ color: 'var(--color-accent-primary)' }}>H</span>
             <span style={{ color: 'var(--color-error)' }}>R</span>
             <span style={{ color: 'var(--color-accent-secondary)' }}>B</span>
