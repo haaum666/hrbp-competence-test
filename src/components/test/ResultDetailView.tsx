@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TestResult, AnswerDetail, Question, UserAnswer } from '../../types/test.d';
-import DataExporter from './DataExporter';
+// import DataExporter from './DataExporter'; // Временно закомментируем или удалим, чтобы стилизовать кнопки напрямую
 import { Link } from 'react-router-dom';
 
 interface ResultDetailViewProps {
@@ -16,13 +16,13 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
     return (
       <div className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-3xl w-full mx-auto text-center"
            style={{
-             backgroundColor: 'var(--color-background-card)', // Фон как у блоков аналитики
-             backgroundImage: 'var(--texture-grain)', // Текстура
+             backgroundColor: 'var(--color-background-card)',
+             backgroundImage: 'var(--texture-grain)',
              backgroundSize: '4px 4px',
              backgroundRepeat: 'repeat',
-             border: '2px solid var(--color-neutral)', // Рамка
-             boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Тень
-             color: 'var(--color-text-primary)', // Цвет текста по умолчанию
+             border: '2px solid var(--color-neutral)',
+             boxShadow: '4px 4px 0px 0px var(--color-neutral)',
+             color: 'var(--color-text-primary)',
            }}>
         <p className="text-2xl font-heading">Результаты теста не найдены.</p>
         <Link to="/" className="mt-6 inline-block bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-bauhaus-blue focus:ring-opacity-50">
@@ -36,22 +36,30 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
   return (
     <div
-      className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-bauhaus-white font-sans" // text-bauhaus-white font-sans сюда
+      className="rounded-xl shadow-2xl backdrop-blur-md p-6 sm:p-8 max-w-4xl w-full mx-auto text-bauhaus-white font-sans"
       style={{
-        backgroundColor: 'var(--color-background-card)', // Фон как у блоков аналитики
-        backgroundImage: 'var(--texture-grain)', // Текстура
+        backgroundColor: 'var(--color-background-card)',
+        backgroundImage: 'var(--texture-grain)',
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
-        border: '2px solid var(--color-neutral)', // Рамка
-        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // Тень
+        border: '2px solid var(--color-neutral)',
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)',
       }}
     >
       <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-bauhaus-white text-center font-heading">
         Детальный Отчет по Тесту
       </h2>
 
-      {/* Сводка результатов */}
-      <div className="text-lg space-y-2 mb-8 p-4 bg-bauhaus-black bg-opacity-70 rounded-lg border border-bauhaus-dark-gray shadow-inner">
+      {/* Сводка результатов - УЛУЧШЕННАЯ РАМКА */}
+      <div className="text-lg space-y-2 mb-8 p-4 rounded-lg shadow-inner"
+           style={{
+             backgroundColor: 'var(--color-background-accent)', // Использовал акцентный фон для лучшей видимости
+             border: '2px solid var(--color-text-primary)', // Усиленная рамка
+             boxShadow: '2px 2px 0px 0px var(--color-neutral-dark)', // Тень для контраста
+             backgroundImage: 'var(--texture-grain)',
+             backgroundSize: '4px 4px',
+             backgroundRepeat: 'repeat',
+           }}>
         <p className="text-bauhaus-light-gray">Всего вопросов: <span className="font-semibold text-bauhaus-white">{totalQuestions}</span></p>
         <p className="text-bauhaus-light-gray">Правильных ответов: <span className="font-semibold text-bauhaus-blue">{correctAnswers}</span></p>
         <p className="text-bauhaus-light-gray">Неправильных ответов: <span className="font-semibold text-bauhaus-red">{incorrectAnswers}</span></p>
@@ -59,34 +67,51 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
         <p className="text-2xl sm:text-3xl pt-4 border-t border-bauhaus-dark-gray mt-4">Итоговый балл: <span className="font-extrabold text-bauhaus-white">{scorePercentage.toFixed(2)}%</span></p>
       </div>
 
-      {/* Кнопка экспорта данных */}
-      <div className="flex justify-center mb-8">
-        <DataExporter
-          testResult={testResult}
-          questions={questions}
-          userAnswers={userAnswers}
-        />
+      {/* Кнопки экспорта данных - НОВЫЕ СТИЛИ */}
+      <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-8">
+        <button
+          className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center hover:bg-opacity-80"
+          style={{
+            backgroundColor: 'var(--color-accent-secondary)', // Цвет для CSV
+            color: 'var(--color-text-primary)',
+            backgroundImage: 'var(--texture-grain)',
+            backgroundSize: '4px 4px',
+            backgroundRepeat: 'repeat',
+            border: `1px solid var(--color-neutral)`,
+          }}
+        >
+          Экспорт в CSV
+        </button>
+        <button
+          className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center hover:bg-opacity-80"
+          style={{
+            backgroundColor: 'var(--color-error)', // Цвет для XLSX
+            color: 'var(--color-text-primary)',
+            backgroundImage: 'var(--texture-grain)',
+            backgroundSize: '4px 4px',
+            backgroundRepeat: 'repeat',
+            border: `1px solid var(--color-neutral)`,
+          }}
+        >
+          Экспорт в XLSX
+        </button>
       </div>
 
       {/* Детали по каждому вопросу */}
       <h3 className="text-xl sm:text-2xl font-semibold mb-4 text-bauhaus-white font-heading">Разбор вопросов:</h3>
       <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-thin scrollbar-thumb-bauhaus-dark-gray scrollbar-track-bauhaus-black">
         {answers.map((detail: AnswerDetail, index: number) => {
-          // Ищем полную информацию о вопросе из пропсов 'questions'
           const questionData = questions.find(q => q.id === detail.question.id);
-          // Если вопрос не найден в 'questions' (что маловероятно при корректной работе), используем данные из 'detail.question'
           const finalQuestionData: Question = questionData || detail.question;
-
           const userAnswerData = userAnswers.find(ua => ua.questionId === finalQuestionData.id);
 
-          const isCorrect = userAnswerData ? userAnswerData.isCorrect : false; // Корректность берем из userAnswerData
+          const isCorrect = userAnswerData ? userAnswerData.isCorrect : false;
           const selectedOptionText = userAnswerData && userAnswerData.selectedOptionId
             ? finalQuestionData.options.find(opt => opt.id === userAnswerData.selectedOptionId)?.text || 'Не выбран'
             : 'Не отвечено';
-          // ИСПОЛЬЗУЕМ questionData.correctAnswer ВМЕСТО option.isCorrect
           const correctOptionText = finalQuestionData.options.find(opt => opt.id === finalQuestionData.correctAnswer)?.text || 'N/A';
 
-          const borderColor = isCorrect ? 'border-bauhaus-blue' : (userAnswerData ? 'border-bauhaus-red' : 'border-bauhaus-yellow'); // Изменил border-bauhaus-gray на border-bauhaus-yellow для без ответа
+          const borderColor = isCorrect ? 'border-bauhaus-blue' : (userAnswerData ? 'border-bauhaus-red' : 'border-bauhaus-yellow');
 
           return (
             <div key={finalQuestionData.id} className={`bg-bauhaus-black bg-opacity-50 p-5 rounded-lg border-l-4 ${borderColor} shadow-md`}>
@@ -105,13 +130,11 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 </p>
               )}
 
-              {/* Правильный ответ показываем всегда, если он есть */}
               {finalQuestionData.type === 'multiple-choice' && correctOptionText !== 'N/A' && (
                 <p className="text-sm sm:text-base text-bauhaus-light-gray">
                   Правильный ответ: <span className="font-normal text-bauhaus-yellow">{correctOptionText}</span>
                 </p>
               )}
-              {/* Если это case-study, указываем, что правильного ответа для выбора нет */}
               {finalQuestionData.type === 'case-study' && (
                 <p className="text-sm sm:text-base text-bauhaus-light-gray">
                   Этот вопрос не предполагает выбора из вариантов.
@@ -124,7 +147,6 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 </div>
               )}
 
-              {/* Добавленные блоки для отображения новой информации */}
               {finalQuestionData.explanationDetails && finalQuestionData.explanationDetails.length > 0 && (
                 <div className="mt-3 p-3 bg-bauhaus-dark-gray bg-opacity-70 rounded-md text-sm sm:text-base text-bauhaus-light-gray italic">
                   <strong className="text-bauhaus-white block mb-2">Детали неверных/менее подходящих вариантов:</strong>
@@ -171,7 +193,6 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                   </ul>
                 </div>
               )}
-
             </div>
           );
         })}
@@ -179,7 +200,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
       <div className="flex justify-center mt-8">
         <Link to="/" onClick={() => {
-          localStorage.removeItem('currentTestState'); // Очищаем состояние теста
+          localStorage.removeItem('currentTestState');
         }} className="bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center">
           Вернуться к началу / Пройти тест снова
         </Link>
