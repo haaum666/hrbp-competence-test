@@ -1,13 +1,102 @@
 /* src/styles/index.css */
 
-/* ... существующие стили ... */
+/* Все @import правила ДОЛЖНЫ идти в самом начале файла. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Основные цвета новой палитры */
+    --color-background: #28486e; /* Темно-синий фон страницы */
+    --color-background-card: #fadeb1; /* Светло-бежевый для карточек, хедера, графиков */
+    
+    /* Цвета текста */
+    --color-text-primary: #3A4232; /* Темно-зеленый (основной, для заголовков, основного текста) */
+    --color-text-secondary: #6E7766; /* Приглушенный средне-серый (вторичный текст, подписи) */
+    --color-neutral: #FFF5E0; /* Очень светлый бежевый (нейтральный, для светлых границ, акцентов, текста на цветных кнопках) */
+
+    /* Акцентные цвета */
+    --color-accent-primary: #67A1BF; /* Серо-голубой (основной акцент: кнопки, прогресс-бары, правильные ответы) */
+    --color-accent-secondary: #A3C690; /* Оливково-зеленый (вторичный акцент: средний балл, ховер-состояния) */
+    
+    /* Цвета состояний */
+    --color-error: #E07A5F; /* Оранжево-красный (для ошибок, неправильных ответов, кнопки "Очистить") */
+    --color-success: var(--color-accent-secondary); /* Используем вторичный акцент для успеха */
+    --color-warning: #f7b32b; /* Желтый (для предупреждений, если понадобится) */
+
+    /* Цвета для кнопок и элементов, используемые в компонентах */
+    /* Эти переменные привязывают поведение кнопок к основной палитре */
+    --button-primary-bg: var(--color-accent-primary);
+    --button-primary-text: var(--color-neutral);
+    --button-primary-border: var(--color-text-primary); /* Темная граница для акцентных кнопок */
+    
+    --button-secondary-bg: var(--color-neutral); /* Для кнопки "Начать новый тест" */
+    --button-secondary-text: var(--color-text-primary);
+    --button-secondary-border: var(--color-neutral); /* Светлая граница для светлых кнопок */
+
+    /* Текстуры */
+    /* Упрощенная и более производительная зернистая текстура */
+    --texture-grain: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v1H0V0zm2 2h1v1H2V2zm0 0h1v1H2V2zm1 1h1v1H3V3z'/%3E%3C/g%3E%3C/svg%3E");
+    /* Более плотная текстура для фона, если потребуется */
+    --texture-dense-grain: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='0.08' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v1H0V0zm2 2h1v1H2V2zm0 0h1v1H2V2zm1 1h1v1H3V3z'/%3E%3C/g%3E%3C/svg%3E");
+    
+    --texture-grid: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236e7766' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v10H0V0zm9 0h1v10H9V0zM0 9h10v1H0V9z'/%3E%3C/g%3E%3C/svg%3E");
+
+  }
+}
+
+body {
+  background-color: var(--color-background); /* Использовать основную переменную фона */
+  background-image: var(--texture-grain); /* Применить зернистость к телу */
+  background-size: 4px 4px;
+  background-repeat: repeat;
+  color: var(--color-text-primary);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
+}
+
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite cubic-bezier(0.6, 0.4, 0.4, 0.8);
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.text-shadow-lg {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
 
 /* Custom utility classes */
 .shadow-sm-bottom {
   box-shadow: 0px 2px 0px 0px var(--color-text-primary); /* Эффект тени только снизу */
 }
 
-/* Button styles for AnalyticsDashboard and other secondary buttons */
+/* Button styles for AnalyticsDashboard */
 .button-primary-style {
   background-color: var(--button-primary-bg);
   color: var(--button-primary-text);
@@ -17,19 +106,6 @@
 
 .button-primary-style:hover {
   background-color: var(--color-accent-secondary); /* Ховер на оливковый */
-  box-shadow: 2px 2px 0px 0px var(--color-text-primary); /* Тень немного уменьшается при наведении */
-}
-
-/* НОВЫЙ СТИЛЬ: для второстепенных кнопок */
-.button-secondary-style {
-  background-color: var(--button-secondary-bg); /* Светлый бежевый */
-  color: var(--button-secondary-text); /* Темно-зеленый текст */
-  border: 2px solid var(--button-secondary-border); /* Светлая граница */
-  box-shadow: 4px 4px 0px 0px var(--color-text-primary); /* Темная тень, как у primary */
-}
-
-.button-secondary-style:hover {
-  background-color: var(--color-accent-primary); /* Ховер на серо-голубой */
   box-shadow: 2px 2px 0px 0px var(--color-text-primary); /* Тень немного уменьшается при наведении */
 }
 
@@ -46,4 +122,28 @@
 }
 
 /* Custom scrollbar styles */
-/* ... остальные стили ... */
+/* Для WebKit-браузеров (Chrome, Safari) */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px; /* Ширина скроллбара */
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: var(--color-background); /* Фон трека */
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: var(--color-text-secondary); /* Цвет ползунка */
+  border-radius: 10px;
+  border: 2px solid var(--color-background-card); /* Граница ползунка */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-primary); /* Цвет ползунка при наведении */
+}
+
+/* Для Firefox */
+.scrollbar-custom {
+  scrollbar-width: thin; /* "auto" или "none" */
+  scrollbar-color: var(--color-text-secondary) var(--color-background); /* Цвет ползунка и трека */
+}
