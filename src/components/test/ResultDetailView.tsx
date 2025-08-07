@@ -1,8 +1,9 @@
 // src/components/test/ResultDetailView.tsx
 
 import React from 'react';
-import { TestResult, AnswerDetail, Question, UserAnswer } from '../../types/test.d';
-import DataExporter from './DataExporter'; // Это компонент, который мы модифицировали
+// Импортируем новые типы SourceResource и AdditionalResource
+import { TestResult, AnswerDetail, Question, UserAnswer, SourceResource, AdditionalResource } from '../../types/test.d';
+import DataExporter from './DataExporter';
 import { Link } from 'react-router-dom';
 
 interface ResultDetailViewProps {
@@ -26,7 +27,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
            }}>
         <p className="text-2xl font-heading">Результаты теста не найдены.</p>
         <Link to="/" className="mt-6 inline-block font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50
-            button-primary-style" // ИСПОЛЬЗУЕМ КЛАСС
+            button-primary-style"
         >
           Начать новый тест
         </Link>
@@ -36,12 +37,10 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
   const { totalQuestions, correctAnswers, incorrectAnswers, unanswered, scorePercentage, answers } = testResult;
 
-  // Определяем общие стили для кнопок экспорта, теперь с использованием классов
-  // Передаем в DataExporter классы, а не inline-стили напрямую
   const buttonStyles = {
     base: "w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center",
-    csv: "button-secondary-style", // ИСПОЛЬЗУЕМ КЛАСС
-    xlsx: "button-error-style",    // ИСПОЛЬЗУЕМ КЛАСС
+    csv: "button-secondary-style",
+    xlsx: "button-error-style",
   };
 
   return (
@@ -65,11 +64,11 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
            style={{
              backgroundColor: 'var(--color-background-accent)',
              border: '2px solid var(--color-text-primary)',
-             boxShadow: '2px 2px 0px 0px var(--color-neutral-dark)', // <-- Эту переменную у вас нет, будет предупреждение
+             boxShadow: '2px 2px 0px 0px var(--color-text-primary)',
              backgroundImage: 'var(--texture-grain)',
              backgroundSize: '4px 4px',
              backgroundRepeat: 'repeat',
-             color: 'var(--color-text-primary)' // Установлен цвет текста для этого блока
+             color: 'var(--color-text-primary)'
            }}>
         <p style={{ color: 'var(--color-text-secondary)' }}>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{totalQuestions}</span></p>
         <p style={{ color: 'var(--color-text-secondary)' }}>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{correctAnswers}</span></p>
@@ -91,7 +90,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
       {/* Детали по каждому вопросу */}
       <h3 className="text-xl sm:text-2xl font-semibold mb-4 font-heading" style={{ color: 'var(--color-text-primary)' }}>Разбор вопросов:</h3>
-      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-custom"> {/* Используем общий scrollbar-custom */}
+      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-custom">
         {answers.map((detail: AnswerDetail, index: number) => {
           const questionData = questions.find(q => q.id === detail.question.id);
           const finalQuestionData: Question = questionData || detail.question;
@@ -103,7 +102,6 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
             : 'Не отвечено';
           const correctOptionText = finalQuestionData.options.find(opt => opt.id === finalQuestionData.correctAnswer)?.text || 'N/A';
 
-          // Используем новые переменные для границ
           const borderColor = isCorrect ? 'var(--color-success)' : (userAnswerData ? 'var(--color-error)' : 'var(--color-warning)');
 
           return (
@@ -111,9 +109,9 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
               key={finalQuestionData.id}
               className={`bg-opacity-50 p-5 rounded-lg border-l-4 shadow-md mt-6`}
               style={{
-                backgroundColor: 'var(--color-background)', // Темный фон для вопросов
-                borderColor: borderColor, // Динамический цвет границы
-                color: 'var(--color-text-primary)' // Цвет текста внутри карточки вопроса
+                backgroundColor: 'var(--color-background)',
+                borderColor: borderColor,
+                color: 'var(--color-text-primary)'
               }}
             >
               <p className="font-medium mb-3 text-lg sm:text-xl font-heading" style={{ color: 'var(--color-text-primary)' }}>
@@ -149,7 +147,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
               {finalQuestionData.explanation && (
                 <div className="mt-3 p-3 rounded-md text-sm sm:text-base italic"
                      style={{
-                       backgroundColor: 'var(--color-background-accent)', // Использовать акцентный фон
+                       backgroundColor: 'var(--color-background-accent)',
                        color: 'var(--color-text-primary)'
                      }}>
                   <strong style={{ color: 'var(--color-text-primary)' }}>Объяснение:</strong> {finalQuestionData.explanation}
@@ -183,7 +181,17 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                   <ul className="list-disc list-inside space-y-1">
                     {finalQuestionData.sources.map((source, idx) => (
                       <li key={idx}>
-                        {source.startsWith('http') ? <a href={source} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--color-accent-primary)' }}>{source}</a> : source.title}
+                        {/* Проверка типа: если строка, то это URL; если объект, то используем его свойства */}
+                        {typeof source === 'string' ? (
+                          <a href={source} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--color-accent-primary)' }}>{source}</a>
+                        ) : (
+                          // source является SourceResource
+                          source.url ? (
+                            <a href={source.url} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--color-accent-primary)' }}>{source.title}</a>
+                          ) : (
+                            source.title
+                          )
+                        )}
                       </li>
                     ))}
                   </ul>
@@ -208,7 +216,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                      }}>
                   <strong className="block mb-2" style={{ color: 'var(--color-text-primary)' }}>Дополнительные ресурсы для изучения:</strong>
                   <ul className="list-disc list-inside space-y-1">
-                    {finalQuestionData.additionalResources.map((resource, idx) => (
+                    {finalQuestionData.additionalResources.map((resource: AdditionalResource, idx) => ( // Указываем тип явно
                       <li key={idx}>
                         {resource.type && <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>[{resource.type}] </span>}
                         {resource.url ? <a href={resource.url} target="_blank" rel="noopener noreferrer" className="hover:underline" style={{ color: 'var(--color-accent-primary)' }}>{resource.title}</a> : resource.title}
@@ -228,7 +236,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
           localStorage.removeItem('currentTestState');
         }}
         className="w-full max-w-sm sm:max-w-md font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center
-            button-primary-style" // ИСПОЛЬЗУЕМ КЛАСС
+            button-primary-style"
         >
           Вернуться к началу / Пройти тест снова
         </Link>
