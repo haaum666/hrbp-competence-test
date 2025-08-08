@@ -24,7 +24,7 @@ interface UseTestLogicReturn {
   showResumeOption: boolean;
   remainingTime: number;
   progressPercentage: number;
-  handleAnswerSelect: (questionId: string, selectedOptionId: string) => void;
+  handleAnswerSelect: (questionId: string, selectedOptionId: string | null) => void; // <-- ИЗМЕНЕНИЕ ЗДЕСЬ
   handleNextQuestion: () => void;
   handlePreviousQuestion: () => void;
   startNewTest: () => void;
@@ -107,15 +107,12 @@ const useTestLogic = (): UseTestLogicReturn => {
     setTestStarted(false);
     console.log('useTestLogic: testStarted установлен в FALSE (из calculateTestResult)');
     setOverallTestStartTime(null);
-    // clearLocalStorage(); // <-- УДАЛЯЕМ ЭТОТ ВЫЗОВ!
-  }, [questions, userAnswers, overallTestStartTime]); // clearLocalStorage удален из зависимостей
+  }, [questions, userAnswers, overallTestStartTime]);
 
   const handleNextQuestion = useCallback(() => {
     if (currentQuestionIndex === questions.length - 1) {
-      // Это последний вопрос, завершаем тест
       calculateTestResult(); 
     } else {
-      // Переходим к следующему вопросу
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       questionStartTimeRef.current = Date.now();
       setRemainingTime(questions[currentQuestionIndex + 1]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
@@ -125,12 +122,13 @@ const useTestLogic = (): UseTestLogicReturn => {
   const handlePreviousQuestion = useCallback(() => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
-      questionStartTimeRef.current = Date.now(); // Сброс таймера для предыдущего вопроса
+      questionStartTimeRef.current = Date.now(); 
       setRemainingTime(questions[currentQuestionIndex - 1]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     }
   }, [currentQuestionIndex, questions]);
 
-  const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string) => {
+  // ИЗМЕНЕНИЕ ЗДЕСЬ: selectedOptionId может быть string | null
+  const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string | null) => { 
     const question = questions.find(q => q.id === questionId);
     if (!question) {
       console.error(`Question with ID ${questionId} not found.`);
@@ -141,12 +139,12 @@ const useTestLogic = (): UseTestLogicReturn => {
 
     const newAnswer: UserAnswer = {
       questionId: questionId,
-      selectedOptionId: selectedOptionId,
-      isCorrect: question.correctAnswer === selectedOptionId,
+      selectedOptionId: selectedOptionId, 
+      // ИЗМЕНЕНИЕ ЗДЕСЬ: isCorrect должно проверять selectedOptionId на null
+      isCorrect: selectedOptionId !== null && question.correctAnswer === selectedOptionId, 
       timeSpent: timeSpent,
     };
 
-    // Используем функциональное обновление состояния setUserAnswers
     setUserAnswers((prevAnswers) => {
       const existingAnswerIndex = prevAnswers.findIndex(
         (answer) => answer.questionId === questionId
@@ -162,14 +160,13 @@ const useTestLogic = (): UseTestLogicReturn => {
       return updatedAnswers;
     });
 
-    // Теперь handleNextQuestion вызывается после того, как setUserAnswers завершит обновление состояния.
     handleNextQuestion(); 
 
   }, [questions, handleNextQuestion]);
 
   const startNewTest = useCallback(() => {
     console.log('startNewTest: Запуск нового теста.');
-    clearLocalStorage(); // <-- Очистка здесь остается!
+    clearLocalStorage(); 
     const newQuestions = generateQuestions();
     setQuestions(newQuestions);
     setCurrentQuestionIndex(0);
@@ -186,7 +183,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     console.log('useTestLogic: testStarted установлен в TRUE (из startNewTest)');
     localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
     localStorage.setItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME, Date.now().toString());
-    questionStartTimeRef.current = Date.now();
+    questionStartTimeRef.current = Date.24;
     setRemainingTime(newQuestions[0]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     console.log('startNewTest: Новый тест успешно инициализирован и сохранен в localStorage.');
   }, [clearLocalStorage]);
@@ -264,11 +261,10 @@ const useTestLogic = (): UseTestLogicReturn => {
     setRemainingTime(INITIAL_TIME_PER_QUESTION);
     questionStartTimeRef.current = Date.now();
     setOverallTestStartTime(null);
-    clearLocalStorage(); // <-- Очистка здесь остается!
+    clearLocalStorage(); 
     setShowResumeOption(false);
   }, [clearLocalStorage]);
 
-  // Эффект для инициализации или возобновления теста при загрузке компонента
   useEffect(() => {
     console.log('useEffect (инициализация/возобновление): -- Начало выполнения эффекта --');
 
@@ -298,18 +294,16 @@ const useTestLogic = (): UseTestLogicReturn => {
     } else {
       console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) НЕ ВЫПОЛНЕНО или данные неполные.** shouldShowResume = false.');
       setShowResumeOption(false);
-      // Если savedTestStarted был true, но данные невалидны, очищаем и начинаем заново
-      if (savedTestStarted === 'true') { // Проверяем строго на 'true'
+      if (savedTestStarted === 'true') { 
         clearLocalStorage();
-        setTestStarted(false); // Устанавливаем false, чтобы не было путаницы в состоянии
-        setQuestions(generateQuestions()); // Перегенерируем вопросы, если данные были некорректны
+        setTestStarted(false); 
+        setQuestions(generateQuestions()); 
       }
     }
     console.log('useEffect (showResumeOption): -- Завершение выполнения эффекта. Итоговое showResumeOption:', hasAllKeys && isIndexValid, '--');
 
   }, [clearLocalStorage]);
 
-  // Эффект для таймера обратного отсчета
   useEffect(() => {
     if (!testStarted || testFinished) {
       return;
@@ -319,12 +313,8 @@ const useTestLogic = (): UseTestLogicReturn => {
       setRemainingTime((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          // Здесь также вызываем handleNextQuestion, чтобы сохранить ответ
-          // и перейти к следующему вопросу или завершить тест
-          // Важно: для пропущенного вопроса, handleNextQuestion будет вызван,
-          // и он создаст "пустой" ответ (selectedOptionId: null).
-          // Поэтому нам нужно убедиться, что handleAnswerSelect может принять null.
-          handleAnswerSelect(questions[currentQuestionIndex].id, null); // Передаем null, если время вышло
+          // Здесь вызываем handleAnswerSelect с null для пропущенного вопроса
+          handleAnswerSelect(questions[currentQuestionIndex].id, null); 
           return 0;
         }
         return prevTime - 1;
@@ -332,9 +322,8 @@ const useTestLogic = (): UseTestLogicReturn => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [testStarted, testFinished, remainingTime, handleAnswerSelect, questions, currentQuestionIndex]); // Добавили handleAnswerSelect, questions, currentQuestionIndex в зависимости
+  }, [testStarted, testFinished, remainingTime, handleAnswerSelect, questions, currentQuestionIndex]);
 
-  // Эффект для сохранения прогресса в localStorage
   useEffect(() => {
     console.log('useEffect (сохранение прогресса): testStarted:', testStarted, ', testFinished:', testFinished);
     if (testStarted && !testFinished) {
@@ -348,7 +337,6 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
   }, [userAnswers, currentQuestionIndex, testStarted, testFinished]);
 
-  // Расчет процента выполнения теста
   const progressPercentage = questions.length > 0 ? ((currentQuestionIndex) / questions.length) * 100 : 0;
 
   return {
