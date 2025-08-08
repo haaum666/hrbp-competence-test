@@ -1,4 +1,5 @@
 // src/hooks/useTestLogic.ts
+
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Question, UserAnswer, TestResult, AnswerDetail } from '../types/test.d';
 import { generateQuestions } from '../data/questions';
@@ -106,13 +107,10 @@ const useTestLogic = (): UseTestLogicReturn => {
     setTestStarted(false);
     console.log('useTestLogic: testStarted установлен в FALSE (из calculateTestResult)');
     setOverallTestStartTime(null);
-    clearLocalStorage();
-  }, [questions, userAnswers, clearLocalStorage, overallTestStartTime]);
+    // clearLocalStorage(); // <-- УДАЛЯЕМ ЭТОТ ВЫЗОВ!
+  }, [questions, userAnswers, overallTestStartTime]); // clearLocalStorage удален из зависимостей
 
   const handleNextQuestion = useCallback(() => {
-    // Здесь мы больше не добавляем "пустой" ответ, так как handleAnswerSelect теперь
-    // гарантирует, что ответ (даже если null) будет добавлен перед вызовом handleNextQuestion.
-    
     if (currentQuestionIndex === questions.length - 1) {
       // Это последний вопрос, завершаем тест
       calculateTestResult(); 
@@ -148,8 +146,7 @@ const useTestLogic = (): UseTestLogicReturn => {
       timeSpent: timeSpent,
     };
 
-    // ГЛАВНОЕ ИЗМЕНЕНИЕ: Используем функциональное обновление состояния setUserAnswers
-    // и вызываем handleNextQuestion как колбэк (второй аргумент)
+    // Используем функциональное обновление состояния setUserAnswers
     setUserAnswers((prevAnswers) => {
       const existingAnswerIndex = prevAnswers.findIndex(
         (answer) => answer.questionId === questionId
@@ -166,14 +163,13 @@ const useTestLogic = (): UseTestLogicReturn => {
     });
 
     // Теперь handleNextQuestion вызывается после того, как setUserAnswers завершит обновление состояния.
-    // Это гарантирует, что userAnswers в handleNextQuestion будет актуальным.
     handleNextQuestion(); 
 
-  }, [questions, handleNextQuestion]); // handleNextQuestion теперь в зависимостях
+  }, [questions, handleNextQuestion]);
 
   const startNewTest = useCallback(() => {
     console.log('startNewTest: Запуск нового теста.');
-    clearLocalStorage();
+    clearLocalStorage(); // <-- Очистка здесь остается!
     const newQuestions = generateQuestions();
     setQuestions(newQuestions);
     setCurrentQuestionIndex(0);
@@ -268,7 +264,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     setRemainingTime(INITIAL_TIME_PER_QUESTION);
     questionStartTimeRef.current = Date.now();
     setOverallTestStartTime(null);
-    clearLocalStorage();
+    clearLocalStorage(); // <-- Очистка здесь остается!
     setShowResumeOption(false);
   }, [clearLocalStorage]);
 
@@ -302,9 +298,10 @@ const useTestLogic = (): UseTestLogicReturn => {
     } else {
       console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) НЕ ВЫПОЛНЕНО или данные неполные.** shouldShowResume = false.');
       setShowResumeOption(false);
-      if (savedTestStarted === 'true') {
+      // Если savedTestStarted был true, но данные невалидны, очищаем и начинаем заново
+      if (savedTestStarted === 'true') { // Проверяем строго на 'true'
         clearLocalStorage();
-        setTestStarted(false);
+        setTestStarted(false); // Устанавливаем false, чтобы не было путаницы в состоянии
         setQuestions(generateQuestions()); // Перегенерируем вопросы, если данные были некорректны
       }
     }
@@ -324,7 +321,10 @@ const useTestLogic = (): UseTestLogicReturn => {
           clearInterval(timer);
           // Здесь также вызываем handleNextQuestion, чтобы сохранить ответ
           // и перейти к следующему вопросу или завершить тест
-          handleNextQuestion(); 
+          // Важно: для пропущенного вопроса, handleNextQuestion будет вызван,
+          // и он создаст "пустой" ответ (selectedOptionId: null).
+          // Поэтому нам нужно убедиться, что handleAnswerSelect может принять null.
+          handleAnswerSelect(questions[currentQuestionIndex].id, null); // Передаем null, если время вышло
           return 0;
         }
         return prevTime - 1;
@@ -332,7 +332,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [testStarted, testFinished, remainingTime, handleNextQuestion]); // Добавили handleNextQuestion в зависимости
+  }, [testStarted, testFinished, remainingTime, handleAnswerSelect, questions, currentQuestionIndex]); // Добавили handleAnswerSelect, questions, currentQuestionIndex в зависимости
 
   // Эффект для сохранения прогресса в localStorage
   useEffect(() => {
