@@ -67,7 +67,6 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
           testResult={testResult}
           questions={questions}
           userAnswers={userAnswers}
-          // ИЗМЕНЕНО: Классы кнопок для соответствия вашему новому запросу
           buttonClassNamesCsv="py-3 px-8 rounded-full font-bold text-lg text-text-main bg-neutral-light shadow-lg hover:bg-accent-blue-green hover:text-neutral-light transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
           buttonClassNamesXlsx="py-3 px-8 rounded-full font-bold text-lg text-text-main bg-neutral-light shadow-lg hover:bg-accent-blue-green hover:text-neutral-light transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
         />
@@ -101,7 +100,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 backgroundImage: 'var(--texture-grain)',
                 backgroundSize: '4px 4px',
                 backgroundRepeat: 'repeat',
-                boxShadow: `2px 2px 0px 0px ${borderColor}`, // Оставляем динамическую тень
+                boxShadow: `2px 2px 0px 0px ${borderColor}`,
               }}
             >
               <p className="font-medium mb-3 text-lg sm:text-xl font-heading text-text-main">
@@ -133,7 +132,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
               {finalQuestionData.explanation && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
-                             bg-primary-background text-text-secondary-light border border-neutral-light"
+                             bg-neutral-light text-text-main border border-neutral-light shadow-inner" // ИЗМЕНЕНО: bg-neutral-light и text-text-main
                 >
                   <strong className="text-text-main">Объяснение:</strong> {finalQuestionData.explanation}
                 </div>
@@ -142,7 +141,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
               {finalQuestionData.explanationDetails && finalQuestionData.explanationDetails.length > 0 && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
-                             bg-primary-background text-text-secondary-light border border-neutral-light"
+                             bg-neutral-light text-text-main border border-neutral-light shadow-inner" // ИЗМЕНЕНО: bg-neutral-light и text-text-main
                 >
                   <strong className="text-text-main block mb-2">Детали неверных/менее подходящих вариантов:</strong>
                   <ul className="list-disc list-inside space-y-1">
@@ -155,6 +154,8 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 </div>
               )}
 
+              {/* УДАЛЕНО: Блок Источники */}
+              {/*
               {finalQuestionData.sources && finalQuestionData.sources.length > 0 && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base
@@ -187,16 +188,19 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                   </ul>
                 </div>
               )}
+              */}
 
               {finalQuestionData.developmentRecommendation && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
-                             bg-primary-background text-text-secondary-light border border-neutral-light"
+                             bg-neutral-light text-text-main border border-neutral-light shadow-inner" // ИЗМЕНЕНО: bg-neutral-light и text-text-main
                 >
                   <strong className="text-text-main">Рекомендации по развитию компетенции:</strong> {finalQuestionData.developmentRecommendation}
                 </div>
               )}
 
+              {/* УДАЛЕНО: Блок Дополнительные ресурсы для изучения */}
+              {/*
               {finalQuestionData.additionalResources && finalQuestionData.additionalResources.length > 0 && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base
@@ -214,6 +218,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                   </ul>
                 </div>
               )}
+              */}
             </div>
           );
         })}
