@@ -12,6 +12,7 @@ interface ResultDetailViewProps {
 }
 
 const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questions, userAnswers }) => {
+
   if (!testResult) {
     return (
       // Контейнер сообщения "Результаты теста не найдены"
@@ -74,7 +75,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
       {/* Детали по каждому вопросу */}
       <h3 className="text-xl sm:text-2xl font-semibold mb-4 font-heading text-text-main">Разбор вопросов:</h3>
-      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-custom"> {/* ПРОВЕРЬТЕ, что здесь стоит scrollbar-custom */}
+      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-custom">
         {answers.map((detail: AnswerDetail, index: number) => {
           const questionData = questions.find(q => q.id === detail.question.id);
           const finalQuestionData: Question = questionData || detail.question;
@@ -167,14 +168,13 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
         })}
       </div>
 
-      <div className="flex justify-center mt-8"> {/* УВЕЛИЧЕН отступ, чтобы кнопка "Вернуться к началу" не прилипала к нижней части */}
-        <Link to="/" onClick={() => {
-          localStorage.removeItem('currentTestState'); // Очищаем состояние теста
-        }} className="button-primary-style inline-block text-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50">
-          Вернуться к началу / Пройти тест снова
+      <div className="flex justify-center mt-8">
+        <Link to="/results" // <-- Изменено на /results
+          className="py-3 px-8 rounded-full font-bold text-lg text-text-main bg-accent-blue-green shadow-lg hover:bg-bauhaus-blue transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+        >
+          Полная Аналитика {/* <-- Изменен текст кнопки */}
         </Link>
       </div>
-      {/* УДАЛЕН БЛОК "К общим результатам" */}
     </div>
   );
 };
