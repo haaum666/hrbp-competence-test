@@ -9,7 +9,7 @@ const LOCAL_STORAGE_KEY_CURRENT_INDEX = 'testCurrentQuestionIndex';
 const LOCAL_STORAGE_KEY_TEST_STARTED = 'testStarted';
 const LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME = 'testLastQuestionStartTime';
 const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults';
-const LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME = 'overallTestStartTime'; // Исправлено
+const LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME = 'overallTestStartTime';
 
 const INITIAL_TIME_PER_QUESTION = 60; // Время на вопрос по умолчанию в секундах
 
@@ -54,7 +54,6 @@ const useTestLogic = (): UseTestLogicReturn => {
   }, []);
 
   const calculateTestResult = useCallback(() => {
-    // В calculateTestResult всегда используем актуальные userAnswers из замыкания useCallback
     if (questions.length === 0 || !overallTestStartTime) return;
 
     const correctAnswers = userAnswers.filter(answer => {
@@ -66,13 +65,11 @@ const useTestLogic = (): UseTestLogicReturn => {
     
     const incorrectAnswers = userAnswers.filter(answer => {
       const question = questions.find(q => q.id === answer.questionId);
-      // Если есть ответ и он НЕ является правильным
       return question && answer.selectedOptionId !== null && question.correctAnswer !== answer.selectedOptionId;
     }).length;
 
     const answeredQuestionIds = new Set(userAnswers.map(answer => answer.questionId));
     const unanswered = questions.filter(question => !answeredQuestionIds.has(question.id)).length;
-
 
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
@@ -113,34 +110,19 @@ const useTestLogic = (): UseTestLogicReturn => {
   }, [questions, userAnswers, clearLocalStorage, overallTestStartTime]);
 
   const handleNextQuestion = useCallback(() => {
-    const currentQuestion = questions[currentQuestionIndex];
+    // Здесь мы больше не добавляем "пустой" ответ, так как handleAnswerSelect теперь
+    // гарантирует, что ответ (даже если null) будет добавлен перед вызовом handleNextQuestion.
     
-    // Проверяем, был ли ответ на текущий вопрос. Если нет, добавляем его как неотвеченный.
-    // Это важно, чтобы все вопросы попадали в userAnswers перед calculateTestResult.
-    if (currentQuestion && !userAnswers.find(ua => ua.questionId === currentQuestion.id)) {
-      setUserAnswers(prevAnswers => {
-        const timeSpent = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
-        return [...prevAnswers, {
-          questionId: currentQuestion.id,
-          selectedOptionId: null, // Ответ не выбран
-          isCorrect: false, // Неотвеченные вопросы считаются неверными для подсчета isCorrect
-          timeSpent: timeSpent,
-        }];
-      });
-    }
-    
-    // Для последней страницы теста, вызываем calculateTestResult
     if (currentQuestionIndex === questions.length - 1) {
-      // Здесь нет необходимости в колбэке setUserAnswers,
-      // так как calculateTestResult и так будет вызван с актуальными userAnswers
-      // из замыкания useCallback после обновления состояния.
+      // Это последний вопрос, завершаем тест
       calculateTestResult(); 
     } else {
+      // Переходим к следующему вопросу
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       questionStartTimeRef.current = Date.now();
       setRemainingTime(questions[currentQuestionIndex + 1]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     }
-  }, [currentQuestionIndex, questions, userAnswers, calculateTestResult]); // userAnswers должны быть в зависимостях
+  }, [currentQuestionIndex, questions, calculateTestResult]);
 
   const handlePreviousQuestion = useCallback(() => {
     if (currentQuestionIndex > 0) {
@@ -166,22 +148,28 @@ const useTestLogic = (): UseTestLogicReturn => {
       timeSpent: timeSpent,
     };
 
+    // ГЛАВНОЕ ИЗМЕНЕНИЕ: Используем функциональное обновление состояния setUserAnswers
+    // и вызываем handleNextQuestion как колбэк (второй аргумент)
     setUserAnswers((prevAnswers) => {
       const existingAnswerIndex = prevAnswers.findIndex(
         (answer) => answer.questionId === questionId
       );
 
+      let updatedAnswers;
       if (existingAnswerIndex > -1) {
-        const updatedAnswers = [...prevAnswers];
+        updatedAnswers = [...prevAnswers];
         updatedAnswers[existingAnswerIndex] = newAnswer;
-        return updatedAnswers;
       } else {
-        return [...prevAnswers, newAnswer];
+        updatedAnswers = [...prevAnswers, newAnswer];
       }
+      return updatedAnswers;
     });
-    // handleNextQuestion() удален отсюда. Переход к следующему вопросу
-    // теперь инициируется через кнопку "Далее" в QuestionRenderer.
-  }, [questions]);
+
+    // Теперь handleNextQuestion вызывается после того, как setUserAnswers завершит обновление состояния.
+    // Это гарантирует, что userAnswers в handleNextQuestion будет актуальным.
+    handleNextQuestion(); 
+
+  }, [questions, handleNextQuestion]); // handleNextQuestion теперь в зависимостях
 
   const startNewTest = useCallback(() => {
     console.log('startNewTest: Запуск нового теста.');
@@ -212,7 +200,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
-    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME); // Исправлено
+    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
     const loadedQuestions = generateQuestions();
     setQuestions(loadedQuestions);
@@ -225,11 +213,6 @@ const useTestLogic = (): UseTestLogicReturn => {
 
         const initialQuestionsCheck = generateQuestions();
 
-        console.log('useEffect (showResumeOption): savedAnswers:', savedAnswers ? 'есть' : 'нет', '(Значение:', savedAnswers, ')');
-        console.log('useEffect (showResumeOption): savedIndex:', savedIndex ? 'есть' : 'нет', '(Значение:', savedIndex, ')');
-        console.log('useEffect (showResumeOption): savedTestStarted:', savedTestStarted);
-        console.log('useEffect (showResumeOption): savedOverallTestStartTime:', savedOverallTestStartTime ? 'есть' : 'нет', '(Значение:', savedOverallTestStartTime, ')');
-
         const hasAllKeys = savedAnswers && savedIndex && savedTestStarted && savedOverallTestStartTime;
         if (!hasAllKeys) {
           console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) НЕ ВЫПОЛНЕНО.** Отсутствуют необходимые данные для возобновления теста (один или более ключей отсутствуют/null).');
@@ -238,10 +221,6 @@ const useTestLogic = (): UseTestLogicReturn => {
         }
 
         const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length && parsedIndex >= 0;
-        console.log('useEffect (showResumeOption): parsedAnswers.length:', parsedAnswers.length);
-        console.log('useEffect (showResumeOption): parsedIndex (parseInt):', parsedIndex);
-        console.log('useEffect (showResumeOption): initialQuestionsCheck.length (from generateQuestions):', initialQuestionsCheck.length);
-        console.log('useEffect (showResumeOption): isIndexValid (!isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length):', isIndexValid);
 
         if (hasAllKeys && isIndexValid) {
           setUserAnswers(parsedAnswers);
@@ -300,22 +279,11 @@ const useTestLogic = (): UseTestLogicReturn => {
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
-    // Исправлена опечатка здесь
     const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
     const initialQuestionsCheck = generateQuestions();
 
-    console.log('useEffect (showResumeOption): savedAnswers:', savedAnswers ? 'есть' : 'нет', '(Значение:', savedAnswers, ')');
-    console.log('useEffect (showResumeOption): savedIndex:', savedIndex ? 'есть' : 'нет', '(Значение:', savedIndex, ')');
-    console.log('useEffect (showResumeOption): savedTestStarted:', savedTestStarted);
-    console.log('useEffect (showResumeOption): savedOverallTestStartTime:', savedOverallTestStartTime ? 'есть' : 'нет', '(Значение:', savedOverallTestStartTime, ')');
-
     const hasAllKeys = savedAnswers && savedIndex && savedTestStarted && savedOverallTestStartTime;
-    if (!hasAllKeys) {
-      console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) НЕ ВЫПОЛНЕНО.** Отсутствуют необходимые данные для возобновления теста (один или более ключей отсутствуют/null).');
-    } else {
-      console.log('useEffect (showResumeOption): **Условие 1 (наличие всех ключей) ВЫПОЛНЕНО.**');
-    }
 
     let parsedIndex = -1;
     try {
@@ -327,11 +295,6 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
 
     const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length && parsedIndex >= 0;
-    console.log('useEffect (showResumeOption): parsedAnswers.length:', (savedAnswers ? JSON.parse(savedAnswers).length : 'N/A'));
-    console.log('useEffect (showResumeOption): parsedIndex (parseInt):', parsedIndex);
-    console.log('useEffect (showResumeOption): initialQuestionsCheck.length (from generateQuestions):', initialQuestionsCheck.length);
-    console.log('useEffect (showResumeOption): isIndexValid (!isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length):', isIndexValid);
-
 
     if (hasAllKeys && isIndexValid) {
       console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) ВЫПОЛНЕНО.** shouldShowResume = true.');
@@ -342,7 +305,7 @@ const useTestLogic = (): UseTestLogicReturn => {
       if (savedTestStarted === 'true') {
         clearLocalStorage();
         setTestStarted(false);
-        setQuestions(generateQuestions());
+        setQuestions(generateQuestions()); // Перегенерируем вопросы, если данные были некорректны
       }
     }
     console.log('useEffect (showResumeOption): -- Завершение выполнения эффекта. Итоговое showResumeOption:', hasAllKeys && isIndexValid, '--');
@@ -359,11 +322,9 @@ const useTestLogic = (): UseTestLogicReturn => {
       setRemainingTime((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          if (currentQuestionIndex < questions.length - 1) {
-            handleNextQuestion();
-          } else {
-            calculateTestResult();
-          }
+          // Здесь также вызываем handleNextQuestion, чтобы сохранить ответ
+          // и перейти к следующему вопросу или завершить тест
+          handleNextQuestion(); 
           return 0;
         }
         return prevTime - 1;
@@ -371,7 +332,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [testStarted, testFinished, remainingTime, currentQuestionIndex, questions, handleNextQuestion, calculateTestResult]);
+  }, [testStarted, testFinished, remainingTime, handleNextQuestion]); // Добавили handleNextQuestion в зависимости
 
   // Эффект для сохранения прогресса в localStorage
   useEffect(() => {
@@ -388,7 +349,7 @@ const useTestLogic = (): UseTestLogicReturn => {
   }, [userAnswers, currentQuestionIndex, testStarted, testFinished]);
 
   // Расчет процента выполнения теста
-  const progressPercentage = questions.length > 0 ? (currentQuestionIndex / questions.length) * 100 : 0;
+  const progressPercentage = questions.length > 0 ? ((currentQuestionIndex) / questions.length) * 100 : 0;
 
   return {
     currentQuestionIndex,
