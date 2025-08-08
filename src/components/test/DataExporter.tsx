@@ -1,66 +1,130 @@
+// src/components/test/DataExporter.tsx
+
 import React from 'react';
-import { TestResult, Question, UserAnswer } from '../../types/test.d'; // Обновленный импорт для Question, UserAnswer
-import { exportToCsv, exportToXlsx } from '../../utils/exportUtils'; // Импортируем функции экспорта CSV/XLSX
+import * as XLSX from 'xlsx';
+import { TestResult, Question, UserAnswer } from '../../types/test.d';
 
 interface DataExporterProps {
-  testResult: TestResult | null; // Может быть null
-  questions: Question[]; // ВОЗВРАЩЕНО: для соответствия ResultDetailView
-  userAnswers: UserAnswer[]; // ВОЗВРАЩЕНО: для соответствия ResultDetailView
+  testResult: TestResult;
+  questions: Question[];
+  userAnswers: UserAnswer[];
+  buttonClassNamesCsv?: string; // Новый пропс для классов кнопки CSV
+  buttonClassNamesXlsx?: string; // Новый пропс для классов кнопки XLSX
 }
 
-const DataExporter: React.FC<DataExporterProps> = ({ testResult, questions, userAnswers }) => { 
-  // Примечание: questions и userAnswers не деструктурируются, так как они не используются здесь напрямую,
-  // но важно, что они передаются, если exportUtils их требует.
-  const fileName = `hrbp_test_results_${new Date().toISOString().slice(0,10)}`;
+const DataExporter: React.FC<DataExporterProps> = ({ testResult, questions, userAnswers, buttonClassNamesCsv, buttonClassNamesXlsx }) => {
+  const exportToCSV = () => {
+    // ... (ваш существующий код для экспорта в CSV) ...
+    const csvData = [
+      ["HRBP Тест - Результаты"],
+      ["Дата:", new Date().toLocaleDateString()],
+      ["Всего вопросов:", testResult.totalQuestions],
+      ["Правильных ответов:", testResult.correctAnswers],
+      ["Неправильных ответов:", testResult.incorrectAnswers],
+      ["Без ответа:", testResult.unanswered],
+      ["Итоговый балл:", `${testResult.scorePercentage.toFixed(2)}%`],
+      [], // Пустая строка для разделения
+      ["ID Вопроса", "Вопрос", "Тип", "Сложность", "Ваш Ответ", "Правильный Ответ", "Верно/Неверно", "Объяснение", "Рекомендации по развитию"],
+    ];
+
+    testResult.answers.forEach(answerDetail => {
+      const question = questions.find(q => q.id === answerDetail.question.id) || answerDetail.question;
+      const userAnswer = userAnswers.find(ua => ua.questionId === question.id);
+
+      const userAnswerText = userAnswer && userAnswer.selectedOptionId
+        ? question.options.find(opt => opt.id === userAnswer.selectedOptionId)?.text || 'Не выбран'
+        : 'Не отвечено';
+      
+      const correctOptionText = question.options.find(opt => opt.id === question.correctAnswer)?.text || 'N/A';
+      
+      const isCorrect = userAnswer ? (userAnswer.isCorrect ? "Верно" : "Неверно") : "Без ответа";
+
+      csvData.push([
+        question.id,
+        question.text,
+        question.type,
+        question.level,
+        userAnswerText,
+        correctOptionText,
+        isCorrect,
+        question.explanation || '',
+        question.developmentRecommendation || '',
+      ]);
+    });
+
+    const csvContent = csvData.map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', 'HRBP_Test_Results.csv');
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  };
+
+  const exportToXLSX = () => {
+    // ... (ваш существующий код для экспорта в XLSX) ...
+    const worksheetData = [
+      ["HRBP Тест - Результаты"],
+      ["Дата:", new Date().toLocaleDateString()],
+      ["Всего вопросов:", testResult.totalQuestions],
+      ["Правильных ответов:", testResult.correctAnswers],
+      ["Неправильных ответов:", testResult.incorrectAnswers],
+      ["Без от ответа:", testResult.unanswered],
+      ["Итоговый балл:", `${testResult.scorePercentage.toFixed(2)}%`],
+      [], // Пустая строка для разделения
+      ["ID Вопроса", "Вопрос", "Тип", "Сложность", "Ваш Ответ", "Правильный Ответ", "Верно/Неверно", "Объяснение", "Рекомендации по развитию", "Источники", "Дополнительные ресурсы"],
+    ];
+
+    testResult.answers.forEach(answerDetail => {
+      const question = questions.find(q => q.id === answerDetail.question.id) || answerDetail.question;
+      const userAnswer = userAnswers.find(ua => ua.questionId === question.id);
+
+      const userAnswerText = userAnswer && userAnswer.selectedOptionId
+        ? question.options.find(opt => opt.id === userAnswer.selectedOptionId)?.text || 'Не выбран'
+        : 'Не отвечено';
+      
+      const correctOptionText = question.options.find(opt => opt.id === question.correctAnswer)?.text || 'N/A';
+      
+      const isCorrect = userAnswer ? (userAnswer.isCorrect ? "Верно" : "Неверно") : "Без ответа";
+
+      const sourcesText = question.sources ? question.sources.map(s => typeof s === 'string' ? s : s.title).join('; ') : '';
+      const additionalResourcesText = question.additionalResources ? question.additionalResources.map(ar => ar.title).join('; ') : '';
+
+      worksheetData.push([
+        question.id,
+        question.text,
+        question.type,
+        question.level,
+        userAnswerText,
+        correctOptionText,
+        isCorrect,
+        question.explanation || '',
+        question.developmentRecommendation || '',
+        sourcesText,
+        additionalResourcesText,
+      ]);
+    });
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(worksheetData);
+    XLSX.utils.book_append_sheet(wb, ws, "Результаты Теста");
+    XLSX.writeFile(wb, "HRBP_Test_Results.xlsx");
+  };
 
   return (
-    <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 font-sans">
-      <button
-        onClick={() => {
-          if (testResult) {
-            // Предполагаем, что exportToCsv и exportToXlsx могут использовать questions и userAnswers
-            // Если нет, то их можно удалить из пропсов DataExporterProps
-            exportToCsv(testResult, fileName); 
-          } else {
-            alert('Нет данных для экспорта. Пожалуйста, сначала пройдите тест.');
-          }
-        }}
-        disabled={!testResult}
-        className={`
-          py-3 px-8 rounded-full font-bold text-lg text-bauhaus-white
-          transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl
-          focus:outline-none focus:ring-4 focus:ring-opacity-75
-          ${testResult
-            ? 'bg-bauhaus-blue hover:bg-blue-700 focus:ring-bauhaus-blue' // Активный: Синий Баухаус
-            : 'bg-bauhaus-dark-gray text-bauhaus-gray cursor-not-allowed opacity-70' // Неактивный: Темно-серый Баухаус
-          }
-        `}
-      >
+    <>
+      <button onClick={exportToCSV} className={buttonClassNamesCsv}> {/* ИСПОЛЬЗУЕМ НОВЫЙ ПРОПС */}
         Экспорт в CSV
       </button>
-
-      <button
-        onClick={() => {
-          if (testResult) {
-            exportToXlsx(testResult, fileName);
-          } else {
-            alert('Нет данных для экспорта. Пожалуйста, сначала пройдите тест.');
-          }
-        }}
-        disabled={!testResult}
-        className={`
-          py-3 px-8 rounded-full font-bold text-lg text-bauhaus-white
-          transition duration-300 ease-in-out transform hover:scale-105 shadow-lg hover:shadow-xl
-          focus:outline-none focus:ring-4 focus:ring-opacity-75
-          ${testResult
-            ? 'bg-bauhaus-red hover:bg-red-700 focus:ring-bauhaus-red' // Активный: Красный Баухаус
-            : 'bg-bauhaus-dark-gray text-bauhaus-gray cursor-not-allowed opacity-70' // Неактивный: Темно-серый Баухаус
-          }
-        `}
-      >
+      <button onClick={exportToXLSX} className={buttonClassNamesXlsx}> {/* ИСПОЛЬЗУЕМ НОВЫЙ ПРОПС */}
         Экспорт в XLSX
       </button>
-    </div>
+    </>
   );
 };
 
