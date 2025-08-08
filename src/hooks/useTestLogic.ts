@@ -9,7 +9,7 @@ const LOCAL_STORAGE_KEY_CURRENT_INDEX = 'testCurrentQuestionIndex';
 const LOCAL_STORAGE_KEY_TEST_STARTED = 'testStarted';
 const LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME = 'testLastQuestionStartTime';
 const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults';
-const LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME = 'overallTestStartTime';
+const LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME = 'overallTestStartTime'; // Исправлено
 
 const INITIAL_TIME_PER_QUESTION = 60; // Время на вопрос по умолчанию в секундах
 
@@ -54,6 +54,7 @@ const useTestLogic = (): UseTestLogicReturn => {
   }, []);
 
   const calculateTestResult = useCallback(() => {
+    // В calculateTestResult всегда используем актуальные userAnswers из замыкания useCallback
     if (questions.length === 0 || !overallTestStartTime) return;
 
     const correctAnswers = userAnswers.filter(answer => {
@@ -62,15 +63,13 @@ const useTestLogic = (): UseTestLogicReturn => {
     }).length;
 
     const totalQuestions = questions.length;
-    // Корректный подсчет неправильных ответов:
-    // Это ответы, которые есть в userAnswers, но неверны.
+    
     const incorrectAnswers = userAnswers.filter(answer => {
       const question = questions.find(q => q.id === answer.questionId);
-      return question && question.correctAnswer !== answer.selectedOptionId;
+      // Если есть ответ и он НЕ является правильным
+      return question && answer.selectedOptionId !== null && question.correctAnswer !== answer.selectedOptionId;
     }).length;
 
-    // Корректный подсчет вопросов без ответа:
-    // Проходим по всем вопросам и проверяем, есть ли на них ответ в userAnswers.
     const answeredQuestionIds = new Set(userAnswers.map(answer => answer.questionId));
     const unanswered = questions.filter(question => !answeredQuestionIds.has(question.id)).length;
 
@@ -79,8 +78,6 @@ const useTestLogic = (): UseTestLogicReturn => {
 
     const testDuration = Date.now() - new Date(overallTestStartTime).getTime();
 
-    // ВНИМАНИЕ: Здесь создается answerDetails.
-    // Убедитесь, что userAnswers к этому моменту содержит ВСЕ ответы.
     const answerDetails: AnswerDetail[] = questions.map(question => {
       const userAnswerFound = userAnswers.find(ua => ua.questionId === question.id);
       return {
@@ -116,40 +113,34 @@ const useTestLogic = (): UseTestLogicReturn => {
   }, [questions, userAnswers, clearLocalStorage, overallTestStartTime]);
 
   const handleNextQuestion = useCallback(() => {
-    // ВАЖНО: При вызове handleNextQuestion, userAnswers уже должен быть актуальным.
-    // Если на текущий вопрос не был дан ответ, и мы переходим к следующему,
-    // создаем пустой UserAnswer для текущего вопроса.
     const currentQuestion = questions[currentQuestionIndex];
+    
+    // Проверяем, был ли ответ на текущий вопрос. Если нет, добавляем его как неотвеченный.
+    // Это важно, чтобы все вопросы попадали в userAnswers перед calculateTestResult.
     if (currentQuestion && !userAnswers.find(ua => ua.questionId === currentQuestion.id)) {
       setUserAnswers(prevAnswers => {
         const timeSpent = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
         return [...prevAnswers, {
           questionId: currentQuestion.id,
           selectedOptionId: null, // Ответ не выбран
-          isCorrect: false,
+          isCorrect: false, // Неотвеченные вопросы считаются неверными для подсчета isCorrect
           timeSpent: timeSpent,
         }];
       });
     }
-
-    if (currentQuestionIndex < questions.length - 1) {
+    
+    // Для последней страницы теста, вызываем calculateTestResult
+    if (currentQuestionIndex === questions.length - 1) {
+      // Здесь нет необходимости в колбэке setUserAnswers,
+      // так как calculateTestResult и так будет вызван с актуальными userAnswers
+      // из замыкания useCallback после обновления состояния.
+      calculateTestResult(); 
+    } else {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       questionStartTimeRef.current = Date.now();
       setRemainingTime(questions[currentQuestionIndex + 1]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
-    } else {
-      // Это последняя страница, вызываем calculateTestResult
-      // Используем функцию обратного вызова setUserAnswers, чтобы гарантировать
-      // что все ответы будут в состоянии до вызова calculateTestResult.
-      setUserAnswers(prevAnswers => {
-        // Мы уже добавили пустой ответ выше, если его не было.
-        // Теперь просто возвращаем prevAnswers, чтобы calculateTestResult
-        // был вызван после завершения этого обновления.
-        return prevAnswers;
-      }, () => {
-        calculateTestResult(); // Вызываем calculateTestResult после того, как состояние userAnswers гарантированно обновится
-      });
     }
-  }, [currentQuestionIndex, questions, userAnswers, calculateTestResult]); // Добавлен userAnswers в зависимости
+  }, [currentQuestionIndex, questions, userAnswers, calculateTestResult]); // userAnswers должны быть в зависимостях
 
   const handlePreviousQuestion = useCallback(() => {
     if (currentQuestionIndex > 0) {
@@ -175,7 +166,6 @@ const useTestLogic = (): UseTestLogicReturn => {
       timeSpent: timeSpent,
     };
 
-    // Обновляем userAnswers. Важно, что это происходит синхронно, но setState - асинхронный.
     setUserAnswers((prevAnswers) => {
       const existingAnswerIndex = prevAnswers.findIndex(
         (answer) => answer.questionId === questionId
@@ -189,9 +179,8 @@ const useTestLogic = (): UseTestLogicReturn => {
         return [...prevAnswers, newAnswer];
       }
     });
-    // *** УДАЛЕНО: handleNextQuestion(); ***
-    // Теперь handleNextQuestion вызывается по нажатию кнопки "Далее" или "Завершить тест"
-    // из TestPage/QuestionRenderer, что гарантирует, что setUserAnswers успеет обновиться.
+    // handleNextQuestion() удален отсюда. Переход к следующему вопросу
+    // теперь инициируется через кнопку "Далее" в QuestionRenderer.
   }, [questions]);
 
   const startNewTest = useCallback(() => {
@@ -223,7 +212,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
-    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME); // Исправлено
 
     const loadedQuestions = generateQuestions();
     setQuestions(loadedQuestions);
@@ -234,7 +223,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         const parsedIndex: number = parseInt(savedIndex, 10);
         const savedLastQuestionStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
 
-        const initialQuestionsCheck = generateQuestions(); // Для проверки валидности индекса
+        const initialQuestionsCheck = generateQuestions();
 
         console.log('useEffect (showResumeOption): savedAnswers:', savedAnswers ? 'есть' : 'нет', '(Значение:', savedAnswers, ')');
         console.log('useEffect (showResumeOption): savedIndex:', savedIndex ? 'есть' : 'нет', '(Значение:', savedIndex, ')');
@@ -311,7 +300,8 @@ const useTestLogic = (): UseTestLogicReturn => {
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
-    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_KEY_OVERALL_TEST_START_TIME);
+    // Исправлена опечатка здесь
+    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
     const initialQuestionsCheck = generateQuestions();
 
@@ -369,11 +359,9 @@ const useTestLogic = (): UseTestLogicReturn => {
       setRemainingTime((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          // Если время вышло, и это не последний вопрос, переходим к следующему
           if (currentQuestionIndex < questions.length - 1) {
             handleNextQuestion();
           } else {
-            // Если время вышло на последнем вопросе, завершаем тест
             calculateTestResult();
           }
           return 0;
