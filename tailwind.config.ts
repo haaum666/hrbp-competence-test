@@ -4,51 +4,37 @@ import type { Config } from 'tailwindcss';
 const config: Config = {
   content: [
     "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}", // Расширения уже исправлены на jsx,tsx
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       fontFamily: {
-        // Указываем основной шрифт Inter
         sans: ['Inter', 'sans-serif'],
-        // Указываем шрифт Montserrat для заголовков
         heading: ['Montserrat', 'sans-serif'],
       },
       colors: {
-        // --- Новая Цветовая Палитра ---
-        // Эти цвета будут использоваться Tailwind CSS классами (например, bg-background-card)
+        // --- Цветовая Палитра, синхронизированная с index.css ---
+        // Эти цвета будут доступны как Tailwind-классы (например, bg-primary-background)
 
-        // Фон и основные элементы
-        'background-light-beige': '#28486e', // Новый цвет фона страницы (темный сине-зеленый)
-        'background-card': '#e1b183',       // Новый цвет для карточек/блоков и теперь для шапки
-        // Цвет для шапки будет браться из 'background-card'
+        'primary-background': '#28486e', // var(--color-background)
+        'card-background': '#fadeb1',    // var(--color-background-card)
+        
+        'text-main': '#3A4232',        // var(--color-text-primary)
+        'text-secondary-light': '#6E7766', // var(--color-text-secondary)
+        'neutral-light': '#FFF5E0',      // var(--color-neutral)
 
-        // Цвета текста
-        'text-primary': '#3A4232',           // Темный, землистый зелено-коричневый для основного текста
-        'text-secondary': '#6E7766',         // Приглушенный средне-серо-зеленый для вторичного текста
-
-        // Акцентные цвета
-        'accent-primary': '#67A1BF',         // Приглушенный синий (для прогресса, выбранных опций)
-        'accent-secondary': '#A3C690',       // Светлый оливково-зеленый (для кнопок "Next", "Start" - основной акцент)
-
-        // Состояния
-        'success': '#A3C690',                // Такой же оливково-зеленый для правильных ответов
-        'error': '#E07A5F',                  // Приглушенный оранжево-красный (для неправильных ответов и "Завершить тест")
-        'neutral': '#C8C8BC',                // Серо-бежевый для неактивных/нейтральных элементов, кнопок "Back"
-
-        // Цвета кнопок и текста на них
-        'button-start-test-bg': '#e1b183',   // **ОБНОВЛЕНО:** Фон кнопки "Начать Тест" теперь как у карточек/шапки
-        'button-start-test-text': '#3A4232', // **ОБНОВЛЕНО:** Текст на кнопке "Начать Тест" теперь темный
-        'button-text-dark': '#3A4232',       // Темный текст для других кнопок (напр. нейтральных)
-
-        // Другие элементы
-        'option-border': '#A3C690',          // Граница для неотмеченных опций
+        'accent-blue-green': '#67A1BF', // var(--color-accent-primary)
+        'accent-olive': '#A3C690',     // var(--color-accent-secondary)
+        
+        'status-error': '#E07A5F',     // var(--color-error)
+        'status-success': '#A3C690',   // var(--color-success) - такой же как accent-olive
+        'status-warning': '#f7b32b',   // var(--color-warning)
 
         // Цвета для уровней сложности вопросов
-        'level-junior': '#67A1BF',           // Приглушенный синий
-        'level-middle': '#A3C690',           // Светлый оливково-зеленый
-        'level-senior': '#E07A5F',           // Приглушенный оранжево-красный
-        'level-default': '#6E7766',          // Приглушенный средне-серый/зеленый
+        'level-junior': '#67A1BF',
+        'level-middle': '#A3C690',
+        'level-senior': '#E07A5F',
+        'level-default': '#6E7766',
       },
     },
   },
