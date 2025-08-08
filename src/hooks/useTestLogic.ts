@@ -11,6 +11,8 @@ const LOCAL_STORAGE_KEY_TEST_STARTED = 'testStarted';
 const LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME = 'testLastQuestionStartTime';
 const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults';
 const LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME = 'overallTestStartTime';
+const LOCAL_STORAGE_KEY_FINISHED_ANSWERS = 'testFinishedUserAnswers'; 
+const LOCAL_STORAGE_KEY_LAST_TEST_RESULT = 'lastTestResult'; // Новая константа для последнего результата теста
 
 const INITIAL_TIME_PER_QUESTION = 60; // Время на вопрос по умолчанию в секундах
 
@@ -52,10 +54,15 @@ const useTestLogic = (): UseTestLogicReturn => {
     localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
     localStorage.removeItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS); // Очищаем и новый ключ
+    localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT); // Очищаем ключ с последним результатом
   }, []);
 
   const calculateTestResult = useCallback(() => {
     if (questions.length === 0 || !overallTestStartTime) return;
+
+    // Сначала сохраняем userAnswers для детального просмотра
+    localStorage.setItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS, JSON.stringify(userAnswers)); 
 
     const correctAnswers = userAnswers.filter(answer => {
       const question = questions.find(q => q.id === answer.questionId);
@@ -101,6 +108,9 @@ const useTestLogic = (): UseTestLogicReturn => {
     const allResults = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS) || '[]') as TestResult[];
     allResults.push(finalResult);
     localStorage.setItem(LOCAL_STORAGE_KEY_ALL_RESULTS, JSON.stringify(allResults));
+
+    // Сохраняем последний testResult
+    localStorage.setItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT, JSON.stringify(finalResult)); 
 
     setTestResult(finalResult);
     setTestFinished(true);
@@ -181,7 +191,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     console.log('useTestLogic: testStarted установлен в TRUE (из startNewTest)');
     localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
     localStorage.setItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME, Date.now().toString());
-    questionStartTimeRef.current = Date.now(); // <-- ИЗМЕНЕНИЕ ЗДЕСЬ: БЫЛО Date.24, СТАЛО Date.now()
+    questionStartTimeRef.current = Date.now();
     setRemainingTime(newQuestions[0]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     console.log('startNewTest: Новый тест успешно инициализирован и сохранен в localStorage.');
   }, [clearLocalStorage]);
@@ -270,6 +280,8 @@ const useTestLogic = (): UseTestLogicReturn => {
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+    const savedFinishedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS);
+    const savedLastTestResult = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT); 
 
     const initialQuestionsCheck = generateQuestions();
 
@@ -286,6 +298,33 @@ const useTestLogic = (): UseTestLogicReturn => {
 
     const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length && parsedIndex >= 0;
 
+    // Если тест был завершен ранее, загружаем сохраненные ответы и результат для аналитики
+    if (savedFinishedAnswers && savedLastTestResult && !testStarted && !testFinished) { 
+      try {
+        const parsedFinishedAnswers: UserAnswer[] = JSON.parse(savedFinishedAnswers);
+        const parsedLastTestResult: TestResult = JSON.parse(savedLastTestResult); 
+
+        setUserAnswers(parsedFinishedAnswers);
+        setTestResult(parsedLastTestResult); 
+        setTestFinished(true); 
+        console.log('useEffect (инициализация/возобновление): Загружены ответы и результат завершенного теста.');
+        
+        // Очищаем временные ключи, так как тест завершен и отображается результат
+        localStorage.removeItem(LOCAL_STORAGE_KEY_ANSWERS);
+        localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+        localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
+        localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
+        localStorage.removeItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+        setShowResumeOption(false); // Скрываем опцию "продолжить"
+      } catch (e) {
+        console.error('Ошибка парсинга сохраненных результатов завершенного теста:', e);
+        // Очищаем все, если данные некорректны
+        localStorage.removeItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS);
+        localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT);
+        clearLocalStorage(); // Очищаем также и другие ключи, чтобы избежать путаницы
+      }
+    }
+
     if (hasAllKeys && isIndexValid) {
       console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) ВЫПОЛНЕНО.** shouldShowResume = true.');
       setShowResumeOption(true);
@@ -300,7 +339,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
     console.log('useEffect (showResumeOption): -- Завершение выполнения эффекта. Итоговое showResumeOption:', hasAllKeys && isIndexValid, '--');
 
-  }, [clearLocalStorage]);
+  }, [clearLocalStorage, testStarted, testFinished]); 
 
   useEffect(() => {
     if (!testStarted || testFinished) {
