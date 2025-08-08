@@ -52,7 +52,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       {/* Сводка результатов */}
       <div
         className="text-lg space-y-2 mb-8 p-4 rounded-lg shadow-inner
-                   bg-card-background text-text-main border border-neutral-light shadow-[2px_2px_0px_0px_var(--color-neutral)]" // ИЗМЕНЕНО: bg-card-background вместо bg-primary-background
+                   bg-card-background text-text-main border border-neutral-light shadow-[2px_2px_0px_0px_var(--color-neutral)]"
       >
         <p className="text-text-main">Всего вопросов: <span className="font-semibold text-text-main">{totalQuestions}</span></p>
         <p className="text-text-main">Правильных ответов: <span className="font-semibold text-accent-blue-green">{correctAnswers}</span></p>
@@ -61,12 +61,15 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
         <p className="text-2xl sm:text-3xl pt-4 border-t border-neutral-light mt-4 text-text-main">Итоговый балл: <span className="font-extrabold text-accent-blue-green">{scorePercentage.toFixed(2)}%</span></p>
       </div>
 
-      {/* Кнопка экспорта данных */}
-      <div className="flex justify-center mb-8">
+      {/* Кнопки экспорта данных */}
+      <div className="flex justify-center mb-8 space-x-4"> {/* Добавлен space-x-4 для отступа между кнопками */}
         <DataExporter
           testResult={testResult}
           questions={questions}
           userAnswers={userAnswers}
+          // Передача кастомных стилей для кнопок экспорта
+          buttonClassNamesCsv="py-3 px-8 rounded-full font-bold text-lg text-neutral-light bg-accent-blue-green shadow-lg hover:bg-primary-background transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+          buttonClassNamesXlsx="py-3 px-8 rounded-full font-bold text-lg text-text-main bg-card-background shadow-lg hover:bg-neutral-light transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
         />
       </div>
 
