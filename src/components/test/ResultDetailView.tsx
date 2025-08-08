@@ -115,21 +115,24 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
               {selectedOptionText !== 'Не отвечено' && (
                 <p className="text-sm sm:text-base text-text-secondary-light">
-                  Ваш ответ: <span className={`font-normal ${isCorrect ? 'text-accent-blue-green' : 'text-status-error'}`}>{selectedOptionText}</span>
+                  Ваш ответ: <span className="font-normal" style={{ color: isCorrect ? '#2ECC71' : '#FF4136' }}>{selectedOptionText}</span>
                 </p>
               )}
 
               {finalQuestionData.type === 'multiple-choice' && correctOptionText !== 'N/A' && (
                 <p className="text-sm sm:text-base text-text-secondary-light">
-                  Правильный ответ: <span className="font-normal text-accent-olive">{correctOptionText}</span>
+                  Правильный ответ: <span className="font-normal" style={{ color: '#00BFFF' }}>{correctOptionText}</span>
                 </p>
               )}
+
+              {/* Дополнительный блок для case-study, если вопрос такого типа */}
               {finalQuestionData.type === 'case-study' && (
                 <p className="text-sm sm:text-base text-text-secondary-light">
                   Этот вопрос не предполагает выбора из вариантов.
                 </p>
               )}
 
+              {/* Объяснение вопроса */}
               {finalQuestionData.explanation && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
@@ -139,6 +142,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 </div>
               )}
 
+              {/* Детали неверных/менее подходящих вариантов */}
               {finalQuestionData.explanationDetails && finalQuestionData.explanationDetails.length > 0 && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
@@ -155,6 +159,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 </div>
               )}
 
+              {/* Рекомендации по развитию компетенции */}
               {finalQuestionData.developmentRecommendation && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
@@ -167,8 +172,6 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
           );
         })}
       </div>
-
-     
     </div>
   );
 };
