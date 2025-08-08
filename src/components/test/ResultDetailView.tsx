@@ -52,11 +52,8 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       {/* Сводка результатов */}
       <div
         className="text-lg space-y-2 mb-8 p-4 rounded-lg shadow-inner
-                   bg-primary-background border border-neutral-light shadow-[2px_2px_0px_0px_var(--color-neutral)]"
-        // УДАЛЕНО: style={{ background-color: rgb(44, 62, 80); }} и другие инлайн-стили, которые перебивали Tailwind
-        // Эти стили теперь будут применяться через Tailwind-классы выше
+                   bg-card-background text-text-main border border-neutral-light shadow-[2px_2px_0px_0px_var(--color-neutral)]" // ИЗМЕНЕНО: bg-card-background вместо bg-primary-background
       >
-        {/* УДАЛЕНО: инлайн style={{ color: '...' }} из p и span */}
         <p className="text-text-main">Всего вопросов: <span className="font-semibold text-text-main">{totalQuestions}</span></p>
         <p className="text-text-main">Правильных ответов: <span className="font-semibold text-accent-blue-green">{correctAnswers}</span></p>
         <p className="text-text-main">Неправильных ответов: <span className="font-semibold text-status-error">{incorrectAnswers}</span></p>
@@ -207,7 +204,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                     {finalQuestionData.additionalResources.map((resource, idx) => (
                       <li key={idx}>
                         {resource.type && <span className="font-semibold text-text-main">[{resource.type}] </span>}
-                        {resource.url ? <a href={resource.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-accent-blue-green">{resource.title}</a> : resource.url}
+                        {resource.url ? <a href={resource.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-accent-blue-green">{resource.title}</a> : resource.title}
                         {resource.description && `: ${resource.description}`}
                       </li>
                     ))}
