@@ -74,7 +74,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
 
       {/* Детали по каждому вопросу */}
       <h3 className="text-xl sm:text-2xl font-semibold mb-4 font-heading text-text-main">Разбор вопросов:</h3>
-      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-custom">
+      <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-custom"> {/* ПРОВЕРЬТЕ, что здесь стоит scrollbar-custom */}
         {answers.map((detail: AnswerDetail, index: number) => {
           const questionData = questions.find(q => q.id === detail.question.id);
           const finalQuestionData: Question = questionData || detail.question;
@@ -132,7 +132,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
               {finalQuestionData.explanation && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
-                             bg-neutral-light text-text-main border border-neutral-light shadow-inner" // ИЗМЕНЕНО: bg-neutral-light и text-text-main
+                             bg-neutral-light text-text-main border border-neutral-light shadow-inner"
                 >
                   <strong className="text-text-main">Объяснение:</strong> {finalQuestionData.explanation}
                 </div>
@@ -141,7 +141,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
               {finalQuestionData.explanationDetails && finalQuestionData.explanationDetails.length > 0 && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
-                             bg-neutral-light text-text-main border border-neutral-light shadow-inner" // ИЗМЕНЕНО: bg-neutral-light и text-text-main
+                             bg-neutral-light text-text-main border border-neutral-light shadow-inner"
                 >
                   <strong className="text-text-main block mb-2">Детали неверных/менее подходящих вариантов:</strong>
                   <ul className="list-disc list-inside space-y-1">
@@ -154,83 +154,27 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 </div>
               )}
 
-              {/* УДАЛЕНО: Блок Источники */}
-              {/*
-              {finalQuestionData.sources && finalQuestionData.sources.length > 0 && (
-                <div
-                  className="mt-3 p-3 rounded-md text-sm sm:text-base
-                             bg-primary-background text-text-secondary-light border border-neutral-light"
-                >
-                  <strong className="text-text-main block mb-2">Источники:</strong>
-                  <ul className="list-disc list-inside space-y-1">
-                    {finalQuestionData.sources.map((source, idx) => (
-                      <li key={idx}>
-                        {typeof source === 'string' ? (
-                            source.startsWith('http') ? (
-                                <a href={source} target="_blank" rel="noopener noreferrer" className="hover:underline text-accent-blue-green">
-                                    {source}
-                                </a>
-                            ) : (
-                                source
-                            )
-                        ) : (
-                            <>
-                                {source.title}
-                                {source.url && (
-                                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="hover:underline ml-1 text-accent-blue-green">
-                                        (ссылка)
-                                    </a>
-                                )}
-                            </>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              */}
-
               {finalQuestionData.developmentRecommendation && (
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic
-                             bg-neutral-light text-text-main border border-neutral-light shadow-inner" // ИЗМЕНЕНО: bg-neutral-light и text-text-main
+                             bg-neutral-light text-text-main border border-neutral-light shadow-inner"
                 >
                   <strong className="text-text-main">Рекомендации по развитию компетенции:</strong> {finalQuestionData.developmentRecommendation}
                 </div>
               )}
-
-              {/* УДАЛЕНО: Блок Дополнительные ресурсы для изучения */}
-              {/*
-              {finalQuestionData.additionalResources && finalQuestionData.additionalResources.length > 0 && (
-                <div
-                  className="mt-3 p-3 rounded-md text-sm sm:text-base
-                             bg-primary-background text-text-secondary-light border border-neutral-light"
-                >
-                  <strong className="text-text-main block mb-2">Дополнительные ресурсы для изучения:</strong>
-                  <ul className="list-disc list-inside space-y-1">
-                    {finalQuestionData.additionalResources.map((resource, idx) => (
-                      <li key={idx}>
-                        {resource.type && <span className="font-semibold text-text-main">[{resource.type}] </span>}
-                        {resource.url ? <a href={resource.url} target="_blank" rel="noopener noreferrer" className="hover:underline text-accent-blue-green">{resource.title}</a> : resource.title}
-                        {resource.description && `: ${resource.description}`}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              */}
             </div>
           );
         })}
       </div>
 
-      <div className="flex justify-center mt-8">
+      <div className="flex justify-center mt-8"> {/* УВЕЛИЧЕН отступ, чтобы кнопка "Вернуться к началу" не прилипала к нижней части */}
         <Link to="/" onClick={() => {
           localStorage.removeItem('currentTestState'); // Очищаем состояние теста
         }} className="button-primary-style inline-block text-lg shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50">
           Вернуться к началу / Пройти тест снова
         </Link>
       </div>
+      {/* УДАЛЕН БЛОК "К общим результатам" */}
     </div>
   );
 };
