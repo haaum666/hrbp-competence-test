@@ -62,16 +62,25 @@ const useTestLogic = (): UseTestLogicReturn => {
     }).length;
 
     const totalQuestions = questions.length;
+    // Корректный подсчет неправильных ответов:
+    // Это ответы, которые есть в userAnswers, но неверны.
     const incorrectAnswers = userAnswers.filter(answer => {
       const question = questions.find(q => q.id === answer.questionId);
       return question && question.correctAnswer !== answer.selectedOptionId;
     }).length;
-    const unanswered = totalQuestions - userAnswers.length;
+
+    // Корректный подсчет вопросов без ответа:
+    // Проходим по всем вопросам и проверяем, есть ли на них ответ в userAnswers.
+    const answeredQuestionIds = new Set(userAnswers.map(answer => answer.questionId));
+    const unanswered = questions.filter(question => !answeredQuestionIds.has(question.id)).length;
+
 
     const scorePercentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
     const testDuration = Date.now() - new Date(overallTestStartTime).getTime();
 
+    // ВНИМАНИЕ: Здесь создается answerDetails.
+    // Убедитесь, что userAnswers к этому моменту содержит ВСЕ ответы.
     const answerDetails: AnswerDetail[] = questions.map(question => {
       const userAnswerFound = userAnswers.find(ua => ua.questionId === question.id);
       return {
@@ -107,21 +116,45 @@ const useTestLogic = (): UseTestLogicReturn => {
   }, [questions, userAnswers, clearLocalStorage, overallTestStartTime]);
 
   const handleNextQuestion = useCallback(() => {
+    // ВАЖНО: При вызове handleNextQuestion, userAnswers уже должен быть актуальным.
+    // Если на текущий вопрос не был дан ответ, и мы переходим к следующему,
+    // создаем пустой UserAnswer для текущего вопроса.
+    const currentQuestion = questions[currentQuestionIndex];
+    if (currentQuestion && !userAnswers.find(ua => ua.questionId === currentQuestion.id)) {
+      setUserAnswers(prevAnswers => {
+        const timeSpent = Math.floor((Date.now() - questionStartTimeRef.current) / 1000);
+        return [...prevAnswers, {
+          questionId: currentQuestion.id,
+          selectedOptionId: null, // Ответ не выбран
+          isCorrect: false,
+          timeSpent: timeSpent,
+        }];
+      });
+    }
+
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
       questionStartTimeRef.current = Date.now();
-      // Убеждаемся, что следующий вопрос существует, прежде чем получить его время
       setRemainingTime(questions[currentQuestionIndex + 1]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     } else {
-      calculateTestResult();
+      // Это последняя страница, вызываем calculateTestResult
+      // Используем функцию обратного вызова setUserAnswers, чтобы гарантировать
+      // что все ответы будут в состоянии до вызова calculateTestResult.
+      setUserAnswers(prevAnswers => {
+        // Мы уже добавили пустой ответ выше, если его не было.
+        // Теперь просто возвращаем prevAnswers, чтобы calculateTestResult
+        // был вызван после завершения этого обновления.
+        return prevAnswers;
+      }, () => {
+        calculateTestResult(); // Вызываем calculateTestResult после того, как состояние userAnswers гарантированно обновится
+      });
     }
-  }, [currentQuestionIndex, questions, calculateTestResult]);
+  }, [currentQuestionIndex, questions, userAnswers, calculateTestResult]); // Добавлен userAnswers в зависимости
 
   const handlePreviousQuestion = useCallback(() => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prevIndex) => prevIndex - 1);
       questionStartTimeRef.current = Date.now(); // Сброс таймера для предыдущего вопроса
-      // Убеждаемся, что предыдущий вопрос существует, прежде чем получить его время
       setRemainingTime(questions[currentQuestionIndex - 1]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     }
   }, [currentQuestionIndex, questions]);
@@ -142,6 +175,7 @@ const useTestLogic = (): UseTestLogicReturn => {
       timeSpent: timeSpent,
     };
 
+    // Обновляем userAnswers. Важно, что это происходит синхронно, но setState - асинхронный.
     setUserAnswers((prevAnswers) => {
       const existingAnswerIndex = prevAnswers.findIndex(
         (answer) => answer.questionId === questionId
@@ -155,9 +189,10 @@ const useTestLogic = (): UseTestLogicReturn => {
         return [...prevAnswers, newAnswer];
       }
     });
-    // ВОЗВРАЩЕНО: автоматический переход к следующему вопросу после выбора ответа.
-    handleNextQuestion();
-  }, [questions, handleNextQuestion]); // handleNextQuestion теперь снова в зависимостях
+    // *** УДАЛЕНО: handleNextQuestion(); ***
+    // Теперь handleNextQuestion вызывается по нажатию кнопки "Далее" или "Завершить тест"
+    // из TestPage/QuestionRenderer, что гарантирует, что setUserAnswers успеет обновиться.
+  }, [questions]);
 
   const startNewTest = useCallback(() => {
     console.log('startNewTest: Запуск нового теста.');
@@ -276,7 +311,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
-    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+    const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_KEY_OVERALL_TEST_START_TIME);
 
     const initialQuestionsCheck = generateQuestions();
 
@@ -334,9 +369,11 @@ const useTestLogic = (): UseTestLogicReturn => {
       setRemainingTime((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
+          // Если время вышло, и это не последний вопрос, переходим к следующему
           if (currentQuestionIndex < questions.length - 1) {
             handleNextQuestion();
           } else {
+            // Если время вышло на последнем вопросе, завершаем тест
             calculateTestResult();
           }
           return 0;
