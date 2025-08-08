@@ -23,6 +23,11 @@ export interface AdditionalResource {
 
 export interface Question {
   id: string;
+  // *** ДОБАВЛЕННЫЕ/ИЗМЕНЕННЫЕ ПОЛЯ ***
+  competency?: string; // ДОБАВЛЕНО, опционально
+  hrbpLevel?: 'Junior HRBP' | 'Middle HRBP' | 'Senior HRBP'; // ДОБАВЛЕНО, опционально
+  // **********************************
+
   text: string;
   type: 'multiple-choice' | 'case-study';
   options: Option[];
