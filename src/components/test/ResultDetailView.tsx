@@ -62,14 +62,14 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       </div>
 
       {/* Кнопки экспорта данных */}
-      <div className="flex justify-center mb-8 space-x-4"> {/* Добавлен space-x-4 для отступа между кнопками */}
+      <div className="flex justify-center mb-8 space-x-4">
         <DataExporter
           testResult={testResult}
           questions={questions}
           userAnswers={userAnswers}
-          // Передача кастомных стилей для кнопок экспорта
-          buttonClassNamesCsv="py-3 px-8 rounded-full font-bold text-lg text-neutral-light bg-accent-blue-green shadow-lg hover:bg-primary-background transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
-          buttonClassNamesXlsx="py-3 px-8 rounded-full font-bold text-lg text-text-main bg-card-background shadow-lg hover:bg-neutral-light transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+          // ИЗМЕНЕНО: Классы кнопок для соответствия вашему новому запросу
+          buttonClassNamesCsv="py-3 px-8 rounded-full font-bold text-lg text-text-main bg-neutral-light shadow-lg hover:bg-accent-blue-green hover:text-neutral-light transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
+          buttonClassNamesXlsx="py-3 px-8 rounded-full font-bold text-lg text-text-main bg-neutral-light shadow-lg hover:bg-accent-blue-green hover:text-neutral-light transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
         />
       </div>
 
