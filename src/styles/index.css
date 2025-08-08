@@ -1,53 +1,149 @@
-/* src/index.css */
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+/* src/styles/index.css */
 
-/* Пользовательские переменные CSS для цветов и текстуры */
-:root {
-  --color-primary-background: #27374D; /* Темно-синий, основной фон */
-  --color-secondary-background: #526D82; /* Средний синий */
-  --color-card-background: #FFF8E1; /* Светлый бежевый/желтый, фон для карточек */
-  --color-text-main: #333333; /* Темный текст */
-  --color-text-secondary-light: #F0F0F0; /* Светлый текст */
-  --color-neutral: #C8C8C8; /* Нейтральный серый для теней/границ */
-  --color-neutral-light: #FFF5E0; /* Очень светлый бежевый/желтый */
+/* Все @import правила ДОЛЖНЫ идти в самом начале файла. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@400;700&display=swap');
 
-  --color-accent-primary: #3B82F6; /* Стандартный синий (если нужен) */
-  --color-accent-blue-green: #67A1BF; /* Голубовато-зеленый (новый акцентный цвет) */
-  --color-accent-olive: #B5C4B0; /* Оливковый/зеленоватый (для правильных ответов/акцентов) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-  --color-status-error: #EF4444; /* Красный для ошибок */
-  --color-status-warning: #F59E0B; /* Оранжевый для предупреждений */
-  --color-status-success: #22C55E; /* Зеленый для успеха (если потребуется) */
+@layer base {
+  :root {
+    /* Основные цвета новой палитры */
+    --color-background: #28486e; /* Темно-синий фон страницы */
+    --color-background-card: #fadeb1; /* Светло-бежевый для карточек, хедера, графиков */
+    
+    /* Цвета текста */
+    --color-text-primary: #3A4232; /* Темно-зеленый (основной, для заголовков, основного текста) */
+    --color-text-secondary: #6E7766; /* Приглушенный средне-серый (вторичный текст, подписи) */
+    --color-neutral: #FFF5E0; /* Очень светлый бежевый (нейтральный, для светлых границ, акцентов, текста на цветных кнопках) */
 
-  --texture-grain: url('/grain.png'); /* Путь к текстуре зерна, если есть */
+    /* Акцентные цвета */
+    --color-accent-primary: #67A1BF; /* Серо-голубой (основной акцент: кнопки, прогресс-бары, правильные ответы) */
+    --color-accent-secondary: #A3C690; /* Оливково-зеленый (вторичный акцент: средний балл, ховер-состояния) */
+    
+    /* Цвета состояний */
+    --color-error: #E07A5F; /* Оранжево-красный (для ошибок, неправильных ответов, кнопки "Очистить") */
+    --color-success: var(--color-accent-secondary); /* Используем вторичный акцент для успеха */
+    --color-warning: #f7b32b; /* Желтый (для предупреждений, если понадобится) */
+
+    /* Цвета для кнопок и элементов, используемые в компонентах */
+    /* Эти переменные привязывают поведение кнопок к основной палитре */
+    --button-primary-bg: var(--color-accent-primary);
+    --button-primary-text: var(--color-neutral);
+    --button-primary-border: var(--color-text-primary); /* Темная граница для акцентных кнопок */
+    
+    --button-secondary-bg: var(--color-neutral); /* Для кнопки "Начать новый тест" */
+    --button-secondary-text: var(--color-text-primary);
+    --button-secondary-border: var(--color-neutral); /* Светлая граница для светлых кнопок */
+
+    /* Текстуры */
+    /* Упрощенная и более производительная зернистая текстура */
+    --texture-grain: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='0.05' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v1H0V0zm2 2h1v1H2V2zm0 0h1v1H2V2zm1 1h1v1H3V3z'/%3E%3C/g%3E%3C/svg%3E");
+    /* Более плотная текстура для фона, если потребуется */
+    --texture-dense-grain: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23000' fill-opacity='0.08' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v1H0V0zm2 2h1v1H2V2zm0 0h1v1H2V2zm1 1h1v1H3V3z'/%3E%3C/g%3E%3C/svg%3E");
+    
+    --texture-grid: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 10 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236e7766' fill-opacity='0.1' fill-rule='evenodd'%3E%3Cpath d='M0 0h1v10H0V0zm9 0h1v10H9V0zM0 9h10v1H0V9z'/%3E%3C/g%3E%3C/svg%3E");
+
+  }
 }
 
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--color-primary-background); /* Основной фон приложения */
-  color: var(--color-text-main);
+  background-color: var(--color-background); /* Использовать основную переменную фона */
+  background-image: var(--texture-grain); /* Применить зернистость к телу */
+  background-size: 4px 4px;
+  background-repeat: repeat;
+  color: var(--color-text-primary);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Montserrat', sans-serif;
 }
 
-/* Base button style - для кнопок, которые не имеют специфического стиля (например, Link в шапке) */
+@keyframes blob {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+  100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+}
+
+.animate-blob {
+  animation: blob 7s infinite cubic-bezier(0.6, 0.4, 0.4, 0.8);
+}
+
+.animation-delay-2000 {
+  animation-delay: 2s;
+}
+
+.animation-delay-4000 {
+  animation-delay: 4s;
+}
+
+.text-shadow-lg {
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* Custom utility classes */
+.shadow-sm-bottom {
+  box-shadow: 0px 2px 0px 0px var(--color-text-primary); /* Эффект тени только снизу */
+}
+
+/* Button styles for AnalyticsDashboard */
 .button-primary-style {
-  @apply bg-accent-blue-green text-neutral-light py-3 px-6 rounded-full font-bold
-         inline-flex items-center justify-center text-center
-         shadow-[4px_4px_0px_0px_var(--color-neutral)] transition-all duration-300 ease-in-out;
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-text);
+  border: 2px solid var(--button-primary-border); /* Более выраженная граница */
+  box-shadow: 4px 4px 0px 0px var(--color-text-primary); /* Эффект "стенки" */
 }
 
-/* scrollbar-custom is defined in ResultDetailView.tsx,
-   but its actual styling should probably be handled here or
-   via a Tailwind CSS plugin if needed for cross-browser consistency. */
-/* No explicit scrollbar styling here yet, relying on browser defaults or Tailwind plugins. */
+.button-primary-style:hover {
+  background-color: var(--color-accent-secondary); /* Ховер на оливковый */
+  box-shadow: 2px 2px 0px 0px var(--color-text-primary); /* Тень немного уменьшается при наведении */
+}
+
+.button-error-style {
+  background-color: var(--color-error);
+  color: var(--button-primary-text); /* Текст все еще светлый, как у primary */
+  border: 2px solid var(--color-text-primary);
+  box-shadow: 4px 4px 0px 0px var(--color-text-primary);
+}
+
+.button-error-style:hover {
+  background-color: var(--color-accent-primary); /* Ховер на серо-голубой */
+  box-shadow: 2px 2px 0px 0px var(--color-text-primary);
+}
+
+/* Custom scrollbar styles */
+/* Для WebKit-браузеров (Chrome, Safari) */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px; /* Ширина скроллбара */
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: var(--color-background); /* Фон трека */
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: var(--color-text-secondary); /* Цвет ползунка */
+  border-radius: 10px;
+  border: 2px solid var(--color-background-card); /* Граница ползунка */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-primary); /* Цвет ползунка при наведении */
+}
+
+/* Для Firefox */
+.scrollbar-custom {
+  scrollbar-width: thin; /* "auto" или "none" */
+  scrollbar-color: var(--color-text-secondary) var(--color-background); /* Цвет ползунка и трека */
+}
