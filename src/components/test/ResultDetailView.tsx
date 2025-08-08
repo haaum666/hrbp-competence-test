@@ -168,13 +168,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
         })}
       </div>
 
-      <div className="flex justify-center mt-8">
-        <Link to="/results" // <-- Изменено на /results
-          className="py-3 px-8 rounded-full font-bold text-lg text-text-main bg-accent-blue-green shadow-lg hover:bg-bauhaus-blue transition duration-300 ease-in-out transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50"
-        >
-          Полная Аналитика {/* <-- Изменен текст кнопки */}
-        </Link>
-      </div>
+     
     </div>
   );
 };
