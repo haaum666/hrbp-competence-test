@@ -32,11 +32,11 @@ const TestPage: React.FC = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showDetailedResults, setShowDetailedResults] = useState(false);
-  const prevPathnameRef = useRef(location.pathname); // ИСПОЛЬЗУЕМ ПРАВИЛЬНОЕ ИМЯ ПЕРЕМЕННОЙ
+  const prevPathnameRef = useRef(location.pathname);
 
   useEffect(() => {
     const currentPath = location.pathname;
-    const previousPath = prevPathnameRef.current; // ИСПРАВЛЕНО
+    const previousPath = prevPathnameRef.current;
 
     if (testStarted && previousPath !== '/' && currentPath === '/') {
       console.log('TestPage useEffect: Обнаружен переход с тестовой страницы на главную. Сброс состояния.');
@@ -173,8 +173,8 @@ const TestPage: React.FC = () => {
             </p>
             <div className="text-left mx-auto max-w-sm space-y-2 mb-8 text-base sm:text-lg">
               <p>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.totalQuestions}</span></p>
-              <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.correctAnswers}</span></p> {/* Исправлен цвет на success */}
-              <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.incorrectAnswers}</span></p> {/* Исправлен цвет на error */}
+              <p>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-success)' }}>{testResult.correctAnswers}</span></p>
+              <p>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{testResult.incorrectAnswers}</span></p>
               <p>Пропущено вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-secondary)' }}>{testResult.unanswered}</span></p>
               <p className="text-xl sm:text-2xl pt-4">Итоговый балл: <span className="font-extrabold" style={{ color: 'var(--color-text-primary)' }}>{testResult.scorePercentage.toFixed(2)}%</span></p>
             </div>
@@ -193,7 +193,6 @@ const TestPage: React.FC = () => {
                 onClick={startNewTest}
                 className="w-full sm:w-auto font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
                 style={getButtonStyle(true)}
-                // УДАЛЕНЫ onMouseEnter И onMouseLeave, так как это Link, а не Button
               >
                 Пройти тест снова
               </Link>
@@ -203,21 +202,12 @@ const TestPage: React.FC = () => {
 
         {/* Отображение детальных результатов */}
         {testFinished && testResult && showDetailedResults && (
-          <>
-            <ResultDetailView
-              testResult={testResult}
-              questions={questions}
-              userAnswers={userAnswers}
-            />
-            <div className="flex justify-center mt-8">
-              <button
-                onClick={() => setShowDetailedResults(false)}
-                className="bg-bauhaus-blue hover:bg-blue-700 text-bauhaus-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition duration-300 ease-in-out transform hover:scale-105 inline-block text-center"
-              >
-                К общим результатам
-              </button>
-            </div>
-          </>
+          <ResultDetailView
+            testResult={testResult}
+            questions={questions}
+            userAnswers={userAnswers}
+          />
+          // УДАЛЕН БЛОК "К общим результатам" ОТСЮДА
         )}
       </>
 
