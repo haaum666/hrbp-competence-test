@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { TestResult, AnswerDetail, Question, UserAnswer, SourceResource } from '../../types/test.d';
-import DataExporter from './DataExporter'; // Мы рассмотрим стилизацию кнопок внутри DataExporter отдельным шагом
+import DataExporter from './DataExporter';
 import { Link } from 'react-router-dom';
 
 interface ResultDetailViewProps {
@@ -18,7 +18,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       <div
         className="rounded-xl p-6 sm:p-8 max-w-3xl w-full mx-auto text-center font-sans"
         style={{
-          backgroundColor: 'var(--color-background-card)',
+          backgroundColor: 'var(--color-background-card)', // Используем переменную
           backgroundImage: 'var(--texture-grain)',
           backgroundSize: '4px 4px',
           backgroundRepeat: 'repeat',
@@ -42,7 +42,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
     <div
       className="rounded-xl p-6 sm:p-8 max-w-4xl w-full mx-auto"
       style={{
-        backgroundColor: 'var(--color-background-card)',
+        backgroundColor: 'var(--color-background-card)', // Используем переменную
         backgroundImage: 'var(--texture-grain)',
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
@@ -59,16 +59,16 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       <div
         className="text-lg space-y-2 mb-8 p-4 rounded-lg shadow-inner"
         style={{
-          backgroundColor: 'var(--color-background)',
-          border: '1px solid var(--color-neutral)',
-          boxShadow: '2px 2px 0px 0px var(--color-neutral)',
+          backgroundColor: 'var(--color-background)', // ИЗМЕНЕНО: Возвращаем к var(--color-background)
+          border: '1px solid var(--color-neutral)', // ИЗМЕНЕНО: Возвращаем к var(--color-neutral)
+          boxShadow: '2px 2px 0px 0px var(--color-neutral)', // ИЗМЕНЕНО: Возвращаем к var(--color-neutral)
         }}
       >
-        <p style={{ color: '#3A4232' }}>Всего вопросов: <span className="font-semibold" style={{ color: '#3A4232' }}>{totalQuestions}</span></p>
-        <p style={{ color: '#3A4232' }}>Правильных ответов: <span className="font-semibold" style={{ color: '#739072' }}>{correctAnswers}</span></p>
-        <p style={{ color: '#3A4232' }}>Неправильных ответов: <span className="font-semibold" style={{ color: '#B31312' }}>{incorrectAnswers}</span></p>
-        <p style={{ color: '#3A4232' }}>Без ответа: <span className="font-semibold" style={{ color: '#F0B86E' }}>{unanswered}</span></p> {/* Используем accent-secondary как warning */}
-        <p className="text-2xl sm:text-3xl pt-4 border-t mt-4" style={{ borderColor: '#A79277', color: '#3A4232' }}>Итоговый балл: <span className="font-extrabold" style={{ color: '#739072' }}>{scorePercentage.toFixed(2)}%</span></p>
+        <p style={{ color: 'var(--color-text-primary)' }}>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{totalQuestions}</span></p>
+        <p style={{ color: 'var(--color-text-primary)' }}>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-accent-primary)' }}>{correctAnswers}</span></p>
+        <p style={{ color: 'var(--color-text-primary)' }}>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{incorrectAnswers}</span></p>
+        <p style={{ color: 'var(--color-text-primary)' }}>Без ответа: <span className="font-semibold" style={{ color: 'var(--color-warning)' }}>{unanswered}</span></p>
+        <p className="text-2xl sm:text-3xl pt-4 border-t mt-4" style={{ borderColor: 'var(--color-neutral)', color: 'var(--color-text-primary)' }}>Итоговый балл: <span className="font-extrabold" style={{ color: 'var(--color-accent-primary)' }}>{scorePercentage.toFixed(2)}%</span></p>
       </div>
 
       {/* Кнопка экспорта данных */}
@@ -103,7 +103,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
               key={finalQuestionData.id}
               className={`p-5 rounded-lg border-l-4 shadow-md`}
               style={{
-                backgroundColor: 'var(--color-background-card)',
+                backgroundColor: 'var(--color-background-card)', // Используем переменную
                 backgroundImage: 'var(--texture-grain)',
                 backgroundSize: '4px 4px',
                 backgroundRepeat: 'repeat',
