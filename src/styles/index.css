@@ -121,29 +121,34 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: 2px 2px 0px 0px var(--color-text-primary);
 }
 
-/* Custom scrollbar styles */
-/* Для WebKit-браузеров (Chrome, Safari) */
+/* --- Стилизация полосы прокрутки для HRBP-Тест --- */
+.scrollbar-custom {
+  /* Ширина полосы прокрутки для Firefox */
+  scrollbar-width: thin;
+  /* Цвет ползунка (thumb) и трека (track) для Firefox */
+  scrollbar-color: var(--color-neutral-light) var(--color-card-background);
+}
+
+/* Для Webkit (Chrome, Safari, Edge) */
 .scrollbar-custom::-webkit-scrollbar {
-  width: 8px; /* Ширина скроллбара */
+  width: 8px; /* Ширина полосы прокрутки */
+  height: 8px; /* Высота для горизонтального скроллбара, если будет */
 }
 
 .scrollbar-custom::-webkit-scrollbar-track {
-  background: var(--color-background); /* Фон трека */
-  border-radius: 10px;
+  background: var(--color-card-background); /* Цвет трека (области): светло-желтый */
+  border-radius: 10px; /* Закругленные края трека */
 }
 
 .scrollbar-custom::-webkit-scrollbar-thumb {
-  background: var(--color-text-secondary); /* Цвет ползунка */
-  border-radius: 10px;
-  border: 2px solid var(--color-background-card); /* Граница ползунка */
+  background-color: var(--color-neutral-light); /* Цвет ползунка (бегунка): светло-бежевый/желтый */
+  border-radius: 10px; /* Закругленные края ползунка */
+  border: 2px solid var(--color-card-background); /* Небольшая граница, чтобы ползунок не сливался с треком */
 }
 
+/* Стилизация ползунка при наведении */
 .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-  background: var(--color-text-primary); /* Цвет ползунка при наведении */
+  background-color: var(--color-accent-blue-green); /* Цвет при наведении: светло-голубой */
+  border: 2px solid var(--color-neutral-light); /* Изменить границу при наведении */
 }
-
-/* Для Firefox */
-.scrollbar-custom {
-  scrollbar-width: thin; /* "auto" или "none" */
-  scrollbar-color: var(--color-text-secondary) var(--color-background); /* Цвет ползунка и трека */
-}
+/* --- Конец стилизации полосы прокрутки --- */
