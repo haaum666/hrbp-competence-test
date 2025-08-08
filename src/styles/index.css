@@ -47,32 +47,7 @@ code {
          shadow-[4px_4px_0px_0px_var(--color-neutral)] transition-all duration-300 ease-in-out;
 }
 
-/* Стилизация полосы прокрутки */
-.scrollbar-custom {
-  /* Ширина полосы прокрутки */
-  scrollbar-width: thin; /* Для Firefox */
-  scrollbar-color: var(--color-neutral-light) var(--color-card-background); /* thumb track для Firefox */
-}
-
-/* Для Webkit (Chrome, Safari, Edge) */
-.scrollbar-custom::-webkit-scrollbar {
-  width: 8px; /* Ширина полосы прокрутки */
-  height: 8px; /* Высота для горизонтального скроллбара, если будет */
-}
-
-.scrollbar-custom::-webkit-scrollbar-track {
-  background: var(--color-card-background); /* Цвет трека (области) */
-  border-radius: 10px; /* Закругленные края трека */
-}
-
-.scrollbar-custom::-webkit-scrollbar-thumb {
-  background-color: var(--color-neutral-light); /* Цвет ползунка (бегунка) */
-  border-radius: 10px; /* Закругленные края ползунка */
-  border: 2px solid var(--color-card-background); /* Небольшая граница, чтобы ползунок не сливался с треком */
-}
-
-/* Стилизация полосы прокрутки при наведении */
-.scrollbar-custom::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-accent-blue-green); /* Цвет при наведении, как кнопки экспорта при наведении */
-  border: 2px solid var(--color-neutral-light); /* Изменить границу при наведении */
-}
+/* scrollbar-custom is defined in ResultDetailView.tsx,
+   but its actual styling should probably be handled here or
+   via a Tailwind CSS plugin if needed for cross-browser consistency. */
+/* No explicit scrollbar styling here yet, relying on browser defaults or Tailwind plugins. */
