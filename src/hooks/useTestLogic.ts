@@ -24,7 +24,7 @@ interface UseTestLogicReturn {
   showResumeOption: boolean;
   remainingTime: number;
   progressPercentage: number;
-  handleAnswerSelect: (questionId: string, selectedOptionId: string | null) => void; // <-- ИЗМЕНЕНИЕ ЗДЕСЬ
+  handleAnswerSelect: (questionId: string, selectedOptionId: string | null) => void;
   handleNextQuestion: () => void;
   handlePreviousQuestion: () => void;
   startNewTest: () => void;
@@ -127,7 +127,6 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
   }, [currentQuestionIndex, questions]);
 
-  // ИЗМЕНЕНИЕ ЗДЕСЬ: selectedOptionId может быть string | null
   const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string | null) => { 
     const question = questions.find(q => q.id === questionId);
     if (!question) {
@@ -140,7 +139,6 @@ const useTestLogic = (): UseTestLogicReturn => {
     const newAnswer: UserAnswer = {
       questionId: questionId,
       selectedOptionId: selectedOptionId, 
-      // ИЗМЕНЕНИЕ ЗДЕСЬ: isCorrect должно проверять selectedOptionId на null
       isCorrect: selectedOptionId !== null && question.correctAnswer === selectedOptionId, 
       timeSpent: timeSpent,
     };
@@ -183,7 +181,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     console.log('useTestLogic: testStarted установлен в TRUE (из startNewTest)');
     localStorage.setItem(LOCAL_STORAGE_KEY_TEST_STARTED, 'true');
     localStorage.setItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME, Date.now().toString());
-    questionStartTimeRef.current = Date.24;
+    questionStartTimeRef.current = Date.now(); // <-- ИЗМЕНЕНИЕ ЗДЕСЬ: БЫЛО Date.24, СТАЛО Date.now()
     setRemainingTime(newQuestions[0]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
     console.log('startNewTest: Новый тест успешно инициализирован и сохранен в localStorage.');
   }, [clearLocalStorage]);
@@ -313,7 +311,6 @@ const useTestLogic = (): UseTestLogicReturn => {
       setRemainingTime((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          // Здесь вызываем handleAnswerSelect с null для пропущенного вопроса
           handleAnswerSelect(questions[currentQuestionIndex].id, null); 
           return 0;
         }
