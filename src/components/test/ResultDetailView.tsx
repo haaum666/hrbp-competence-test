@@ -18,13 +18,13 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       <div
         className="rounded-xl p-6 sm:p-8 max-w-3xl w-full mx-auto text-center font-sans"
         style={{
-          backgroundColor: 'var(--color-background-card)', // ИЗМЕНЕНО: Используем переменную
-          backgroundImage: 'var(--texture-grain)',          // ИЗМЕНЕНО: Добавляем текстуру
+          backgroundColor: 'var(--color-background-card)',
+          backgroundImage: 'var(--texture-grain)',
           backgroundSize: '4px 4px',
           backgroundRepeat: 'repeat',
-          color: 'var(--color-text-primary)',               // ИЗМЕНЕНО: Используем переменную
-          border: '2px solid var(--color-neutral)',         // ИЗМЕНЕНО: Используем переменную
-          boxShadow: '4px 4px 0px 0px var(--color-neutral)', // ИЗМЕНЕНО: Используем переменную
+          color: 'var(--color-text-primary)',
+          border: '2px solid var(--color-neutral)',
+          boxShadow: '4px 4px 0px 0px var(--color-neutral)',
         }}
       >
         <p className="text-2xl font-heading mb-6">Результаты теста не найдены.</p>
@@ -42,16 +42,16 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
     <div
       className="rounded-xl p-6 sm:p-8 max-w-4xl w-full mx-auto"
       style={{
-        backgroundColor: 'var(--color-background-card)', // ИЗМЕНЕНО: Используем переменную
-        backgroundImage: 'var(--texture-grain)',          // ИЗМЕНЕНО: Добавляем текстуру
+        backgroundColor: 'var(--color-background-card)',
+        backgroundImage: 'var(--texture-grain)',
         backgroundSize: '4px 4px',
         backgroundRepeat: 'repeat',
-        color: 'var(--color-text-primary)',               // ИЗМЕНЕНО: Используем переменную
-        border: '2px solid var(--color-neutral)',         // ИЗМЕНЕНО: Используем переменную
-        boxShadow: '4px 4px 0px 0px var(--color-neutral)', // ИЗМЕНЕНО: Используем переменную
+        color: 'var(--color-text-primary)',
+        border: '2px solid var(--color-neutral)',
+        boxShadow: '4px 4px 0px 0px var(--color-neutral)',
       }}
     >
-      <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-center font-heading" style={{ color: 'var(--color-text-primary)' }}> {/* ИЗМЕНЕНО: Цвет через переменную */}
+      <h2 className="text-3xl sm:text-4xl font-bold mb-6 text-center font-heading" style={{ color: 'var(--color-text-primary)' }}>
         Детальный Отчет по Тесту
       </h2>
 
@@ -59,21 +59,19 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       <div
         className="text-lg space-y-2 mb-8 p-4 rounded-lg shadow-inner"
         style={{
-          backgroundColor: 'var(--color-background)', // ИЗМЕНЕНО: Используем переменную для более светлого фона
-          border: '1px solid var(--color-text-secondary)', // ИЗМЕНЕНО: Используем переменную для границы
+          backgroundColor: 'var(--color-background)',
+          border: '1px solid var(--color-neutral)',
+          boxShadow: '2px 2px 0px 0px var(--color-neutral)',
         }}
       >
-        <p style={{ color: 'var(--color-text-primary)' }}>Всего вопросов: <span className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{totalQuestions}</span></p>
-        <p style={{ color: 'var(--color-text-primary)' }}>Правильных ответов: <span className="font-semibold" style={{ color: 'var(--color-accent-primary)' }}>{correctAnswers}</span></p>
-        <p style={{ color: 'var(--color-text-primary)' }}>Неправильных ответов: <span className="font-semibold" style={{ color: 'var(--color-error)' }}>{incorrectAnswers}</span></p>
-        <p style={{ color: 'var(--color-text-primary)' }}>Без ответа: <span className="font-semibold" style={{ color: 'var(--color-warning)' }}>{unanswered}</span></p>
-        <p className="text-2xl sm:text-3xl pt-4 border-t" style={{ borderColor: 'var(--color-text-secondary)', color: 'var(--color-text-primary)' }}>Итоговый балл: <span className="font-extrabold" style={{ color: 'var(--color-accent-primary)' }}>{scorePercentage.toFixed(2)}%</span></p>
+        <p style={{ color: '#3A4232' }}>Всего вопросов: <span className="font-semibold" style={{ color: '#3A4232' }}>{totalQuestions}</span></p>
+        <p style={{ color: '#3A4232' }}>Правильных ответов: <span className="font-semibold" style={{ color: '#739072' }}>{correctAnswers}</span></p>
+        <p style={{ color: '#3A4232' }}>Неправильных ответов: <span className="font-semibold" style={{ color: '#B31312' }}>{incorrectAnswers}</span></p>
+        <p style={{ color: '#3A4232' }}>Без ответа: <span className="font-semibold" style={{ color: '#F0B86E' }}>{unanswered}</span></p> {/* Используем accent-secondary как warning */}
+        <p className="text-2xl sm:text-3xl pt-4 border-t mt-4" style={{ borderColor: '#A79277', color: '#3A4232' }}>Итоговый балл: <span className="font-extrabold" style={{ color: '#739072' }}>{scorePercentage.toFixed(2)}%</span></p>
       </div>
 
       {/* Кнопка экспорта данных */}
-      {/* Примечание: DataExporter имеет собственные стили кнопок, которые мы сейчас не меняем,
-          но можем обновить на следующем шаге, чтобы они использовали button-primary-style.
-          Здесь я только добавил общую обертку flex для центрирования, если DataExporter не имеет ее. */}
       <div className="flex justify-center mb-8">
         <DataExporter
           testResult={testResult}
@@ -86,11 +84,6 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
       <h3 className="text-xl sm:text-2xl font-semibold mb-4 font-heading" style={{ color: 'var(--color-text-primary)' }}>Разбор вопросов:</h3>
       <div className="space-y-6 max-h-[60vh] overflow-y-auto pr-3 scrollbar-custom">
         {answers.map((detail: AnswerDetail, index: number) => {
-          // *** ВНИМАНИЕ: Здесь учтено несоответствие с questions.json.
-          // Если `questionText` используется для отображения, а не `text`,
-          // то это может потребовать корректировки в вашей логике загрузки данных
-          // или преобразования их в формат TypeScript `Question`.
-          // Пока я предполагаю, что `finalQuestionData.text` будет корректным.
           const questionData = questions.find(q => q.id === detail.question.id);
           const finalQuestionData: Question = questionData || detail.question;
 
@@ -110,15 +103,15 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
               key={finalQuestionData.id}
               className={`p-5 rounded-lg border-l-4 shadow-md`}
               style={{
-                backgroundColor: 'var(--color-background-card)', // Используем переменную
-                backgroundImage: 'var(--texture-grain)',          // Добавляем текстуру
+                backgroundColor: 'var(--color-background-card)',
+                backgroundImage: 'var(--texture-grain)',
                 backgroundSize: '4px 4px',
                 backgroundRepeat: 'repeat',
-                borderLeftColor: borderColor,                     // Динамический цвет границы
-                borderTop: '1px solid var(--color-neutral)',     // Добавляем остальные границы
+                borderLeftColor: borderColor,
+                borderTop: '1px solid var(--color-neutral)',
                 borderRight: '1px solid var(--color-neutral)',
                 borderBottom: '1px solid var(--color-neutral)',
-                boxShadow: `2px 2px 0px 0px ${borderColor}`,     // ИЗМЕНЕНО: Тень с цветом границы
+                boxShadow: `2px 2px 0px 0px ${borderColor}`,
               }}
             >
               <p className="font-medium mb-3 text-lg sm:text-xl font-heading" style={{ color: 'var(--color-text-primary)' }}>
@@ -151,7 +144,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic"
                   style={{
-                    backgroundColor: 'var(--color-background)', // Более светлый фон
+                    backgroundColor: 'var(--color-background)',
                     color: 'var(--color-text-secondary)',
                     border: '1px solid var(--color-neutral)'
                   }}
@@ -164,7 +157,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic"
                   style={{
-                    backgroundColor: 'var(--color-background)', // Более светлый фон
+                    backgroundColor: 'var(--color-background)',
                     color: 'var(--color-text-secondary)',
                     border: '1px solid var(--color-neutral)'
                   }}
@@ -184,7 +177,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base"
                   style={{
-                    backgroundColor: 'var(--color-background)', // Более светлый фон
+                    backgroundColor: 'var(--color-background)',
                     color: 'var(--color-text-secondary)',
                     border: '1px solid var(--color-neutral)'
                   }}
@@ -221,7 +214,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base italic"
                   style={{
-                    backgroundColor: 'var(--color-background)', // Более светлый фон
+                    backgroundColor: 'var(--color-background)',
                     color: 'var(--color-text-secondary)',
                     border: '1px solid var(--color-neutral)'
                   }}
@@ -234,7 +227,7 @@ const ResultDetailView: React.FC<ResultDetailViewProps> = ({ testResult, questio
                 <div
                   className="mt-3 p-3 rounded-md text-sm sm:text-base"
                   style={{
-                    backgroundColor: 'var(--color-background)', // Более светлый фон
+                    backgroundColor: 'var(--color-background)',
                     color: 'var(--color-text-secondary)',
                     border: '1px solid var(--color-neutral)'
                   }}
