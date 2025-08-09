@@ -44,6 +44,14 @@ const useTestLogic = (): UseTestLogicReturn => {
   const [remainingTime, setRemainingTime] = useState<number>(INITIAL_TIME_PER_QUESTION);
 
   const questionStartTimeRef = useRef<number>(Date.now());
+   // Добавляем useRef для userAnswers, чтобы calculateTestResult всегда имел доступ к актуальному состоянию
+   const userAnswersRef = useRef<UserAnswer[]>(userAnswers);
+
+   // Обновляем userAnswersRef при каждом изменении userAnswers
+   useEffect(() => {
+       userAnswersRef.current = userAnswers;
+   }, [userAnswers]);
+
 
   const clearLocalStorage = useCallback(() => {
     console.log('clearLocalStorage: Выполняется очистка связанных ключей localStorage.');
@@ -56,6 +64,111 @@ const useTestLogic = (): UseTestLogicReturn => {
     localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT); 
     // НЕ удаляем LOCAL_STORAGE_KEY_ALL_RESULTS, так как это история всех тестов
   }, []);
+
+  // --- Расчет результатов теста ---
+  const calculateTestResult = useCallback(() => {
+    console.log('calculateTestResult: Начинаем расчет результатов...');
+    console.log('calculateTestResult: Текущие questions:', questions);
+    console.log('calculateTestResult: Текущие userAnswers (из ref):', userAnswersRef.current); // Используем ref
+
+    if (questions.length === 0 || !overallTestStartTime) {
+      console.warn('calculateTestResult: Отсутствуют вопросы или время начала теста. Расчет невозможен.');
+      return;
+    }
+
+    const totalQuestions = questions.length;
+    let correctAnswersCount = 0;
+    let incorrectAnswersCount = 0;
+    let unansweredCount = 0;
+
+    // Используем userAnswersRef.current для гарантированного доступа к последним ответам
+    const currentAnswers = userAnswersRef.current;
+
+    // Проходим по ВСЕМ вопросам, чтобы определить их статус
+    questions.forEach(question => {
+        const userAnswerFound = currentAnswers.find(ua => ua.questionId === question.id);
+        
+        if (userAnswerFound) {
+            // Вопрос был отвечен
+            if (question.correctAnswer === userAnswerFound.selectedOptionId) {
+                correctAnswersCount++;
+            } else {
+                incorrectAnswersCount++; // Включает неправильные ответы, даже если selectedOptionId !== null
+            }
+        } else {
+            // Вопрос не был отвечен (не найден в userAnswers)
+            unansweredCount++;
+        }
+    });
+
+    const scorePercentage = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
+
+    const testDuration = Date.now() - new Date(overallTestStartTime).getTime();
+
+    const answerDetails: AnswerDetail[] = questions.map(question => {
+      const userAnswerFound = currentAnswers.find(ua => ua.questionId === question.id); // Используем currentAnswers
+      return {
+        question: question,
+        userAnswer: userAnswerFound || null,
+        isCorrect: userAnswerFound ? (question.correctAnswer === userAnswerFound.selectedOptionId) : false,
+      };
+    });
+
+    const finalResult: TestResult = {
+      scorePercentage: parseFloat(scorePercentage.toFixed(2)),
+      correctAnswers: correctAnswersCount,
+      incorrectAnswers: incorrectAnswersCount,
+      unanswered: unansweredCount,
+      totalQuestions: totalQuestions,
+      answers: answerDetails,
+      timestamp: new Date().toISOString(),
+      completionTime: Math.floor(testDuration / 1000),
+      startTime: overallTestStartTime,
+      endTime: new Date().toISOString(),
+    };
+
+    console.log('calculateTestResult: Правильных ответов:', correctAnswersCount);
+    console.log('calculateTestResult: Неправильных ответов:', incorrectAnswersCount);
+    console.log('calculateTestResult: Без ответа:', unansweredCount);
+    console.log('calculateTestResult: Итоговый процент:', scorePercentage.toFixed(2));
+    console.log('calculateTestResult: Финальный TestResult:', finalResult);
+
+    // Сохраняем финальные ответы и результат перед установкой состояний
+    localStorage.setItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS, JSON.stringify(currentAnswers)); // Используем currentAnswers
+    localStorage.setItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT, JSON.stringify(finalResult));
+
+    setTestResult(finalResult); 
+    setTestFinished(true); 
+    setTestStarted(false); 
+    console.log('useTestLogic: testStarted установлен в FALSE (из calculateTestResult)');
+    setOverallTestStartTime(null);
+
+    // Дополнительная очистка временных ключей активного теста
+    localStorage.removeItem(LOCAL_STORAGE_KEY_ANSWERS);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
+    localStorage.removeItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
+
+  }, [questions, overallTestStartTime]); // userAnswers убраны из зависимостей, так как используем ref
+
+
+  // --- Логика перехода к следующему вопросу (или завершения теста) ---
+  const handleNextQuestion = useCallback(() => {
+    console.log('handleNextQuestion: Текущий индекс:', currentQuestionIndex, 'Всего вопросов:', questions.length);
+    if (currentQuestionIndex < questions.length - 1) {
+      setCurrentQuestionIndex((prevIndex) => {
+        const nextIndex = prevIndex + 1;
+        questionStartTimeRef.current = Date.now(); // Сброс времени для нового вопроса
+        setRemainingTime(questions[nextIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
+        console.log('handleNextQuestion: Переход к следующему вопросу:', nextIndex);
+        return nextIndex;
+      });
+    } else {
+      console.log('handleNextQuestion: Последний вопрос. Завершаем тест.');
+      calculateTestResult(); // <-- Теперь эта функция объявлена выше и доступна
+    }
+  }, [currentQuestionIndex, questions.length, calculateTestResult]); // calculateTestResult здесь оставим, так как она вызывается.
 
   // --- Инициализация и загрузка состояния теста из localStorage ---
   useEffect(() => {
@@ -116,7 +229,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
 
     console.log('useEffect (инициализация/возобновление): -- Завершение выполнения эффекта --');
-  }, []); // Зависимости пустые, эффект запускается один раз при монтировании
+  }, [testResult, testStarted, testFinished]); // Добавил testResult, testStarted, testFinished в зависимости для корректного повторного выполнения при изменении этих состояний.
 
   // --- Эффект для сохранения прогресса теста в localStorage ---
   useEffect(() => {
@@ -249,27 +362,6 @@ const useTestLogic = (): UseTestLogicReturn => {
     });
   }, [questions]); // Зависимость от questions нужна, так как question.correctAnswer используется
 
-  // --- Логика перехода к следующему вопросу (или завершения теста) ---
-  const handleNextQuestion = useCallback(() => {
-    console.log('handleNextQuestion: Текущий индекс:', currentQuestionIndex, 'Всего вопросов:', questions.length);
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prevIndex) => {
-        const nextIndex = prevIndex + 1;
-        questionStartTimeRef.current = Date.now(); // Сброс времени для нового вопроса
-        setRemainingTime(questions[nextIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
-        console.log('handleNextQuestion: Переход к следующему вопросу:', nextIndex);
-        return nextIndex;
-      });
-    } else {
-      console.log('handleNextQuestion: Последний вопрос. Завершаем тест.');
-      // Вызываем calculateTestResult прямо здесь, передавая актуальные userAnswers
-      // Это критично, чтобы убедиться, что calculateTestResult работает с последними ответами
-      // Мы будем передавать userAnswers через ref или прямой аргумент, если не можем полагаться на замыкание.
-      // Но useCallback с зависимостью от userAnswers должен сработать корректно.
-        calculateTestResult(); // <-- Вызов функции
-    }
-  }, [currentQuestionIndex, questions.length, calculateTestResult]); // Добавляем calculateTestResult в зависимости
-
   // --- Логика перехода к предыдущему вопросу ---
   const handlePreviousQuestion = useCallback(() => {
     if (currentQuestionIndex > 0) {
@@ -282,93 +374,6 @@ const useTestLogic = (): UseTestLogicReturn => {
       });
     }
   }, [currentQuestionIndex, questions]);
-
-  // --- Расчет результатов теста ---
-  const calculateTestResult = useCallback(() => {
-    console.log('calculateTestResult: Начинаем расчет результатов...');
-    console.log('calculateTestResult: Текущие questions:', questions);
-    console.log('calculateTestResult: Текущие userAnswers:', userAnswers); // Проверяем, что здесь актуальные ответы
-
-    if (questions.length === 0 || !overallTestStartTime) {
-      console.warn('calculateTestResult: Отсутствуют вопросы или время начала теста. Расчет невозможен.');
-      return;
-    }
-
-    const totalQuestions = questions.length;
-    let correctAnswersCount = 0;
-    let incorrectAnswersCount = 0;
-    let unansweredCount = 0;
-
-    // Создаем Set из ID вопросов, на которые есть ответы
-    const answeredQuestionIds = new Set(userAnswers.map(answer => answer.questionId));
-
-    // Проходим по ВСЕМ вопросам, чтобы определить их статус
-    questions.forEach(question => {
-        const userAnswerFound = userAnswers.find(ua => ua.questionId === question.id);
-        
-        if (userAnswerFound) {
-            // Вопрос был отвечен
-            if (question.correctAnswer === userAnswerFound.selectedOptionId) {
-                correctAnswersCount++;
-            } else {
-                incorrectAnswersCount++; // Включает неправильные ответы, даже если selectedOptionId !== null
-            }
-        } else {
-            // Вопрос не был отвечен (не найден в userAnswers)
-            unansweredCount++;
-        }
-    });
-
-    const scorePercentage = totalQuestions > 0 ? (correctAnswersCount / totalQuestions) * 100 : 0;
-
-    const testDuration = Date.now() - new Date(overallTestStartTime).getTime();
-
-    const answerDetails: AnswerDetail[] = questions.map(question => {
-      const userAnswerFound = userAnswers.find(ua => ua.questionId === question.id);
-      return {
-        question: question,
-        userAnswer: userAnswerFound || null,
-        isCorrect: userAnswerFound ? (question.correctAnswer === userAnswerFound.selectedOptionId) : false,
-      };
-    });
-
-    const finalResult: TestResult = {
-      scorePercentage: parseFloat(scorePercentage.toFixed(2)),
-      correctAnswers: correctAnswersCount,
-      incorrectAnswers: incorrectAnswersCount,
-      unanswered: unansweredCount,
-      totalQuestions: totalQuestions,
-      answers: answerDetails,
-      timestamp: new Date().toISOString(),
-      completionTime: Math.floor(testDuration / 1000),
-      startTime: overallTestStartTime,
-      endTime: new Date().toISOString(),
-    };
-
-    console.log('calculateTestResult: Правильных ответов:', correctAnswersCount);
-    console.log('calculateTestResult: Неправильных ответов:', incorrectAnswersCount);
-    console.log('calculateTestResult: Без ответа:', unansweredCount);
-    console.log('calculateTestResult: Итоговый процент:', scorePercentage.toFixed(2));
-    console.log('calculateTestResult: Финальный TestResult:', finalResult);
-
-    // Сохраняем финальные ответы и результат перед установкой состояний
-    localStorage.setItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS, JSON.stringify(userAnswers));
-    localStorage.setItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT, JSON.stringify(finalResult));
-
-    setTestResult(finalResult); 
-    setTestFinished(true); 
-    setTestStarted(false); 
-    console.log('useTestLogic: testStarted установлен в FALSE (из calculateTestResult)');
-    setOverallTestStartTime(null);
-
-    // Дополнительная очистка временных ключей активного теста
-    localStorage.removeItem(LOCAL_STORAGE_KEY_ANSWERS);
-    localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
-    localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
-    localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
-    localStorage.removeItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
-
-  }, [questions, userAnswers, overallTestStartTime]); // Важно: userAnswers в зависимостях
 
   // --- Сброс состояния для навигации (например, при выходе из теста) ---
   const resetTestStateForNavigation = useCallback(() => {
