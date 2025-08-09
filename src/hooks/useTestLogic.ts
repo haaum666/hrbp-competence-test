@@ -56,6 +56,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     localStorage.removeItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
     localStorage.removeItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS); 
     localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT); 
+    // НЕ удаляем LOCAL_STORAGE_KEY_ALL_RESULTS, так как это история всех тестов
   }, []);
 
   const calculateTestResult = useCallback(() => {
@@ -111,9 +112,9 @@ const useTestLogic = (): UseTestLogicReturn => {
 
     localStorage.setItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT, JSON.stringify(finalResult)); 
 
-    setTestResult(finalResult); // Устанавливаем результат теста
-    setTestFinished(true); // Устанавливаем, что тест завершен
-    setTestStarted(false); // Тест завершен, устанавливаем testStarted в FALSE
+    setTestResult(finalResult); 
+    setTestFinished(true); 
+    setTestStarted(false); 
     console.log('useTestLogic: testStarted установлен в FALSE (из calculateTestResult)');
     setOverallTestStartTime(null);
 
@@ -187,7 +188,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTestFinished(false);
-    setTestResult(null); // Сбрасываем результат при старте нового теста
+    setTestResult(null); 
     setShowResumeOption(false);
 
     const now = new Date().toISOString();
@@ -219,7 +220,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         const parsedIndex: number = parseInt(savedIndex, 10);
         const savedLastQuestionStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
 
-        const initialQuestionsCheck = generateQuestions(); // для проверки валидности индекса
+        const initialQuestionsCheck = generateQuestions(); 
 
         const hasAllKeys = savedAnswers && savedIndex && savedTestStarted && savedOverallTestStartTime;
         if (!hasAllKeys) {
@@ -236,7 +237,7 @@ const useTestLogic = (): UseTestLogicReturn => {
           setTestStarted(true); 
           console.log('useTestLogic: testStarted установлен в TRUE (из resumeTest)');
           setTestFinished(false);
-          setTestResult(null); // Сбрасываем результат при возобновлении теста
+          setTestResult(null); 
           setShowResumeOption(false);
           setOverallTestStartTime(savedOverallTestStartTime);
 
@@ -272,7 +273,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     setCurrentQuestionIndex(0);
     setUserAnswers([]);
     setTestFinished(false);
-    setTestResult(null); // Сбрасываем результат при сбросе состояния
+    setTestResult(null); 
     setRemainingTime(INITIAL_TIME_PER_QUESTION);
     questionStartTimeRef.current = Date.now();
     setOverallTestStartTime(null);
@@ -286,12 +287,19 @@ const useTestLogic = (): UseTestLogicReturn => {
 
     const savedFinishedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS);
     const savedLastTestResult = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT); 
+    const savedTestStartedInLs = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED) === 'true'; // Флаг из LS
+
+    const initialQuestions = generateQuestions(); 
+    // Устанавливаем вопросы только если они еще не загружены
+    if (questions.length === 0) {
+      setQuestions(initialQuestions); 
+    }
 
     // **СЦЕНАРИЙ 1: Загрузка результатов завершенного теста.**
-    // Выполняем это, если тест не запущен, но есть сохраненные завершенные данные,
-    // ИЛИ если тест завершен, но `testResult` еще не загружен в состояние.
-    if (!testStarted && savedFinishedAnswers && savedLastTestResult) { 
-        console.log('useEffect (инициализация/возобновление): Обнаружены сохраненные завершенные данные. Попытка загрузки.');
+    // Это должно произойти, если есть завершенные данные в LS и `testResult` еще не в состоянии
+    // (или если `testFinished` True, но `testResult` еще Null после рефреша).
+    if (savedFinishedAnswers && savedLastTestResult && (testResult === null || !testFinished)) { 
+        console.log('useEffect (инициализация/возобновление): Обнаружены сохраненные завершенные данные и testResult еще не установлен. Попытка загрузки.');
         try {
             const parsedFinishedAnswers: UserAnswer[] = JSON.parse(savedFinishedAnswers);
             const parsedLastTestResult: TestResult = JSON.parse(savedLastTestResult); 
@@ -299,41 +307,37 @@ const useTestLogic = (): UseTestLogicReturn => {
             setUserAnswers(parsedFinishedAnswers);
             setTestResult(parsedLastTestResult); 
             setTestFinished(true); 
-            setTestStarted(false); // Убедимся, что тест не активен
+            setTestStarted(false); 
             console.log('useEffect (инициализация/возобновление): Загружены ответы и результат завершенного теста.');
-            
-            // После загрузки завершенного теста, мы **не** выходим сразу,
-            // чтобы дать возможность `showResumeOption` обновиться, если нужно,
-            // но мы уже установили `testFinished` и `testResult`.
-            // clearLocalStorage() здесь не нужен, так как мы хотим сохранить аналитику.
+            setShowResumeOption(false); // Завершенный тест не возобновляется
+            // После успешной загрузки, мы не выходим сразу.
+            // Позволим остальной логике `useEffect` определить `showResumeOption`.
         } catch (e) {
             console.error('Ошибка парсинга сохраненных результатов завершенного теста:', e);
-            clearLocalStorage(); // Очищаем все, если данные некорректны
-            setTestFinished(false); // Сброс состояния, чтобы можно было начать новый тест
+            clearLocalStorage(); 
+            setTestFinished(false); 
             setTestStarted(false);
         }
     } 
-
+    
     // **СЦЕНАРИЙ 2: Предотвращение лишней инициализации, если тест уже в правильном состоянии.**
-    // Если тест запущен ИЛИ тест завершен И результаты уже загружены в состояние, выходим.
-    if (testStarted || (testFinished && testResult !== null)) {
-      console.log('useEffect (инициализация/возобновление): Тест уже в активном/завершенном состоянии с загруженным результатом. Пропускаем инициализацию остальной логики.');
+    // Это условие теперь более строго:
+    // Мы выходим, если:
+    //   - тест активно запущен (`testStarted` истинно)
+    //   - ИЛИ тест завершен (`testFinished` истинно) И его результат (`testResult`) уже загружен в состояние.
+    //   - ИЛИ если LS говорит, что тест уже запущен (`savedTestStartedInLs`), и мы не на странице аналитики (которая могла бы загрузить результат).
+    // Это предотвращает бесконечные циклы, когда тест уже в нужном состоянии.
+    if (testStarted || (testFinished && testResult !== null) || savedTestStartedInLs) {
+      console.log('useEffect (инициализация/возобновление): Тест уже в активном/завершенном состоянии с загруженным результатом или помечен как активный в LS. Пропускаем остальную инициализацию.');
       return; 
     }
 
+    // Если мы дошли до сюда, значит тест не запущен, не завершен (или завершен, но `testResult` еще не загружен).
+    // Логика для ВОЗОБНОВЛЕНИЯ АКТИВНОГО теста (кнопка "Продолжить тест").
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
     const savedIndex = localStorage.getItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
-    const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
     
-    const initialQuestions = generateQuestions(); 
-    // Устанавливаем вопросы только если они еще не загружены (т.е. questions.length === 0)
-    if (questions.length === 0) {
-      setQuestions(initialQuestions); 
-    }
-
-
-    // **СЦЕНАРИЙ 3: Определение, показывать ли опцию "Возобновить тест".**
     let parsedIndex = -1;
     try {
       if (savedIndex) {
@@ -344,18 +348,17 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
     const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestions.length && parsedIndex >= 0;
 
-    const hasResumeKeys = savedAnswers && savedIndex && savedTestStarted === 'true' && savedOverallTestStartTime;
+    const hasResumeKeys = savedAnswers && savedIndex && savedTestStartedInLs && savedOverallTestStartTime;
 
     if (hasResumeKeys && isIndexValid) {
-      console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) ВЫПОЛНЕНО.** shouldShowResume = true.');
+      console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) ВЫПОЛНЕНО.** showResumeOption = true.');
       setShowResumeOption(true);
     } else {
-      console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) НЕ ВЫПОЛНЕНО или данные неполные.** shouldShowResume = false.');
+      console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) НЕ ВЫПОЛНЕНО или данные неполные.** showResumeOption = false.');
       setShowResumeOption(false);
       
-      // Если savedTestStarted был true, но данные невалидны, то очищаем временные ключи.
-      // (Это не затронет savedFinishedAnswers и savedLastTestResult, так как они обрабатываются выше)
-      if (savedTestStarted === 'true') {
+      // Если savedTestStartedInLs был true, но данные невалидны, то очищаем временные ключи.
+      if (savedTestStartedInLs) {
         localStorage.removeItem(LOCAL_STORAGE_KEY_ANSWERS);
         localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
         localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
@@ -367,7 +370,9 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
     console.log('useEffect (showResumeOption): -- Завершение выполнения эффекта. Итоговое showResumeOption:', showResumeOption, '--');
 
-  }, [clearLocalStorage, testStarted, testFinished, testResult, questions.length]); // Убрали setQuestions из зависимостей, добавили questions.length
+  }, [clearLocalStorage, testStarted, testFinished, testResult, questions.length, showResumeOption]); 
+  // showResumeOption добавлено в зависимости, чтобы ее логирование в конце было актуальным
+  // testResult и testFinished - критичные зависимости, чтобы эффект реагировал на их изменение.
 
   useEffect(() => {
     if (!testStarted || testFinished) {
@@ -378,7 +383,14 @@ const useTestLogic = (): UseTestLogicReturn => {
       setRemainingTime((prevTime) => {
         if (prevTime <= 1) {
           clearInterval(timer);
-          handleAnswerSelect(questions[currentQuestionIndex].id, null); 
+          // Здесь важно убедиться, что handleAnswerSelect вызывается с актуальными данными
+          // Если текущий вопрос undefined, то это может быть баг в логике.
+          if (questions[currentQuestionIndex]) {
+              handleAnswerSelect(questions[currentQuestionIndex].id, null); 
+          } else {
+              console.warn('useEffect Timer: Текущий вопрос не найден, пропуск автоматического ответа.');
+              calculateTestResult(); // Если вопросы закончились, но тест еще не завершен
+          }
           return 0;
         }
         return prevTime - 1;
@@ -386,7 +398,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [testStarted, testFinished, remainingTime, handleAnswerSelect, questions, currentQuestionIndex]);
+  }, [testStarted, testFinished, remainingTime, handleAnswerSelect, questions, currentQuestionIndex, calculateTestResult]); // calculateTestResult добавлен в зависимости
 
   useEffect(() => {
     console.log('useEffect (сохранение прогресса): testStarted:', testStarted, ', testFinished:', testFinished);
