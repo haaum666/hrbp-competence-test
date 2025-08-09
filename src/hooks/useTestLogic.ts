@@ -26,8 +26,8 @@ interface UseTestLogicReturn {
   showResumeOption: boolean;
   remainingTime: number;
   progressPercentage: number;
-  handleAnswerSelect: (questionId: string, selectedOptionId: string | null) => void; // Изменено на string | null
-  handleNextQuestion: () => void;
+  handleAnswerSelect: (questionId: string, selectedOptionId: string | null) => void; 
+  handleNextQuestion: (latestUserAnswers?: UserAnswer[]) => void; // Изменено: теперь может принимать актуальные ответы
   handlePreviousQuestion: () => void;
   startNewTest: () => void;
   resumeTest: () => void;
@@ -46,10 +46,9 @@ const useTestLogic = (): UseTestLogicReturn => {
   const [remainingTime, setRemainingTime] = useState<number>(INITIAL_TIME_PER_QUESTION);
 
   const questionStartTimeRef = useRef<number>(Date.now());
-   // Добавляем useRef для userAnswers, чтобы calculateTestResult всегда имел доступ к актуальному состоянию
+   // userAnswersRef теперь не используется для передачи в calculateTestResult, но сохраняется для других целей (например, отладки)
    const userAnswersRef = useRef<UserAnswer[]>(userAnswers);
 
-   // Обновляем userAnswersRef при каждом изменении userAnswers
    useEffect(() => {
        userAnswersRef.current = userAnswers;
    }, [userAnswers]);
@@ -67,11 +66,11 @@ const useTestLogic = (): UseTestLogicReturn => {
     // НЕ удаляем LOCAL_STORAGE_KEY_ALL_RESULTS, так как это история всех тестов
   }, []);
 
-  // --- Расчет результатов теста (перемещен выше для избежания ошибок с объявлением) ---
-  const calculateTestResult = useCallback(() => {
+  // --- Расчет результатов теста (теперь принимает актуальные userAnswers как аргумент) ---
+  const calculateTestResult = useCallback((latestAnswers: UserAnswer[]) => { // Изменено: добавлен аргумент latestAnswers
     console.log('calculateTestResult: Начинаем расчет результатов...');
     console.log('calculateTestResult: Текущие questions:', questions);
-    console.log('calculateTestResult: Текущие userAnswers (из ref):', userAnswersRef.current); // Используем ref для актуальных ответов
+    console.log('calculateTestResult: Полученные latestAnswers:', latestAnswers); // Теперь логгируем переданные ответы
 
     if (questions.length === 0 || !overallTestStartTime) {
       console.warn('calculateTestResult: Отсутствуют вопросы или время начала теста. Расчет невозможен.');
@@ -83,8 +82,8 @@ const useTestLogic = (): UseTestLogicReturn => {
     let incorrectAnswersCount = 0;
     let unansweredCount = 0;
 
-    // Используем userAnswersRef.current для гарантированного доступа к последним ответам
-    const currentAnswers = userAnswersRef.current;
+    // Используем ПЕРЕДАННЫЕ latestAnswers для гарантированного доступа к последним ответам
+    const currentAnswers = latestAnswers; // Используем аргумент
 
     // Проходим по ВСЕМ вопросам, чтобы определить их статус
     questions.forEach(question => {
@@ -98,7 +97,7 @@ const useTestLogic = (): UseTestLogicReturn => {
                 incorrectAnswersCount++; // Включает неправильные ответы
             }
         } else {
-            // Вопрос не был отвечен (не найден в userAnswersRef.current)
+            // Вопрос не был отвечен (не найден в latestAnswers)
             unansweredCount++;
         }
     });
@@ -136,7 +135,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     console.log('calculateTestResult: Финальный TestResult:', finalResult);
 
     // Сохраняем финальные ответы и результат перед установкой состояний
-    localStorage.setItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS, JSON.stringify(currentAnswers)); // Используем currentAnswers
+    localStorage.setItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS, JSON.stringify(currentAnswers)); 
     localStorage.setItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT, JSON.stringify(finalResult));
 
     // Сохраняем общий результат в массив всех результатов
@@ -157,34 +156,33 @@ const useTestLogic = (): UseTestLogicReturn => {
     localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
     localStorage.removeItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
-  }, [questions, overallTestStartTime]); // userAnswers убраны из зависимостей, так как используем ref
+  }, [questions, overallTestStartTime]); 
 
 
   // --- Логика перехода к следующему вопросу (или завершения теста) ---
-  const handleNextQuestion = useCallback(() => {
+  const handleNextQuestion = useCallback((latestUserAnswers?: UserAnswer[]) => { // Изменено: добавлен опциональный аргумент
     console.log('handleNextQuestion: Текущий индекс:', currentQuestionIndex, 'Всего вопросов:', questions.length);
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => {
         const nextIndex = prevIndex + 1;
-        questionStartTimeRef.current = Date.now(); // Сброс времени для нового вопроса
-        // Убеждаемся, что следующий вопрос существует, прежде чем получить его время
+        questionStartTimeRef.current = Date.now(); 
         setRemainingTime(questions[nextIndex]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
         console.log('handleNextQuestion: Переход к следующему вопросу:', nextIndex);
         return nextIndex;
       });
     } else {
       console.log('handleNextQuestion: Последний вопрос. Завершаем тест.');
-      calculateTestResult(); // Вызываем calculateTestResult
+      // Теперь передаем актуальные ответы в calculateTestResult
+      calculateTestResult(latestUserAnswers || userAnswersRef.current); 
     }
-  }, [currentQuestionIndex, questions.length, calculateTestResult, questions]); // Добавил `questions` в зависимости для `setRemainingTime`
+  }, [currentQuestionIndex, questions.length, calculateTestResult, questions]); 
 
   // --- Логика перехода к предыдущему вопросу ---
   const handlePreviousQuestion = useCallback(() => {
     if (currentQuestionIndex > 0) {
       setCurrentQuestionIndex((prevIndex) => {
         const prevIndexValue = prevIndex - 1;
-        questionStartTimeRef.current = Date.now(); // Сброс таймера для предыдущего вопроса
-        // Убеждаемся, что предыдущий вопрос существует, прежде чем получить его время
+        questionStartTimeRef.current = Date.now(); 
         setRemainingTime(questions[prevIndexValue]?.timeEstimate || INITIAL_TIME_PER_QUESTION);
         console.log('handlePreviousQuestion: Переход к предыдущему вопросу:', prevIndexValue);
         return prevIndexValue;
@@ -194,7 +192,7 @@ const useTestLogic = (): UseTestLogicReturn => {
 
 
   // --- Логика выбора ответа ---
-  const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string | null) => { // Изменено на string | null
+  const handleAnswerSelect = useCallback((questionId: string, selectedOptionId: string | null) => { 
     const question = questions.find(q => q.id === questionId);
     if (!question) {
       console.error(`handleAnswerSelect: Вопрос с ID ${questionId} не найден.`);
@@ -206,11 +204,10 @@ const useTestLogic = (): UseTestLogicReturn => {
     const newAnswer: UserAnswer = {
       questionId: questionId,
       selectedOptionId: selectedOptionId,
-      isCorrect: selectedOptionId !== null && question.correctAnswer === selectedOptionId, // Проверка на null
+      isCorrect: selectedOptionId !== null && question.correctAnswer === selectedOptionId, 
       timeSpent: timeSpent,
     };
 
-    // Добавляем логи для отладки
     console.log(`handleAnswerSelect: Вопрос ${questionId}, Выбран: ${selectedOptionId}, Верно: ${newAnswer.isCorrect}, Время: ${timeSpent}s`);
 
     setUserAnswers((prevAnswers) => {
@@ -225,12 +222,12 @@ const useTestLogic = (): UseTestLogicReturn => {
       } else {
         updatedAnswers = [...prevAnswers, newAnswer];
       }
-      console.log('handleAnswerSelect: Обновленные userAnswers (после setUserAnswers):', updatedAnswers); // Лог обновленного состояния
-      return updatedAnswers;
+      console.log('handleAnswerSelect: Обновленные userAnswers (для передачи в handleNextQuestion):', updatedAnswers); 
+      // !!! Ключевое изменение: вызываем handleNextQuestion СРАЗУ с обновленными ответами
+      handleNextQuestion(updatedAnswers); 
+      return updatedAnswers; // Возвращаем для обновления состояния userAnswers
     });
-    // ВОЗВРАЩЕНО: автоматический переход к следующему вопросу после выбора ответа.
-    handleNextQuestion();
-  }, [questions, handleNextQuestion]); // handleNextQuestion теперь снова в зависимостях
+  }, [questions, handleNextQuestion]); 
 
   const startNewTest = useCallback(() => {
     console.log('startNewTest: Запуск нового теста.');
@@ -272,7 +269,7 @@ const useTestLogic = (): UseTestLogicReturn => {
         const parsedIndex: number = parseInt(savedIndex, 10);
         const savedLastQuestionStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
 
-        const initialQuestionsCheck = generateQuestions(); // Для проверки валидности индекса
+        const initialQuestionsCheck = generateQuestions(); 
 
         console.log('resumeTest: savedAnswers:', savedAnswers ? 'есть' : 'нет', '(Значение:', savedAnswers, ')');
         console.log('resumeTest: savedIndex:', savedIndex ? 'есть' : 'нет', '(Значение:', savedIndex, ')');
@@ -346,8 +343,6 @@ const useTestLogic = (): UseTestLogicReturn => {
   useEffect(() => {
     console.log('useEffect (инициализация/возобновление): -- Начало выполнения эффекта --');
 
-    // Если тест уже завершен (например, мы на странице результатов после перезагрузки),
-    // загружаем сохраненный результат и answers
     const savedLastTestResult = localStorage.getItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT);
     const savedFinishedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS);
 
@@ -357,11 +352,11 @@ const useTestLogic = (): UseTestLogicReturn => {
         if (savedFinishedAnswers) {
             setUserAnswers(JSON.parse(savedFinishedAnswers));
         }
-        setQuestions(generateQuestions()); // Важно: вопросы должны быть, чтобы детализация работала
+        setQuestions(generateQuestions()); 
         setTestFinished(true);
         setTestStarted(false);
         console.log('useEffect (инициализация/возобновление): Тест успешно загружен как завершенный.');
-        return; // Прерываем дальнейшую инициализацию, так как тест уже завершен
+        return; 
     }
 
     const savedAnswers = localStorage.getItem(LOCAL_STORAGE_KEY_ANSWERS);
@@ -369,7 +364,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     const savedTestStarted = localStorage.getItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     const savedOverallTestStartTime = localStorage.getItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
 
-    const initialQuestionsCheck = generateQuestions(); // Генерируем вопросы для проверки длины
+    const initialQuestionsCheck = generateQuestions(); 
 
     console.log('useEffect (инициализация/возобновление - проверка возобновления): savedAnswers:', savedAnswers ? 'есть' : 'нет');
     console.log('useEffect (инициализация/возобновление - проверка возобновления): savedIndex:', savedIndex ? 'есть' : 'нет');
@@ -389,25 +384,21 @@ const useTestLogic = (): UseTestLogicReturn => {
 
     const isIndexValid = !isNaN(parsedIndex) && parsedIndex < initialQuestionsCheck.length && parsedIndex >= 0;
 
-    // Логика для определения, показывать ли кнопку "Продолжить тест"
     if (hasAllKeys && isIndexValid && !testStarted && !testFinished) {
       console.log('useEffect (инициализация/возобновление): Обнаружена возможность возобновить тест. Устанавливаем showResumeOption в true.');
       setShowResumeOption(true);
     } else {
       console.log('useEffect (инициализация/возобновление): Условия для возобновления не выполнены. showResumeOption в false.');
       setShowResumeOption(false);
-      // Если нет возможности возобновить или тест уже завершен, но `testStarted` почему-то 'true'
       if (!testStarted && !testFinished) {
-            // Если тест не запущен и не завершен, и нет сохраненных данных, генерируем новые вопросы
             setQuestions(initialQuestionsCheck);
         } else if (testStarted && !testFinished && questions.length === 0) {
-            // Если тест запущен, но вопросов нет (например, после горячей перезагрузки), генерируем их
             setQuestions(initialQuestionsCheck);
         }
     }
     console.log('useEffect (инициализация/возобновление): -- Завершение выполнения эффекта --');
 
-  }, [clearLocalStorage, testStarted, testFinished, testResult, questions.length]); // Добавил вопросы в зависимости
+  }, [clearLocalStorage, testStarted, testFinished, testResult, questions.length]); 
 
   // Эффект для таймера обратного отсчета
   useEffect(() => {
@@ -421,7 +412,8 @@ const useTestLogic = (): UseTestLogicReturn => {
           if (prevTime <= 1) {
             clearInterval(timer);
             // Автоматический переход к следующему вопросу или завершение теста
-            handleNextQuestion();
+            // Здесь мы не передаем latestUserAnswers, так как таймер не связан с конкретным ответом
+            handleNextQuestion(); 
             return 0;
           }
           return prevTime - 1;
@@ -430,7 +422,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     }
 
     return () => clearInterval(timer);
-  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]); // remainingTime убран из зависимостей
+  }, [testStarted, testFinished, currentQuestionIndex, questions, handleNextQuestion]); 
 
   // Эффект для сохранения прогресса в localStorage
   useEffect(() => {
@@ -443,8 +435,6 @@ const useTestLogic = (): UseTestLogicReturn => {
       localStorage.setItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME, questionStartTimeRef.current.toString());
       localStorage.setItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME, overallTestStartTime || new Date().toISOString());
     } else if (testFinished) {
-        // Если тест завершен, мы уже сохранили финальный результат в calculateTestResult.
-        // Здесь просто убедимся, что временные ключи удалены.
         localStorage.removeItem(LOCAL_STORAGE_KEY_ANSWERS);
         localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
         localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
