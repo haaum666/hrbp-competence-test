@@ -12,9 +12,9 @@ const LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME = 'testLastQuestionStartTime';
 const LOCAL_STORAGE_KEY_ALL_RESULTS = 'allTestResults';
 const LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME = 'overallTestStartTime';
 const LOCAL_STORAGE_KEY_FINISHED_ANSWERS = 'testFinishedUserAnswers'; 
-const LOCAL_STORAGE_KEY_LAST_TEST_RESULT = 'lastTestResult'; // Новая константа для последнего результата теста
+const LOCAL_STORAGE_KEY_LAST_TEST_RESULT = 'lastTestResult'; 
 
-const INITIAL_TIME_PER_QUESTION = 60; // Время на вопрос по умолчанию в секундах
+const INITIAL_TIME_PER_QUESTION = 60; 
 
 interface UseTestLogicReturn {
   currentQuestionIndex: number;
@@ -54,14 +54,13 @@ const useTestLogic = (): UseTestLogicReturn => {
     localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
     localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_QUESTION_START_TIME);
     localStorage.removeItem(LOCAL_STORAGE_KEY_OVERALL_TEST_START_TIME);
-    localStorage.removeItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS); // Очищаем и новый ключ
-    localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT); // Очищаем ключ с последним результатом
+    localStorage.removeItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS); 
+    localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT); 
   }, []);
 
   const calculateTestResult = useCallback(() => {
     if (questions.length === 0 || !overallTestStartTime) return;
 
-    // Сначала сохраняем userAnswers для детального просмотра
     localStorage.setItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS, JSON.stringify(userAnswers)); 
 
     const correctAnswers = userAnswers.filter(answer => {
@@ -109,7 +108,6 @@ const useTestLogic = (): UseTestLogicReturn => {
     allResults.push(finalResult);
     localStorage.setItem(LOCAL_STORAGE_KEY_ALL_RESULTS, JSON.stringify(allResults));
 
-    // Сохраняем последний testResult
     localStorage.setItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT, JSON.stringify(finalResult)); 
 
     setTestResult(finalResult);
@@ -321,21 +319,26 @@ const useTestLogic = (): UseTestLogicReturn => {
         // Очищаем все, если данные некорректны
         localStorage.removeItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS);
         localStorage.removeItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT);
-        clearLocalStorage(); // Очищаем также и другие ключи, чтобы избежать путаницы
+        clearLocalStorage(); 
       }
+    } else if (savedTestStarted === 'true' && (!hasAllKeys || !isIndexValid)) { // <-- ИЗМЕНЕНИЕ ЗДЕСЬ: Убрали прямой вызов clearLocalStorage
+        // Если тест был начат, но данные неполные или невалидные,
+        // мы можем здесь только сбросить testStarted и позволить startNewTest()
+        // инициировать новую очистку при следующем запуске.
+        // Прямой clearLocalStorage() здесь не нужен.
+        setTestStarted(false); 
+        console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) НЕ ВЫПОЛНЕНО или данные неполные.** testStarted сброшен на false, чтобы не мешать новому тесту.');
     }
+
 
     if (hasAllKeys && isIndexValid) {
       console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) ВЫПОЛНЕНО.** shouldShowResume = true.');
       setShowResumeOption(true);
     } else {
       console.log('useEffect (showResumeOption): **Условие 2 (валидности индекса) НЕ ВЫПОЛНЕНО или данные неполные.** shouldShowResume = false.');
+      // Если savedTestStarted был true, но данные невалидны, мы уже обработали это выше.
+      // Здесь просто устанавливаем setShowResumeOption в false.
       setShowResumeOption(false);
-      if (savedTestStarted === 'true') { 
-        clearLocalStorage();
-        setTestStarted(false); 
-        setQuestions(generateQuestions()); 
-      }
     }
     console.log('useEffect (showResumeOption): -- Завершение выполнения эффекта. Итоговое showResumeOption:', hasAllKeys && isIndexValid, '--');
 
