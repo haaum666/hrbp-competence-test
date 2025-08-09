@@ -1,8 +1,6 @@
-// src/components/analytics/AnalyticsDashboard.tsx
-
 import React, { useState, useEffect } from 'react';
 import { TestResult } from '../../types/test.d';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // Импортируем useLocation
 
 // НОВЫЕ ИМПОРТЫ ДЛЯ ГРАФИКОВ
 import { Line, Pie } from 'react-chartjs-2';
@@ -54,100 +52,111 @@ const AnalyticsDashboard: React.FC = () => {
     accentSecondary: '#F0B86E',
   });
 
+  const location = useLocation(); // Инициализируем useLocation
+
   useEffect(() => {
+    console.log('AnalyticsDashboard: useEffect запущен. Текущий путь:', location.pathname);
+
     const getCssVariable = (variable: string) => {
       if (typeof window !== 'undefined') {
         return window.getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
       }
       return '';
-    }; // <-- Исправлено: добавлена закрывающая скобка для функции getCssVariable
-
-    const accentPrimary = getCssVariable('--color-accent-primary');
-    const error = getCssVariable('--color-error');
-    const textSecondary = getCssVariable('--color-text-secondary');
-    const backgroundCard = getCssVariable('--color-background-card');
-    const textPrimary = getCssVariable('--color-text-primary');
-    const neutral = getCssVariable('--color-neutral');
-    const accentSecondary = getCssVariable('--color-accent-secondary');
+    };
 
     setChartColors({
-      accentPrimary: accentPrimary || '#739072',
-      error: error || '#B31312',
-      textSecondary: textSecondary || '#6F6F6F',
-      backgroundCard: backgroundCard || '#EADBC8',
-      textPrimary: textPrimary || '#3A4232',
-      neutral: neutral || '#A79277',
-      accentSecondary: accentSecondary || '#F0B86E',
+      accentPrimary: getCssVariable('--color-accent-primary') || '#739072',
+      error: getCssVariable('--color-error') || '#B31312',
+      textSecondary: getCssVariable('--color-text-secondary') || '#6F6F6F',
+      backgroundCard: getCssVariable('--color-background-card') || '#EADBC8',
+      textPrimary: getCssVariable('--color-text-primary') || '#3A4232',
+      neutral: getCssVariable('--color-neutral') || '#A79277',
+      accentSecondary: getCssVariable('--color-accent-secondary') || '#F0B86E',
     });
 
-    try {
-      const savedResultsString = localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
-      if (savedResultsString) {
-        const parsedResults: TestResult[] = JSON.parse(savedResultsString);
+    const loadAnalyticsData = () => {
+      try {
+        const savedResultsString = localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
+        console.log('AnalyticsDashboard: Загрузка данных из localStorage. savedResultsString:', savedResultsString ? 'присутствует' : 'отсутствует');
 
-        const sortedResults = parsedResults.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-        setAllResults(sortedResults);
+        if (savedResultsString) {
+          const parsedResults: TestResult[] = JSON.parse(savedResultsString);
+          const validResults = parsedResults.filter(result => result && typeof result.scorePercentage === 'number');
 
-        setTotalTestsCompleted(sortedResults.length);
+          const sortedResults = validResults.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+          setAllResults(sortedResults);
 
-        if (sortedResults.length > 0) {
-          const totalScores = sortedResults.reduce((sum, result) => sum + result.scorePercentage, 0);
-          const avgScore = totalScores / sortedResults.length;
-          setAverageScore(avgScore.toFixed(2));
+          setTotalTestsCompleted(sortedResults.length);
 
-          const totalCorrect = sortedResults.reduce((sum, result) => sum + result.correctAnswers, 0);
-          const totalIncorrect = sortedResults.reduce((sum, result) => sum + result.incorrectAnswers, 0);
-          const totalUnanswered = sortedResults.reduce((sum, result) => sum + result.unanswered, 0);
-          const totalQuestionsOverall = sortedResults.reduce((sum, result) => sum + result.totalQuestions, 0);
+          if (sortedResults.length > 0) {
+            const totalScores = sortedResults.reduce((sum, result) => sum + result.scorePercentage, 0);
+            const avgScore = totalScores / sortedResults.length;
+            setAverageScore(avgScore.toFixed(2));
 
-          if (totalQuestionsOverall > 0) {
-            setAvgCorrect((totalCorrect / totalQuestionsOverall) * 100);
-            setAvgIncorrect((totalIncorrect / totalQuestionsOverall) * 100);
-            setAvgUnanswered((totalUnanswered / totalQuestionsOverall) * 100);
+            const totalCorrect = sortedResults.reduce((sum, result) => sum + result.correctAnswers, 0);
+            const totalIncorrect = sortedResults.reduce((sum, result) => sum + result.incorrectAnswers, 0);
+            const totalUnanswered = sortedResults.reduce((sum, result) => sum + result.unanswered, 0);
+            const totalQuestionsOverall = sortedResults.reduce((sum, result) => sum + result.totalQuestions, 0);
+
+            if (totalQuestionsOverall > 0) {
+              setAvgCorrect((totalCorrect / totalQuestionsOverall) * 100);
+              setAvgIncorrect((totalIncorrect / totalQuestionsOverall) * 100);
+              setAvgUnanswered((totalUnanswered / totalQuestionsOverall) * 100);
+            } else {
+              setAvgCorrect(0);
+              setAvgIncorrect(0);
+              setAvgUnanswered(0);
+            }
+
+            let totalDurationSeconds = 0;
+            let validDurationsCount = 0;
+            sortedResults.forEach(result => {
+              try {
+                if (result.startTime && result.endTime) {
+                  const start = new Date(result.startTime).getTime();
+                  const end = new Date(result.endTime).getTime();
+                  if (!isNaN(start) && !isNaN(end) && end > start) {
+                    totalDurationSeconds += (end - start) / 1000;
+                    validDurationsCount++;
+                  } else {
+                      console.warn(`Пропущено некорректное время для теста: startTime=${result.startTime}, endTime=${result.endTime}`);
+                  }
+                } else {
+                    console.warn(`Пропущен тест без startTime или endTime:`, result);
+                }
+              } catch (e) {
+                console.warn("Ошибка парсинга даты для расчета длительности теста:", result, e);
+              }
+            });
+
+            if (validDurationsCount > 0) {
+              const averageSec = totalDurationSeconds / validDurationsCount;
+              const minutes = Math.floor(averageSec / 60);
+              const seconds = Math.round(averageSec % 60);
+              setAverageTestDuration(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+            } else {
+              setAverageTestDuration('00:00');
+            }
+
           } else {
+            setAverageScore('0.00');
             setAvgCorrect(0);
             setAvgIncorrect(0);
             setAvgUnanswered(0);
-          }
-
-          let totalDurationSeconds = 0;
-          let validDurationsCount = 0;
-          sortedResults.forEach(result => {
-            try {
-              if (result.startTime && result.endTime) {
-                const start = new Date(result.startTime).getTime();
-                const end = new Date(result.endTime).getTime();
-                if (!isNaN(start) && !isNaN(end) && end > start) {
-                  totalDurationSeconds += (end - start) / 1000;
-                  validDurationsCount++;
-                } else {
-                    console.warn(`Пропущено некорректное время для теста: startTime=${result.startTime}, endTime=${result.endTime}`);
-                }
-              } else {
-                  console.warn(`Пропущен тест без startTime или endTime:`, result);
-              }
-            } catch (e) {
-              console.warn("Ошибка парсинга даты для расчета длительности теста:", result, e);
-            }
-          });
-
-          if (validDurationsCount > 0) {
-            const averageSec = totalDurationSeconds / validDurationsCount;
-            const minutes = Math.floor(averageSec / 60);
-            const seconds = Math.round(averageSec % 60);
-            setAverageTestDuration(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-          } else {
             setAverageTestDuration('00:00');
           }
-
         } else {
+          setAllResults([]);
+          setTotalTestsCompleted(0);
           setAverageScore('0.00');
           setAvgCorrect(0);
           setAvgIncorrect(0);
           setAvgUnanswered(0);
           setAverageTestDuration('00:00');
         }
-      } else {
+      } catch (e) {
+        console.error('Ошибка при загрузке или парсинге данных аналитики из localStorage:', e);
+        setError("Ошибка при загрузке аналитических данных. Возможно, данные повреждены.");
         setAllResults([]);
         setTotalTestsCompleted(0);
         setAverageScore('0.00');
@@ -155,22 +164,28 @@ const AnalyticsDashboard: React.FC = () => {
         setAvgIncorrect(0);
         setAvgUnanswered(0);
         setAverageTestDuration('00:00');
+        localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
+      } finally {
+        setLoading(false);
       }
-    } catch (e) {
-      console.error('Ошибка при загрузке или парсинге данных аналитики из localStorage:', e);
-      setError("Ошибка при загрузке аналитических данных. Возможно, данные повреждены.");
-      setAllResults([]);
-      setTotalTestsCompleted(0);
-      setAverageScore('0.00');
-      setAvgCorrect(0);
-      setAvgIncorrect(0);
-      setAvgUnanswered(0);
-      setAverageTestDuration('00:00');
-      localStorage.removeItem(LOCAL_STORAGE_KEY_ALL_RESULTS);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    };
+
+    loadAnalyticsData(); // Вызываем загрузку данных
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === LOCAL_STORAGE_KEY_ALL_RESULTS) {
+        console.log('AnalyticsDashboard: Обнаружено изменение LOCAL_STORAGE_KEY_ALL_RESULTS в другом окне/вкладке. Обновляем данные.');
+        loadAnalyticsData(); // Перезагружаем данные
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+
+  }, [location.pathname]); // <--- КЛЮЧЕВОЕ ИЗМЕНЕНИЕ: Зависимость от pathname
 
   const handleClearAllResults = () => {
     if (window.confirm('Вы уверены, что хотите удалить все данные о пройденных тестах? Это действие необратимо.')) {
@@ -213,9 +228,7 @@ const AnalyticsDashboard: React.FC = () => {
         labels: {
           boxWidth: 0,
           boxHeight: 0,
-          padding: 0, // Исправлено: запятая после padding: 0 не нужна, если это последний элемент,
-                       // но в TypeScript/JS это допустимо. Проблема была, возможно, в другом месте.
-
+          padding: 0,
           color: chartColors.textPrimary,
           font: {
             size: 14,
