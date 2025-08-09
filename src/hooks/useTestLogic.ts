@@ -27,7 +27,7 @@ interface UseTestLogicReturn {
   remainingTime: number;
   progressPercentage: number;
   handleAnswerSelect: (questionId: string, selectedOptionId: string | null) => void; 
-  handleNextQuestion: (latestUserAnswers?: UserAnswer[]) => void; // Изменено: теперь может принимать актуальные ответы
+  handleNextQuestion: () => void; // Откатили сигнатуру обратно
   handlePreviousQuestion: () => void;
   startNewTest: () => void;
   resumeTest: () => void;
@@ -46,7 +46,7 @@ const useTestLogic = (): UseTestLogicReturn => {
   const [remainingTime, setRemainingTime] = useState<number>(INITIAL_TIME_PER_QUESTION);
 
   const questionStartTimeRef = useRef<number>(Date.now());
-   // userAnswersRef теперь не используется для передачи в calculateTestResult, но сохраняется для других целей (например, отладки)
+   // userAnswersRef остается для использования calculateTestResult
    const userAnswersRef = useRef<UserAnswer[]>(userAnswers);
 
    useEffect(() => {
@@ -66,11 +66,11 @@ const useTestLogic = (): UseTestLogicReturn => {
     // НЕ удаляем LOCAL_STORAGE_KEY_ALL_RESULTS, так как это история всех тестов
   }, []);
 
-  // --- Расчет результатов теста (теперь принимает актуальные userAnswers как аргумент) ---
-  const calculateTestResult = useCallback((latestAnswers: UserAnswer[]) => { // Изменено: добавлен аргумент latestAnswers
+  // --- Расчет результатов теста (снова использует userAnswersRef.current) ---
+  const calculateTestResult = useCallback(() => { // Откатили: без аргумента latestAnswers
     console.log('calculateTestResult: Начинаем расчет результатов...');
     console.log('calculateTestResult: Текущие questions:', questions);
-    console.log('calculateTestResult: Полученные latestAnswers:', latestAnswers); // Теперь логгируем переданные ответы
+    console.log('calculateTestResult: Текущие userAnswers (из ref):', userAnswersRef.current); // Снова используем ref
 
     if (questions.length === 0 || !overallTestStartTime) {
       console.warn('calculateTestResult: Отсутствуют вопросы или время начала теста. Расчет невозможен.');
@@ -82,22 +82,20 @@ const useTestLogic = (): UseTestLogicReturn => {
     let incorrectAnswersCount = 0;
     let unansweredCount = 0;
 
-    // Используем ПЕРЕДАННЫЕ latestAnswers для гарантированного доступа к последним ответам
-    const currentAnswers = latestAnswers; // Используем аргумент
+    // Используем userAnswersRef.current для гарантированного доступа к последним ответам
+    const currentAnswers = userAnswersRef.current; // Используем ref
 
     // Проходим по ВСЕМ вопросам, чтобы определить их статус
     questions.forEach(question => {
         const userAnswerFound = currentAnswers.find(ua => ua.questionId === question.id);
         
         if (userAnswerFound) {
-            // Вопрос был отвечен
             if (question.correctAnswer === userAnswerFound.selectedOptionId) {
                 correctAnswersCount++;
             } else {
-                incorrectAnswersCount++; // Включает неправильные ответы
+                incorrectAnswersCount++; 
             }
         } else {
-            // Вопрос не был отвечен (не найден в latestAnswers)
             unansweredCount++;
         }
     });
@@ -107,7 +105,7 @@ const useTestLogic = (): UseTestLogicReturn => {
     const testDuration = Date.now() - new Date(overallTestStartTime).getTime();
 
     const answerDetails: AnswerDetail[] = questions.map(question => {
-      const userAnswerFound = currentAnswers.find(ua => ua.questionId === question.id); // Используем currentAnswers
+      const userAnswerFound = currentAnswers.find(ua => ua.questionId === question.id); 
       return {
         question: question,
         userAnswer: userAnswerFound || null,
@@ -134,11 +132,9 @@ const useTestLogic = (): UseTestLogicReturn => {
     console.log('calculateTestResult: Итоговый процент:', scorePercentage.toFixed(2));
     console.log('calculateTestResult: Финальный TestResult:', finalResult);
 
-    // Сохраняем финальные ответы и результат перед установкой состояний
     localStorage.setItem(LOCAL_STORAGE_KEY_FINISHED_ANSWERS, JSON.stringify(currentAnswers)); 
     localStorage.setItem(LOCAL_STORAGE_KEY_LAST_TEST_RESULT, JSON.stringify(finalResult));
 
-    // Сохраняем общий результат в массив всех результатов
     const allResults = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY_ALL_RESULTS) || '[]') as TestResult[];
     allResults.push(finalResult);
     localStorage.setItem(LOCAL_STORAGE_KEY_ALL_RESULTS, JSON.stringify(allResults));
@@ -149,7 +145,6 @@ const useTestLogic = (): UseTestLogicReturn => {
     console.log('useTestLogic: testStarted установлен в FALSE (из calculateTestResult)');
     setOverallTestStartTime(null);
 
-    // Очистка временных ключей активного теста
     localStorage.removeItem(LOCAL_STORAGE_KEY_ANSWERS);
     localStorage.removeItem(LOCAL_STORAGE_KEY_CURRENT_INDEX);
     localStorage.removeItem(LOCAL_STORAGE_KEY_TEST_STARTED);
@@ -160,7 +155,7 @@ const useTestLogic = (): UseTestLogicReturn => {
 
 
   // --- Логика перехода к следующему вопросу (или завершения теста) ---
-  const handleNextQuestion = useCallback((latestUserAnswers?: UserAnswer[]) => { // Изменено: добавлен опциональный аргумент
+  const handleNextQuestion = useCallback(() => { // Откатили сигнатуру обратно
     console.log('handleNextQuestion: Текущий индекс:', currentQuestionIndex, 'Всего вопросов:', questions.length);
     if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((prevIndex) => {
@@ -172,8 +167,11 @@ const useTestLogic = (): UseTestLogicReturn => {
       });
     } else {
       console.log('handleNextQuestion: Последний вопрос. Завершаем тест.');
-      // Теперь передаем актуальные ответы в calculateTestResult
-      calculateTestResult(latestUserAnswers || userAnswersRef.current); 
+      // !!! Ключевое изменение: используем setTimeout для отложенного вызова
+      // Это даст React время обновить `userAnswers` и `userAnswersRef.current`
+      setTimeout(() => {
+        calculateTestResult(); 
+      }, 0); // Небольшая задержка, чтобы React успел обновить состояние
     }
   }, [currentQuestionIndex, questions.length, calculateTestResult, questions]); 
 
@@ -222,11 +220,11 @@ const useTestLogic = (): UseTestLogicReturn => {
       } else {
         updatedAnswers = [...prevAnswers, newAnswer];
       }
-      console.log('handleAnswerSelect: Обновленные userAnswers (для передачи в handleNextQuestion):', updatedAnswers); 
-      // !!! Ключевое изменение: вызываем handleNextQuestion СРАЗУ с обновленными ответами
-      handleNextQuestion(updatedAnswers); 
-      return updatedAnswers; // Возвращаем для обновления состояния userAnswers
+      console.log('handleAnswerSelect: Обновленные userAnswers (после setUserAnswers):', updatedAnswers); 
+      return updatedAnswers; 
     });
+    // Автоматический переход к следующему вопросу после выбора ответа.
+    handleNextQuestion(); // Вызываем без аргументов
   }, [questions, handleNextQuestion]); 
 
   const startNewTest = useCallback(() => {
@@ -411,8 +409,6 @@ const useTestLogic = (): UseTestLogicReturn => {
         setRemainingTime((prevTime) => {
           if (prevTime <= 1) {
             clearInterval(timer);
-            // Автоматический переход к следующему вопросу или завершение теста
-            // Здесь мы не передаем latestUserAnswers, так как таймер не связан с конкретным ответом
             handleNextQuestion(); 
             return 0;
           }
