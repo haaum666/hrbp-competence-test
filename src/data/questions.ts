@@ -658,6 +658,40 @@ export const generateQuestions = (): Question[] => {
             { type: 'Article', title: 'Building an AI-Ready Workforce (McKinsey)' },
         ],
     },
+      // --- НОВЫЙ ВОПРОС 20 (Знания) ---
+    {
+        id: 'q20',
+        competency: 'Оркестрация HR Tech-стека',
+        type: 'multiple-choice',
+        hrbpLevel: 'Middle HRBP',
+        text: 'Какая из перечисленных систем предназначена в первую очередь для автоматизации процесса подбора персонала, от публикации вакансий до формирования базы кандидатов?',
+        options: [
+            { id: 'a', text: 'HRIS (Human Resources Information System)' },
+            { id: 'b', text: 'LMS (Learning Management System)' },
+            { id: 'c', text: 'ERP (Enterprise Resource Planning)' },
+            { id: 'd', text: 'ATS (Applicant Tracking System)' }, // Правильный ответ
+            { id: 'e', text: 'CRM (Customer Relationship Management)' },
+        ],
+        correctAnswer: 'd',
+        explanation: 'ATS (Applicant Tracking System) — это специализированная программная система, разработанная для автоматизации и управления всем процессом подбора персонала. Она позволяет публиковать вакансии, собирать и систематизировать резюме, отслеживать статус кандидатов на разных этапах воронки найма, планировать собеседования и формировать базу данных кандидатов. Это ключевой инструмент для рекрутеров и HRBP, занимающихся наймом.',
+        explanationDetails: [
+            { optionId: 'a', reason: 'HRIS — это более широкая система для управления всеми данными о сотрудниках после их найма (зарплата, отпуска, личные данные). Хотя она может иметь модули для рекрутинга, ее основное назначение другое.' },
+            { optionId: 'b', reason: 'LMS — это система для управления обучением и развитием сотрудников.' },
+            { optionId: 'c', reason: 'ERP — это комплексная система для управления всеми бизнес-процессами компании, HR-модуль в ней обычно является частью, но не фокусируется исключительно на подборе.' },
+            { optionId: 'e', reason: 'CRM — это система для управления взаимоотношениями с клиентами, а не с кандидатами или сотрудниками.' },
+        ],
+        timeEstimate: 90,
+        categoryid: 'hr_tech_stack',
+        level: 'middle',
+        sources: ['HR Tech Stack Guide', 'The Future of HR Technology'],
+        relatedCompetencies: ['Цифровая грамотность', 'HR-аналитика', 'Автоматизация HR-процессов'],
+        developmentRecommendation: 'Если вы ошиблись в этом вопросе, уделите внимание изучению различных типов HR-систем и их функционального назначения. Понимание HR Tech-стека критически важно для эффективной работы HRBP в цифровой среде.',
+        additionalResources: [
+            { type: 'Book', title: 'HR Technology Simplified: A Guide for the HR Professional' },
+            { type: 'Course', title: 'HR Technology (various platforms)' },
+            { type: 'Article', title: 'The Ultimate Guide to HR Technology (Gartner)' },
+        ],
+    },
       
   ];
 };
