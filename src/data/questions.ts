@@ -184,5 +184,39 @@ export const generateQuestions = (): Question[] => {
             { type: 'Article', title: 'Managing HR Risks in Global Expansions (Harvard Business Review)' },
         ],
     },
+      // --- НОВЫЙ ВОПРОС 6 (Знания) ---
+    {
+        id: 'q6',
+        competency: 'Аналитика People Data',
+        type: 'multiple-choice',
+        hrbpLevel: 'Junior HRBP',
+        text: 'Какой из перечисленных показателей является опережающей метрикой (lead-metric) для оценки вовлеченности сотрудников?',
+        options: [
+            { id: 'a', text: 'Текучесть персонала за квартал.' },
+            { id: 'b', text: 'Средний стаж работы в компании.' },
+            { id: 'c', text: 'eNPS (индекс лояльности сотрудников)' }, // Правильный ответ
+            { id: 'd', text: 'Количество закрытых вакансий.' },
+            { id: 'e', text: 'Общие затраты на персонал.' },
+        ],
+        correctAnswer: 'c',
+        explanation: 'eNPS (Employee Net Promoter Score) является опережающей метрикой, поскольку он измеряет готовность сотрудников рекомендовать компанию как место работы. Высокий eNPS часто предшествует высокой вовлеченности, лояльности и, как следствие, снижению текучести. Опережающие метрики позволяют HRBP предвидеть будущие тенденции и принимать превентивные меры, а не реагировать на уже произошедшие события. Для Junior HRBP важно понимать разницу между опережающими и запаздывающими метриками, чтобы правильно интерпретировать данные.',
+        explanationDetails: [
+            { optionId: 'a', reason: 'Это запаздывающая метрика (lag-metric), которая показывает уже произошедшие увольнения.' },
+            { optionId: 'b', reason: 'Это также запаздывающая метрика, отражающая исторические данные.' },
+            { optionId: 'd', reason: 'Операционная метрика рекрутинга, не связанная напрямую с вовлеченностью.' },
+            { optionId: 'e', reason: 'Финансовая метрика, не являющаяся индикатором вовлеченности.' },
+        ],
+        timeEstimate: 60,
+        categoryid: 'people_data_analytics',
+        level: 'junior',
+        sources: ['HR Metrics and Analytics', 'Human Resources Management'],
+        relatedCompetencies: ['HR-аналитика', 'People Analytics', 'Аналитическое мышление'],
+        developmentRecommendation: 'Если вы допустили ошибку, сосредоточьтесь на изучении различных типов HR-метрик и их классификации (опережающие vs. запаздывающие). Понимание, какие метрики предсказывают будущие события, а какие отражают прошлое, критически важно для проактивного HR.',
+        additionalResources: [
+            { type: 'Book', title: 'Data-Driven HR: How to Use Analytics and Metrics to Drive Performance' },
+            { type: 'Course', title: 'People Analytics (Coursera, edX)' },
+            { type: 'Article', title: 'Lead and Lag HR Metrics: What They Are and Why They Matter (SHRM)' },
+        ],
+    },
   ];
 };
