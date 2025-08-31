@@ -19,11 +19,12 @@ const AboutPage: React.FC = () => {
         <span style={{ color: 'var(--color-accent-primary)' }}>т</span>
         <span style={{ color: 'var(--color-error)' }}>е</span>
       </h1>
-      <div className="text-lg leading-relaxed mb-8" style={{ color: 'var(--color-background-light)' }}> {/* Изменено: основной текст стал светлее */}
+      <div className="text-white text-lg leading-relaxed mb-8">
         <p className="mb-4">
-          HRBP-Тест — это инструмент для самооценки и развития компетенций HR Business Partner, разработанный специально для российского рынка труда. Тест ориентирован на современные профессиональные стандарты и призван помочь в объективной оценке теоретических знаний и понимания практических аспектов работы HRBP.
+          HRBP-Тест — это инструмент для самооценки и развития компетенций HR Business Partner, разработанный специально для российского рынка труда. 
+          Тест ориентирован на современные профессиональные стандарты и призван помочь в объективной оценке теоретических знаний и понимания практических аспектов работы HRBP.
         </p>
-        <h2 className="text-2xl font-bold text-text-primary mt-6 mb-2">Панель Аналитики</h2> {/* Заголовок остался темным */}
+        <h2 className="text-2xl font-bold text-accent-primary mt-6 mb-2">Панель Аналитики</h2>
         <p className="mb-4">
           В дополнение к основной функциональности тестирования, проект включает интерактивную панель аналитики, позволяющую пользователям:
         </p>
@@ -36,7 +37,7 @@ const AboutPage: React.FC = () => {
         <p>
           Эта панель аналитики призвана обеспечить более глубокое понимание результатов и помочь в выявлении областей для дальнейшего развития.
         </p>
-        <h2 className="text-2xl font-bold text-text-primary mt-6 mb-2">Основные Функциональные Возможности</h2> {/* Заголовок остался темным */}
+        <h2 className="text-2xl font-bold text-accent-primary mt-6 mb-2">Основные Функциональные Возможности</h2>
         <ul className="list-disc list-inside space-y-2">
           <li><strong className="font-semibold">Комплексный Тест:</strong> Оценка компетенций HRBP по различным категориям и уровням сложности.</li>
           <li><strong className="font-semibold">Таймер:</strong> Ограничение времени на каждый вопрос для имитации реальных условий.</li>
@@ -49,8 +50,8 @@ const AboutPage: React.FC = () => {
       </div>
       
       <div className="bg-background-card rounded-lg p-6 shadow-custom mt-8">
-        <h2 className="text-xl font-bold text-text-primary mb-2">Контакты и поддержка</h2> {/* Заголовок остался темным */}
-        <p style={{ color: 'var(--color-background-light)' }}> {/* Изменено: текст стал светлее */}
+        <h2 className="text-xl font-bold text-accent-primary mb-2">Контакты и поддержка</h2>
+        <p className="text-white">
           Если у вас есть вопросы, предложения или обратная связь, вы всегда можете связаться со мной:
         </p>
         <ul className="mt-4">
@@ -65,7 +66,7 @@ const AboutPage: React.FC = () => {
             </a>
           </li>
         </ul>
-        <p className="mt-4" style={{ color: 'var(--color-background-light)' }}> {/* Изменено: текст стал светлее */}
+        <p className="text-white mt-4">
           Проект создан при поддержке <a href="https://quantum-dev.ru/" target="_blank" rel="noopener noreferrer" className="text-accent-primary hover:underline transition-colors duration-300">quantum-dev.ru</a>.
         </p>
       </div>
