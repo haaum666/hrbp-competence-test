@@ -203,9 +203,11 @@ const QuestionRenderer: React.FC<QuestionRendererProps> = ({
       </div>
 
       {/* ОБНОВЛЕННЫЙ БЛОК ДЛЯ ОТОБРАЖЕНИЯ ТЕКСТА ВОПРОСА */}
-      <div className="text-xl sm:text-2xl font-bold mb-6 leading-relaxed font-heading" style={{ color: 'var(--color-text-primary)' }}>
-        <p dangerouslySetInnerHTML={{ __html: formatQuestionText(question.text) }}></p>
-      </div>
+      <div
+        className="text-xl sm:text-2xl mb-6 leading-relaxed font-heading"
+        style={{ color: 'var(--color-text-primary)' }}
+        dangerouslySetInnerHTML={{ __html: formatQuestionText(question.text) }}
+      ></div>
       {/* КОНЕЦ ОБНОВЛЕННОГО БЛОКА */}
 
       {question.type === 'multiple-choice' && (
