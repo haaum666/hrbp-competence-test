@@ -98,8 +98,8 @@ const TestPage: React.FC = () => {
           >
             <h1 className="text-4xl sm:text-5xl font-extrabold mb-4" style={{ color: 'var(--color-text-primary)' }}>HRBP-Тест</h1>
             <p className="text-lg sm:text-xl mb-8 max-w-2xl leading-relaxed" style={{ color: 'var(--color-text-secondary)' }}>
-              Этот тест поможет оценить ваши компетенции HR Business Partner для российского рынка.
-              Разработан как инструмент уровня специализированных образовательных учреждений.
+              Этот тест поможет оценить ваши компетенции HR Business Partner для российского рынка. 
+              Он разработан с ориентацией на современные профессиональные стандарты.
             </p>
             {showResumeOption ? (
               <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full max-w-md">
