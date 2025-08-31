@@ -1,6 +1,10 @@
-// src/types/test.d.ts
-
 export type QuestionLevel = 'junior' | 'middle' | 'senior';
+
+// Новый тип для текстовых секций вопроса
+export interface QuestionTextSection {
+  title?: string;
+  text: string;
+}
 
 export interface Option {
   id: string;
@@ -23,28 +27,28 @@ export interface AdditionalResource {
 
 export interface Question {
   id: string;
-  // *** ДОБАВЛЕННЫЕ/ИЗМЕНЕННЫЕ ПОЛЯ ***
-  competency?: string; // ДОБАВЛЕНО, опционально
-  hrbpLevel?: 'Junior HRBP' | 'Middle HRBP' | 'Senior HRBP'; // ДОБАВЛЕНО, опционально
-  // **********************************
+  competency?: string;
+  hrbpLevel?: 'Junior HRBP' | 'Middle HRBP' | 'Senior HRBP';
 
-  text: string;
+  // ЗАМЕНА: 'text: string;' заменено на 'sections: QuestionTextSection[];'
+  sections: QuestionTextSection[];
+  
   type: 'multiple-choice' | 'case-study';
   options: Option[];
-  correctAnswer: string | null; // ID правильного ответа для multiple-choice, или null для case-study
+  correctAnswer: string | null;
   explanation?: string;
-  level: QuestionLevel; // Это уже ваш уровень HRBP
+  level: QuestionLevel;
   timeLimitSeconds?: number;
   timeEstimate?: number;
   categoryid?: string;
-  sources?: (string | SourceResource)[]; // ИЗМЕНЕНО: теперь может быть строкой или объектом SourceResource
-  relatedCompetencies?: string[]; // Компетенция вопроса
-  explanationDetails?: { // Для объяснения неверных/менее подходящих вариантов
+  sources?: (string | SourceResource)[];
+  relatedCompetencies?: string[];
+  explanationDetails?: {
     optionId: string;
     reason: string;
   }[];
-  developmentRecommendation?: string; // Рекомендации по развитию компетенции
-  additionalResources?: AdditionalResource[]; // ИЗМЕНЕНО: теперь ссылается на отдельный интерфейс AdditionalResource
+  developmentRecommendation?: string;
+  additionalResources?: AdditionalResource[];
 }
 
 export interface UserAnswer {
