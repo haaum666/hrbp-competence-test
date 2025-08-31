@@ -118,8 +118,8 @@ const Header: React.FC = () => {
 
           {/* НОВЫЕ ССЫЛКИ НА ПРОФИЛИ */}
           <a href="https://t.me/hr_dushnila" target="_blank" rel="noopener noreferrer" className="text-text-primary hover:text-accent-primary transition-colors duration-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm4.35 8.16l-2.486 11.23c-.15.676-.562.847-.947.847-.282 0-.374-.117-.557-.291-.322-.387-1.785-1.185-2.296-1.378-.344-.131-.644-.249-.854-.249-.24 0-.458.128-.621.282l-2.036 1.956c-.255.245-.487.472-.82.472-.455 0-.621-.205-.733-.557L4.1 11.458c-.131-.482.029-.861.424-1.015l11.666-4.498c.404-.155.776-.046.993.284.218.33.242.756.069 1.107z"/>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" width="24" height="24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L6 12zm0 0h12" />
             </svg>
           </a>
 
