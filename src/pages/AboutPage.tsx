@@ -21,10 +21,9 @@ const AboutPage: React.FC = () => {
       </h1>
       <div className="text-white text-lg leading-relaxed mb-8">
         <p className="mb-4">
-          HRBP-Тест — это инструмент для самооценки и развития компетенций HR Business Partner, разработанный специально для российского рынка труда. 
-          Тест ориентирован на современные профессиональные стандарты и призван помочь в объективной оценке теоретических знаний и понимания практических аспектов работы HRBP.
+          HRBP-Тест — это профессиональный инструмент для самооценки и развития компетенций HR Business Partner, разработанный специально для российского рынка труда. Тест структурирован с ориентацией на современные профессиональные стандарты и призван помочь в объективной оценке теоретических знаний и понимания практических аспектов работы HRBP.
         </p>
-        <h2 className="text-2xl font-bold text-accent-primary mt-6 mb-2">Панель Аналитики</h2>
+        <h2 className="text-2xl font-bold mt-12 mb-2" style={{ color: 'var(--color-accent-primary)' }}>Панель Аналитики</h2>
         <p className="mb-4">
           В дополнение к основной функциональности тестирования, проект включает интерактивную панель аналитики, позволяющую пользователям:
         </p>
@@ -34,10 +33,7 @@ const AboutPage: React.FC = () => {
           <li>Анализировать среднее соотношение правильных, неправильных и неотвеченных вопросов по всем попыткам.</li>
           <li>Получать общую статистику по количеству пройденных тестов и среднему времени их прохождения.</li>
         </ul>
-        <p>
-          Эта панель аналитики призвана обеспечить более глубокое понимание результатов и помочь в выявлении областей для дальнейшего развития.
-        </p>
-        <h2 className="text-2xl font-bold text-accent-primary mt-6 mb-2">Основные Функциональные Возможности</h2>
+        <h2 className="text-2xl font-bold mt-12 mb-2" style={{ color: 'var(--color-accent-primary)' }}>Основные Функциональные Возможности</h2>
         <ul className="list-disc list-inside space-y-2">
           <li><strong className="font-semibold">Комплексный Тест:</strong> Оценка компетенций HRBP по различным категориям и уровням сложности.</li>
           <li><strong className="font-semibold">Таймер:</strong> Ограничение времени на каждый вопрос для имитации реальных условий.</li>
@@ -49,25 +45,25 @@ const AboutPage: React.FC = () => {
         </ul>
       </div>
       
-      <div className="bg-background-card rounded-lg p-6 shadow-custom mt-8">
-        <h2 className="text-xl font-bold text-accent-primary mb-2">Контакты и поддержка</h2>
+      <div className="bg-background-card rounded-lg p-6 shadow-custom mt-16">
+        <h2 className="text-xl font-bold mb-2" style={{ color: 'var(--color-accent-primary)' }}>Контакты и поддержка</h2>
         <p className="text-white">
           Если у вас есть вопросы, предложения или обратная связь, вы всегда можете связаться со мной:
         </p>
         <ul className="mt-4">
           <li className="mb-2">
-            <a href="https://t.me/hr_dushnila" target="_blank" rel="noopener noreferrer" className="text-accent-primary hover:underline transition-colors duration-300">
+            <a href="https://t.me/hr_dushnila" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-75 transition-colors duration-300 underline" style={{ color: 'var(--color-error)' }}>
               Telegram
             </a>
           </li>
           <li className="mb-2">
-            <a href="https://www.linkedin.com/in/hr-dushnila/" target="_blank" rel="noopener noreferrer" className="text-accent-primary hover:underline transition-colors duration-300">
+            <a href="https://www.linkedin.com/in/hr-dushnila/" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-75 transition-colors duration-300 underline" style={{ color: 'var(--color-error)' }}>
               LinkedIn
             </a>
           </li>
         </ul>
         <p className="text-white mt-4">
-          Проект создан при поддержке <a href="https://quantum-dev.ru/" target="_blank" rel="noopener noreferrer" className="text-accent-primary hover:underline transition-colors duration-300">quantum-dev.ru</a>.
+          Проект создан при поддержке <a href="https://quantum-dev.ru/" target="_blank" rel="noopener noreferrer" className="text-white hover:opacity-75 transition-colors duration-300 underline" style={{ color: 'var(--color-error)' }}>quantum-dev.ru</a>.
         </p>
       </div>
     </div>
