@@ -111,7 +111,7 @@ const Header: React.FC = () => {
             to="/about"
             onClick={(e) => handleNavLinkClick(e, '/about')}
             className={`hidden sm:block text-lg font-medium transition-colors duration-300 ${isActive('/about')}`}
-            style={{ color: 'var(--color-accent-secondary)' }}
+            style={{ color: 'var(--color-accent-primary)' }}
           >
             О проекте
           </Link>
