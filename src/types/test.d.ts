@@ -1,10 +1,6 @@
-export type QuestionLevel = 'junior' | 'middle' | 'senior';
+// src/types/test.d.ts
 
-// Новый тип для текстовых секций вопроса
-export interface QuestionTextSection {
-  title?: string;
-  text: string;
-}
+export type QuestionLevel = 'junior' | 'middle' | 'senior';
 
 export interface Option {
   id: string;
@@ -27,28 +23,28 @@ export interface AdditionalResource {
 
 export interface Question {
   id: string;
-  competency?: string;
-  hrbpLevel?: 'Junior HRBP' | 'Middle HRBP' | 'Senior HRBP';
+  // *** ДОБАВЛЕННЫЕ/ИЗМЕНЕННЫЕ ПОЛЯ ***
+  competency?: string; // ДОБАВЛЕНО, опционально
+  hrbpLevel?: 'Junior HRBP' | 'Middle HRBP' | 'Senior HRBP'; // ДОБАВЛЕНО, опционально
+  // **********************************
 
-  // ЗАМЕНА: 'text: string;' заменено на 'sections: QuestionTextSection[];'
-  sections: QuestionTextSection[];
-  
+  text: string;
   type: 'multiple-choice' | 'case-study';
   options: Option[];
-  correctAnswer: string | null;
+  correctAnswer: string | null; // ID правильного ответа для multiple-choice, или null для case-study
   explanation?: string;
-  level: QuestionLevel;
+  level: QuestionLevel; // Это уже ваш уровень HRBP
   timeLimitSeconds?: number;
   timeEstimate?: number;
   categoryid?: string;
-  sources?: (string | SourceResource)[];
-  relatedCompetencies?: string[];
-  explanationDetails?: {
+  sources?: (string | SourceResource)[]; // ИЗМЕНЕНО: теперь может быть строкой или объектом SourceResource
+  relatedCompetencies?: string[]; // Компетенция вопроса
+  explanationDetails?: { // Для объяснения неверных/менее подходящих вариантов
     optionId: string;
     reason: string;
   }[];
-  developmentRecommendation?: string;
-  additionalResources?: AdditionalResource[];
+  developmentRecommendation?: string; // Рекомендации по развитию компетенции
+  additionalResources?: AdditionalResource[]; // ИЗМЕНЕНО: теперь ссылается на отдельный интерфейс AdditionalResource
 }
 
 export interface UserAnswer {
